@@ -1,6 +1,8 @@
 // port-lint: source error/different_variant.rs
 package io.github.kotlinmania.time.error
 
+import io.github.kotlinmania.time.Error
+
 /**
  * Different variant error.
  */
@@ -15,4 +17,14 @@ class DifferentVariant : IllegalArgumentException("value was of a different vari
     override fun hashCode(): Int = DifferentVariant::class.hashCode()
 
     fun fmt(): String = message ?: "value was of a different variant than required"
+
+    companion object {
+        fun from(error: DifferentVariant): Error = Error.DifferentVariant(error)
+
+        fun tryFrom(error: Error): Result<DifferentVariant> =
+            when (error) {
+                is Error.DifferentVariant -> Result.success(error.err)
+                else -> Result.failure(DifferentVariant())
+            }
+    }
 }

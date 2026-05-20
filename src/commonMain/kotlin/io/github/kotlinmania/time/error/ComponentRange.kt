@@ -1,6 +1,8 @@
 // port-lint: source error/component_range.rs
 package io.github.kotlinmania.time.error
 
+import io.github.kotlinmania.time.Error
+
 /**
  * Component range error.
  */
@@ -46,5 +48,16 @@ class ComponentRange internal constructor(
 
         /** Create a new `ComponentRange` error that is conditional. */
         fun conditional(name: String): ComponentRange = ComponentRange(name, true)
+
+        fun from(original: ComponentRange): Error = Error.ComponentRange(original)
+
+        fun tryFrom(error: Error): Result<ComponentRange> =
+            when (error) {
+                is Error.ComponentRange -> Result.success(error.err)
+                else -> Result.failure(DifferentVariant())
+            }
+
+        fun intoDeError(error: ComponentRange): String =
+            "invalid ${error.name()}, expected an in-range value"
     }
 }

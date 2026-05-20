@@ -7,14 +7,22 @@ package io.github.kotlinmania.time.ext
  * This should not be implemented for signed integers. This forces the caller
  * to write the sign if desired.
  */
-internal fun UByte.numDigits(): Int = toUInt().numDigits()
+internal interface DigitCount {
+    /** The number of digits in the stringified value. */
+    fun numDigits(): Int
+}
 
 /** The number of digits in the stringified value. */
-internal fun UShort.numDigits(): Int = toUInt().numDigits()
+internal fun UByte.numDigits(): Int = digitCount(toUInt())
 
 /** The number of digits in the stringified value. */
-internal fun UInt.numDigits(): Int {
-    var value = this
+internal fun UShort.numDigits(): Int = digitCount(toUInt())
+
+/** The number of digits in the stringified value. */
+internal fun UInt.numDigits(): Int = digitCount(this)
+
+private fun digitCount(input: UInt): Int {
+    var value = input
     var digits = 1
     while (value >= 10u) {
         value /= 10u

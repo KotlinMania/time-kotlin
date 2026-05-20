@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 9/90 (10.0%)
-- **Function parity:** 35/1023 matched (target 59) — 3.4%
-- **Class/type parity:** 8/155 matched (target 10) — 5.2%
-- **Combined symbol parity:** 43/1178 matched (target 69) — 3.7%
-- **Average inline-code cosine:** 0.32 (function body across 9 matched files)
-- **Average documentation cosine:** 0.81 (doc text across 9 matched files)
-- **Cheat-zeroed Files:** 1
-- **Critical Issues:** 7 files with <0.60 function similarity
+- **Files Present:** 16/90 (17.8%)
+- **Function parity:** 67/1015 matched (target 123) — 6.6%
+- **Class/type parity:** 16/156 matched (target 46) — 10.3%
+- **Combined symbol parity:** 83/1171 matched (target 169) — 7.1%
+- **Average inline-code cosine:** 0.52 (function body across 15 matched files)
+- **Average documentation cosine:** 0.86 (doc text across 15 matched files)
+- **Cheat-zeroed Files:** 2
+- **Critical Issues:** 13 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -32,11 +32,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 1. error.component_range
 
 - **Target:** `error.ComponentRange`
-- **Similarity:** 0.25
+- **Similarity:** 0.49
 - **Dependents:** 7
-- **Priority Score:** 7041007.5
-- **Functions:** 5/8 matched (target 7)
-- **Missing functions:** `from`, `try_from`, `into_de_error`
+- **Priority Score:** 7011005.0
+- **Functions:** 8/8 matched (target 10)
+- **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
@@ -45,11 +45,11 @@ Every matched file is listed below with function and type symbol parity.
 - **Target:** `ext.DigitCount [ZERO]`
 - **Similarity:** 0.00
 - **Dependents:** 4
-- **Priority Score:** 4010110.0
-- **Functions:** 0/0 matched (target 3)
+- **Priority Score:** 4000110.0
+- **Functions:** 0/0 matched (target 4)
 - **Missing functions:** _none_
-- **Types:** 0/1 matched (target 0)
-- **Missing types:** `DigitCount`
+- **Types:** 1/1 matched
+- **Missing types:** _none_
 
 ### 3. month
 
@@ -62,7 +62,40 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/5 matched (target 1)
 - **Missing types:** `MonthMetadata`, `Metadata`, `Err`, `Error`
 
-### 4. weekday
+### 4. error.format
+
+- **Target:** `error.Format`
+- **Similarity:** 0.41
+- **Dependents:** 2
+- **Priority Score:** 2020705.9
+- **Functions:** 4/5 matched (target 13)
+- **Missing functions:** `into_invalid_serde_value`
+- **Types:** 1/2 matched (target 5)
+- **Missing types:** `Error`
+
+### 5. error.try_from_parsed
+
+- **Target:** `error.TryFromParsed`
+- **Similarity:** 0.58
+- **Dependents:** 2
+- **Priority Score:** 2010604.1
+- **Functions:** 4/4 matched (target 8)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 3)
+- **Missing types:** `Error`
+
+### 6. error.invalid_format_description
+
+- **Target:** `error.InvalidFormatDescription`
+- **Similarity:** 0.61
+- **Dependents:** 2
+- **Priority Score:** 2010503.9
+- **Functions:** 3/3 matched (target 10)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 8)
+- **Missing types:** `Error`
+
+### 7. weekday
 
 - **Target:** `time.Weekday`
 - **Similarity:** 0.59
@@ -73,40 +106,73 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `WeekdayMetadata`, `Metadata`, `Err`
 
-### 5. error.invalid_variant
+### 8. error.parse
 
-- **Target:** `error.InvalidVariant`
-- **Similarity:** 0.06
+- **Target:** `error.Parse`
+- **Similarity:** 0.40
 - **Dependents:** 1
-- **Priority Score:** 1030509.4
-- **Functions:** 1/3 matched
-- **Missing functions:** `from`, `try_from`
-- **Types:** 1/2 matched (target 1)
+- **Priority Score:** 1010606.0
+- **Functions:** 4/4 matched (target 11)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 3)
 - **Missing types:** `Error`
 
-### 6. error.conversion_range
-
-- **Target:** `error.ConversionRange`
-- **Similarity:** 0.06
-- **Dependents:** 1
-- **Priority Score:** 1030509.4
-- **Functions:** 1/3 matched
-- **Missing functions:** `from`, `try_from`
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
-### 7. error.different_variant
+### 9. error.different_variant
 
 - **Target:** `error.DifferentVariant`
-- **Similarity:** 0.06
+- **Similarity:** 0.54
 - **Dependents:** 1
-- **Priority Score:** 1030509.4
-- **Functions:** 1/3 matched
-- **Missing functions:** `from`, `try_from`
+- **Priority Score:** 1010504.6
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 8. util
+### 10. error.invalid_variant
+
+- **Target:** `error.InvalidVariant`
+- **Similarity:** 0.58
+- **Dependents:** 1
+- **Priority Score:** 1010504.2
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 11. error.parse_from_description
+
+- **Target:** `error.ParseFromDescription`
+- **Similarity:** 0.57
+- **Dependents:** 1
+- **Priority Score:** 1010504.2
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 4)
+- **Missing types:** `Error`
+
+### 12. error.conversion_range
+
+- **Target:** `error.ConversionRange`
+- **Similarity:** 0.58
+- **Dependents:** 1
+- **Priority Score:** 1010504.2
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 13. error.indeterminate_offset
+
+- **Target:** `error.IndeterminateOffset`
+- **Similarity:** 0.58
+- **Dependents:** 1
+- **Priority Score:** 1010504.2
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 14. util
 
 - **Target:** `time.Util`
 - **Similarity:** 0.62
@@ -117,7 +183,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 9. hint
+### 15. error.mod
+
+- **Target:** `time.Error [STUB]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 310.0
+- **Functions:** 2/2 matched
+- **Missing functions:** _none_
+- **Types:** 1/1 matched (target 11)
+- **Missing types:** _none_
+
+### 16. hint
 
 - **Target:** `time.Hint`
 - **Similarity:** 0.66
@@ -158,7 +235,6 @@ do not treat them as the next implementation target by default.
 
 | Source | Expected target | Deps | Source path | Expected path |
 |--------|-----------------|------|-------------|---------------|
-| `error.mod` | `error.Mod` | 0 | `error/mod.rs` | `error/Mod.kt` |
 | `ext.mod` | `ext.Mod` | 0 | `ext/mod.rs` | `ext/Mod.kt` |
 | `format_description.mod` | `formatdescription.Mod` | 0 | `format_description/mod.rs` | `formatdescription/Mod.kt` |
 | `parse.mod` | `formatdescription.parse.Mod` | 0 | `format_description/parse/mod.rs` | `formatdescription/parse/Mod.kt` |
