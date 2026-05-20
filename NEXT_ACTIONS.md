@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 16/90 (17.8%)
-- **Function parity:** 67/1015 matched (target 123) — 6.6%
-- **Class/type parity:** 16/156 matched (target 46) — 10.3%
-- **Combined symbol parity:** 83/1171 matched (target 169) — 7.1%
-- **Average inline-code cosine:** 0.52 (function body across 15 matched files)
-- **Average documentation cosine:** 0.86 (doc text across 15 matched files)
+- **Files Present:** 17/90 (18.9%)
+- **Function parity:** 91/1014 matched (target 154) — 9.0%
+- **Class/type parity:** 21/156 matched (target 51) — 13.5%
+- **Combined symbol parity:** 112/1170 matched (target 205) — 9.6%
+- **Average inline-code cosine:** 0.52 (function body across 16 matched files)
+- **Average documentation cosine:** 0.85 (doc text across 16 matched files)
 - **Cheat-zeroed Files:** 2
-- **Critical Issues:** 13 files with <0.60 function similarity
+- **Critical Issues:** 14 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -95,7 +95,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 8)
 - **Missing types:** `Error`
 
-### 7. weekday
+### 7. utc_offset
+
+- **Target:** `time.UtcOffset`
+- **Similarity:** 0.46
+- **Dependents:** 1
+- **Priority Score:** 1103905.5
+- **Functions:** 24/31 matched
+- **Missing functions:** `local_offset_at`, `current_local_offset`, `format_into`, `format`, `parse`, `metadata`, `fmt_with_metadata`
+- **Types:** 5/8 matched (target 5)
+- **Missing types:** `UtcOffsetMetadata`, `Metadata`, `Output`
+
+### 8. weekday
 
 - **Target:** `time.Weekday`
 - **Similarity:** 0.59
@@ -106,7 +117,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `WeekdayMetadata`, `Metadata`, `Err`
 
-### 8. error.parse
+### 9. error.parse
 
 - **Target:** `error.Parse`
 - **Similarity:** 0.40
@@ -117,7 +128,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Error`
 
-### 9. error.different_variant
+### 10. error.different_variant
 
 - **Target:** `error.DifferentVariant`
 - **Similarity:** 0.54
@@ -128,7 +139,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 10. error.invalid_variant
+### 11. error.invalid_variant
 
 - **Target:** `error.InvalidVariant`
 - **Similarity:** 0.58
@@ -139,7 +150,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 11. error.parse_from_description
+### 12. error.parse_from_description
 
 - **Target:** `error.ParseFromDescription`
 - **Similarity:** 0.57
@@ -150,7 +161,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 4)
 - **Missing types:** `Error`
 
-### 12. error.conversion_range
+### 13. error.conversion_range
 
 - **Target:** `error.ConversionRange`
 - **Similarity:** 0.58
@@ -161,7 +172,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 13. error.indeterminate_offset
+### 14. error.indeterminate_offset
 
 - **Target:** `error.IndeterminateOffset`
 - **Similarity:** 0.58
@@ -172,7 +183,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 14. util
+### 15. util
 
 - **Target:** `time.Util`
 - **Similarity:** 0.62
@@ -183,7 +194,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 15. error.mod
+### 16. error.mod
 
 - **Target:** `time.Error [STUB]`
 - **Similarity:** 0.00
@@ -194,7 +205,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 11)
 - **Missing types:** _none_
 
-### 16. hint
+### 17. hint
 
 - **Target:** `time.Hint`
 - **Similarity:** 0.66
