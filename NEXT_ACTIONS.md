@@ -4,13 +4,13 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 8/90 (8.9%)
-- **Function parity:** 33/1023 matched (target 54) — 3.2%
-- **Class/type parity:** 7/155 matched (target 8) — 4.5%
-- **Combined symbol parity:** 40/1178 matched (target 62) — 3.4%
-- **Average inline-code cosine:** 0.32 (function body across 8 matched files)
-- **Average documentation cosine:** 0.81 (doc text across 8 matched files)
-- **Cheat-zeroed Files:** 0
+- **Files Present:** 9/90 (10.0%)
+- **Function parity:** 35/1023 matched (target 59) — 3.4%
+- **Class/type parity:** 8/155 matched (target 10) — 5.2%
+- **Combined symbol parity:** 43/1178 matched (target 69) — 3.7%
+- **Average inline-code cosine:** 0.32 (function body across 9 matched files)
+- **Average documentation cosine:** 0.81 (doc text across 9 matched files)
+- **Cheat-zeroed Files:** 1
 - **Critical Issues:** 7 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -40,7 +40,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 2. month
+### 2. ext.digit_count
+
+- **Target:** `ext.DigitCount [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 4
+- **Priority Score:** 4010110.0
+- **Functions:** 0/0 matched (target 3)
+- **Missing functions:** _none_
+- **Types:** 0/1 matched (target 0)
+- **Missing types:** `DigitCount`
+
+### 3. month
 
 - **Target:** `time.Month`
 - **Similarity:** 0.58
@@ -51,7 +62,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/5 matched (target 1)
 - **Missing types:** `MonthMetadata`, `Metadata`, `Err`, `Error`
 
-### 3. weekday
+### 4. weekday
 
 - **Target:** `time.Weekday`
 - **Similarity:** 0.59
@@ -62,7 +73,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `WeekdayMetadata`, `Metadata`, `Err`
 
-### 4. error.invalid_variant
+### 5. error.invalid_variant
 
 - **Target:** `error.InvalidVariant`
 - **Similarity:** 0.06
@@ -73,7 +84,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 5. error.conversion_range
+### 6. error.conversion_range
 
 - **Target:** `error.ConversionRange`
 - **Similarity:** 0.06
@@ -84,7 +95,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 6. error.different_variant
+### 7. error.different_variant
 
 - **Target:** `error.DifferentVariant`
 - **Similarity:** 0.06
@@ -95,18 +106,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 7. util
+### 8. util
 
 - **Target:** `time.Util`
-- **Similarity:** 0.31
+- **Similarity:** 0.62
 - **Dependents:** 0
-- **Priority Score:** 50806.9
-- **Functions:** 2/6 matched (target 11)
-- **Missing functions:** `refresh_tz_unchecked`, `refresh_tz`, `set_soundness`, `get_soundness`
-- **Types:** 1/2 matched
-- **Missing types:** `Soundness`
+- **Priority Score:** 20803.8
+- **Functions:** 4/6 matched (target 13)
+- **Missing functions:** `refresh_tz_unchecked`, `refresh_tz`
+- **Types:** 2/2 matched (target 4)
+- **Missing types:** _none_
 
-### 8. hint
+### 9. hint
 
 - **Target:** `time.Hint`
 - **Similarity:** 0.66

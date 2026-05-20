@@ -65,6 +65,22 @@ internal object RangeValidated {
     fun isLeapYear(year: Int): Boolean = io.github.kotlinmania.time.isLeapYear(year)
 }
 
+object LocalOffset {
+    enum class Soundness {
+        Sound,
+        Unsound,
+    }
+
+    fun setSoundness(soundness: Soundness) {
+        when (soundness) {
+            Soundness.Sound,
+            Soundness.Unsound -> Unit
+        }
+    }
+
+    fun getSoundness(): Soundness = Soundness.Sound
+}
+
 private fun isoWeekPredicate(year: Int): Int =
     floorMod(year + floorDiv(year, 4) - floorDiv(year, 100) + floorDiv(year, 400), 7)
 

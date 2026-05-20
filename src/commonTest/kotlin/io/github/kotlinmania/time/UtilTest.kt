@@ -1,0 +1,106 @@
+// port-lint: ignore - upstream test source is tests/integration/util.rs.
+package io.github.kotlinmania.time
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class UtilTest {
+    @Test
+    fun daysInMonth() {
+        val cases =
+            listOf(
+                Triple(2019, Month.January, 31),
+                Triple(2019, Month.February, 28),
+                Triple(2019, Month.March, 31),
+                Triple(2019, Month.April, 30),
+                Triple(2019, Month.May, 31),
+                Triple(2019, Month.June, 30),
+                Triple(2019, Month.July, 31),
+                Triple(2019, Month.August, 31),
+                Triple(2019, Month.September, 30),
+                Triple(2019, Month.October, 31),
+                Triple(2019, Month.November, 30),
+                Triple(2019, Month.December, 31),
+                Triple(2020, Month.January, 31),
+                Triple(2020, Month.February, 29),
+                Triple(2020, Month.March, 31),
+                Triple(2020, Month.April, 30),
+                Triple(2020, Month.May, 31),
+                Triple(2020, Month.June, 30),
+                Triple(2020, Month.July, 31),
+                Triple(2020, Month.August, 31),
+                Triple(2020, Month.September, 30),
+                Triple(2020, Month.October, 31),
+                Triple(2020, Month.November, 30),
+                Triple(2020, Month.December, 31),
+            )
+
+        for ((year, month, expected) in cases) {
+            assertEquals(expected, daysInMonth(month, year))
+        }
+    }
+
+    @Test
+    fun isLeapYear() {
+        for (year in 0..399) {
+            val expected = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+            assertEquals(expected, isLeapYear(year), "year $year failed")
+        }
+    }
+
+    @Test
+    fun daysInYear() {
+        val cases =
+            listOf(
+                1900 to 365,
+                2000 to 366,
+                2004 to 366,
+                2005 to 365,
+                2100 to 365,
+            )
+
+        for ((year, expected) in cases) {
+            assertEquals(expected, daysInYear(year))
+        }
+    }
+
+    @Test
+    fun weeksInYear() {
+        val numWeeksForYears =
+            listOf(
+                52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52,
+                53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52,
+                52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52,
+                53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53,
+                52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53,
+                52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52,
+                52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52,
+                52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52,
+                52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52,
+                53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52,
+                52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52,
+                53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52,
+                53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53,
+                52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52,
+                52, 53, 52, 52, 52, 52, 52, 53, 52, 52, 52, 52, 53, 52, 52, 52, 52, 52, 53, 52,
+            )
+
+        for ((year, numWeeks) in numWeeksForYears.withIndex()) {
+            assertEquals(numWeeks, weeksInYear(year))
+        }
+    }
+
+    @Test
+    fun localOffsetSoundness() {
+        assertEquals(LocalOffset.Soundness.Sound, LocalOffset.getSoundness())
+        LocalOffset.setSoundness(LocalOffset.Soundness.Unsound)
+        assertEquals(LocalOffset.Soundness.Sound, LocalOffset.getSoundness())
+        LocalOffset.setSoundness(LocalOffset.Soundness.Sound)
+        assertEquals(LocalOffset.Soundness.Sound, LocalOffset.getSoundness())
+    }
+}
