@@ -198,10 +198,18 @@ kotlin {
         binaries.framework { baseName = "Time"; xcf.add(this) }
     }
     iosSimulatorArm64 {
-        binaries.framework { baseName = "Time"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Time"
+            isStatic = true
+            xcf.add(this)
+        }
     }
     iosX64 {
-        binaries.framework { baseName = "Time"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Time"
+            isStatic = true
+            xcf.add(this)
+        }
     }
 
     tvosArm64 {
