@@ -58,8 +58,12 @@ proven end-to-end with a working `swift test` invocation against the
      All input frameworks must be either static or dynamic
    ```
 
-   The other Apple targets (`iosArm64`, `tvosArm64`,
-   `tvosSimulatorArm64`, `watchos*`, `macosArm64`) stay dynamic.
+   The original rollout kept `iosArm64` dynamic. H23.3 later made it static as
+   well because this repo's full-target `build` gate includes
+   `assembleDebugIosFatFrameworkForTimeXCFramework`, which combines `iosArm64`
+   and `iosX64`; those slices must have matching linkage. The other Apple
+   targets (`tvosArm64`, `tvosSimulatorArm64`, `watchos*`, `macosArm64`) stay
+   dynamic.
 
    > **Note**: earlier versions of this recipe and of `apply.sh` flipped
    > only `iosSimulatorArm64`. Repos that landed the rollout before this
