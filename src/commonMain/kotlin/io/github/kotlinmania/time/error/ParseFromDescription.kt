@@ -8,7 +8,9 @@ import io.github.kotlinmania.time.Error
  */
 
 /** An error that occurred while parsing the input into a `Parsed` struct. */
-sealed class ParseFromDescription(message: String) : IllegalArgumentException(message) {
+sealed class ParseFromDescription(
+    message: String,
+) : IllegalArgumentException(message) {
     abstract fun fmt(): String
 
     /** A string literal was not what was expected. */
@@ -17,14 +19,14 @@ sealed class ParseFromDescription(message: String) : IllegalArgumentException(me
     }
 
     /** A dynamic component was not valid. */
-    class InvalidComponent(val name: String) :
-        ParseFromDescription("the '$name' component could not be parsed") {
+    class InvalidComponent(
+        val name: String,
+    ) : ParseFromDescription("the '$name' component could not be parsed") {
         override fun fmt(): String = message ?: "the '$name' component could not be parsed"
     }
 
     /** The input was expected to have ended, but there are characters that remain. */
-    class UnexpectedTrailingCharacters :
-        ParseFromDescription("unexpected trailing characters; the end of input was expected") {
+    class UnexpectedTrailingCharacters : ParseFromDescription("unexpected trailing characters; the end of input was expected") {
         override fun fmt(): String =
             message ?: "unexpected trailing characters; the end of input was expected"
     }

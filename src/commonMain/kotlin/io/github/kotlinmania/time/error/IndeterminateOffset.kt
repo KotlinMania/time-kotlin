@@ -8,8 +8,7 @@ import io.github.kotlinmania.time.Error
  */
 
 /** The system's UTC offset could not be determined at the given datetime. */
-class IndeterminateOffset :
-    IllegalArgumentException("The system's UTC offset could not be determined") {
+class IndeterminateOffset : IllegalArgumentException("The system's UTC offset could not be determined") {
     override fun equals(other: Any?): Boolean = other is IndeterminateOffset
 
     override fun hashCode(): Int = IndeterminateOffset::class.hashCode()

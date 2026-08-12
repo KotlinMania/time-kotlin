@@ -12,8 +12,8 @@ package io.github.kotlinmania.time
  * `Result<T>` will work in these situations.
  */
 sealed interface Error {
-    fun fmt(): String {
-        return when (this) {
+    fun fmt(): String =
+        when (this) {
             is ConversionRange -> {
                 val err = this.err
                 err.fmt()
@@ -55,10 +55,9 @@ sealed interface Error {
                 err.fmt()
             }
         }
-    }
 
-    fun source(): Throwable? {
-        return when (this) {
+    fun source(): Throwable? =
+        when (this) {
             is ConversionRange -> {
                 val err = this.err
                 err
@@ -100,36 +99,44 @@ sealed interface Error {
                 err
             }
         }
-    }
 
-    class ConversionRange(val err: io.github.kotlinmania.time.error.ConversionRange) :
-        Error
+    class ConversionRange(
+        val err: io.github.kotlinmania.time.error.ConversionRange,
+    ) : Error
 
-    class ComponentRange(val err: io.github.kotlinmania.time.error.ComponentRange) :
-        Error
+    class ComponentRange(
+        val err: io.github.kotlinmania.time.error.ComponentRange,
+    ) : Error
 
-    class IndeterminateOffset(val err: io.github.kotlinmania.time.error.IndeterminateOffset) :
-        Error
+    class IndeterminateOffset(
+        val err: io.github.kotlinmania.time.error.IndeterminateOffset,
+    ) : Error
 
-    class Format(val err: io.github.kotlinmania.time.error.Format) :
-        Error
+    class Format(
+        val err: io.github.kotlinmania.time.error.Format,
+    ) : Error
 
-    class ParseFromDescription(val err: io.github.kotlinmania.time.error.ParseFromDescription) :
-        Error
+    class ParseFromDescription(
+        val err: io.github.kotlinmania.time.error.ParseFromDescription,
+    ) : Error
 
-    class UnexpectedTrailingCharacters private constructor(val impossible: Nothing) :
-        Error
+    class UnexpectedTrailingCharacters private constructor(
+        val impossible: Nothing,
+    ) : Error
 
-    class TryFromParsed(val err: io.github.kotlinmania.time.error.TryFromParsed) :
-        Error
+    class TryFromParsed(
+        val err: io.github.kotlinmania.time.error.TryFromParsed,
+    ) : Error
 
     class InvalidFormatDescription(
         val err: io.github.kotlinmania.time.error.InvalidFormatDescription,
     ) : Error
 
-    class DifferentVariant(val err: io.github.kotlinmania.time.error.DifferentVariant) :
-        Error
+    class DifferentVariant(
+        val err: io.github.kotlinmania.time.error.DifferentVariant,
+    ) : Error
 
-    class InvalidVariant(val err: io.github.kotlinmania.time.error.InvalidVariant) :
-        Error
+    class InvalidVariant(
+        val err: io.github.kotlinmania.time.error.InvalidVariant,
+    ) : Error
 }
