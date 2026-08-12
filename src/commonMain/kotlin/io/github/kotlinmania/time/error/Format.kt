@@ -8,7 +8,9 @@ import io.github.kotlinmania.time.Error
  */
 
 /** An error occurred when formatting. */
-sealed class Format(message: String) : IllegalArgumentException(message) {
+sealed class Format(
+    message: String,
+) : IllegalArgumentException(message) {
     abstract fun fmt(): String
 
     open fun source(): Throwable? = null
@@ -28,22 +30,28 @@ sealed class Format(message: String) : IllegalArgumentException(message) {
      *
      * This variant is only returned when using well-known formats.
      */
-    class InvalidComponent(val component: String) :
-        Format("The $component component cannot be formatted into the requested format.") {
+    class InvalidComponent(
+        val component: String,
+    ) : Format("The $component component cannot be formatted into the requested format.") {
         override fun fmt(): String =
             message ?: "The $component component cannot be formatted into the requested format."
     }
 
     /** A component provided was out of range. */
-    class ComponentRange(val error: io.github.kotlinmania.time.error.ComponentRange) :
-        Format(error.fmt()) {
+    class ComponentRange(
+        val error: io.github.kotlinmania.time.error.ComponentRange,
+    ) : Format(error.fmt()) {
         override fun fmt(): String = error.fmt()
+
         override fun source(): Throwable = error
     }
 
     /** A value of `Throwable` was returned internally. */
-    class StdIo(val error: Throwable) : Format(error.message ?: error.toString()) {
+    class StdIo(
+        val error: Throwable,
+    ) : Format(error.message ?: error.toString()) {
         override fun fmt(): String = message ?: error.toString()
+
         override fun source(): Throwable = error
     }
 

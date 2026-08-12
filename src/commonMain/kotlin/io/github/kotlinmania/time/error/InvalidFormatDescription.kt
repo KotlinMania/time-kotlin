@@ -8,7 +8,9 @@ import io.github.kotlinmania.time.Error
  */
 
 /** The format description provided was not valid. */
-sealed class InvalidFormatDescription(message: String) : IllegalArgumentException(message) {
+sealed class InvalidFormatDescription(
+    message: String,
+) : IllegalArgumentException(message) {
     abstract fun fmt(): String
 
     class UnclosedOpeningBracket(
@@ -49,8 +51,8 @@ sealed class InvalidFormatDescription(message: String) : IllegalArgumentExceptio
         /** The zero-based index of the component. */
         val index: Int,
     ) : InvalidFormatDescription(
-        "missing required modifier `$name` for component at byte index $index",
-    ) {
+            "missing required modifier `$name` for component at byte index $index",
+        ) {
         override fun fmt(): String =
             message ?: "missing required modifier `$name` for component at byte index $index"
     }

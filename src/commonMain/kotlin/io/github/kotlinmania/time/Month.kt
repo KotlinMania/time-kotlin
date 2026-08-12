@@ -5,7 +5,9 @@ import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.error.InvalidVariant
 
 /** Months of the year. */
-enum class Month(val number: Int) {
+enum class Month(
+    val number: Int,
+) {
     January(1),
     February(2),
     March(3),

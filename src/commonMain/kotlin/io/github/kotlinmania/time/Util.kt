@@ -62,7 +62,9 @@ internal fun daysInMonthLeap(month: Int, isLeapYear: Boolean): Int {
 }
 
 internal object RangeValidated {
-    fun isLeapYear(year: Int): Boolean = io.github.kotlinmania.time.isLeapYear(year)
+    fun isLeapYear(year: Int): Boolean =
+        io.github.kotlinmania.time
+            .isLeapYear(year)
 }
 
 object LocalOffset {
@@ -74,7 +76,8 @@ object LocalOffset {
     fun setSoundness(soundness: Soundness) {
         when (soundness) {
             Soundness.Sound,
-            Soundness.Unsound -> Unit
+            Soundness.Unsound,
+            -> Unit
         }
     }
 

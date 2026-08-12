@@ -8,20 +8,26 @@ import io.github.kotlinmania.time.Error
  */
 
 /** An error that occurred at some stage of parsing. */
-sealed class Parse(message: String) : IllegalArgumentException(message) {
+sealed class Parse(
+    message: String,
+) : IllegalArgumentException(message) {
     abstract fun fmt(): String
 
     open fun source(): Throwable? = null
 
-    class TryFromParsed(val error: io.github.kotlinmania.time.error.TryFromParsed) :
-        Parse(error.fmt()) {
+    class TryFromParsed(
+        val error: io.github.kotlinmania.time.error.TryFromParsed,
+    ) : Parse(error.fmt()) {
         override fun fmt(): String = error.fmt()
+
         override fun source(): Throwable = error
     }
 
-    class ParseFromDescription(val error: io.github.kotlinmania.time.error.ParseFromDescription) :
-        Parse(error.fmt()) {
+    class ParseFromDescription(
+        val error: io.github.kotlinmania.time.error.ParseFromDescription,
+    ) : Parse(error.fmt()) {
         override fun fmt(): String = error.fmt()
+
         override fun source(): Throwable = error
     }
 

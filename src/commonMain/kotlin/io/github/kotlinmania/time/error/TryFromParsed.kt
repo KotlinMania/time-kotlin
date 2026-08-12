@@ -8,22 +8,25 @@ import io.github.kotlinmania.time.Error
  */
 
 /** An error that occurred when converting a `Parsed` to another type. */
-sealed class TryFromParsed(message: String) : IllegalArgumentException(message) {
+sealed class TryFromParsed(
+    message: String,
+) : IllegalArgumentException(message) {
     abstract fun fmt(): String
 
     open fun source(): Throwable? = null
 
     /** The `Parsed` did not include enough information to construct the type. */
-    class InsufficientInformation :
-        TryFromParsed("the `Parsed` struct did not include enough information to construct the type") {
+    class InsufficientInformation : TryFromParsed("the `Parsed` struct did not include enough information to construct the type") {
         override fun fmt(): String =
             message ?: "the `Parsed` struct did not include enough information to construct the type"
     }
 
     /** Some component contained an invalid value for the type. */
-    class ComponentRange(val error: io.github.kotlinmania.time.error.ComponentRange) :
-        TryFromParsed(error.fmt()) {
+    class ComponentRange(
+        val error: io.github.kotlinmania.time.error.ComponentRange,
+    ) : TryFromParsed(error.fmt()) {
         override fun fmt(): String = error.fmt()
+
         override fun source(): Throwable = error
     }
 
