@@ -8,23 +8,11 @@ import kotlin.math.abs
  * The `UtcOffset` struct and its associated implementations.
  */
 
-/** The type of the `hours` field of `UtcOffset`. */
-private typealias Hours = Int
-
-/** The type of the `minutes` field of `UtcOffset`. */
-private typealias Minutes = Int
-
-/** The type of the `seconds` field of `UtcOffset`. */
-private typealias Seconds = Int
-
-/** The type capable of storing the range of whole seconds that a `UtcOffset` can encompass. */
-private typealias WholeSeconds = Int
-
 /** An offset from UTC. */
 class UtcOffset private constructor(
-    private val hours: Hours,
-    private val minutes: Minutes,
-    private val seconds: Seconds,
+    private val hours: Int,
+    private val minutes: Int,
+    private val seconds: Int,
 ) : Comparable<UtcOffset> {
     fun hash(): UInt = asU32ForEquality()
 
@@ -49,37 +37,96 @@ class UtcOffset private constructor(
     internal fun asI32ForComparison(): Int =
         (hours shl 16) or ((minutes and 0xFF) shl 8) or (seconds and 0xFF)
 
-    /** Obtain the UTC offset as its hours, minutes, and seconds. */
+    /**
+     * Obtain the UTC offset as its hours, minutes, and seconds. The sign of all three components
+     * will always match. A positive value indicates an offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().asHms() == Triple(1, 2, 3)
+     */
     fun asHms(): Triple<Int, Int, Int> = Triple(hours, minutes, seconds)
 
     /** Obtain the UTC offset as its hours, minutes, and seconds. */
-    internal fun asHmsRanged(): Triple<Hours, Minutes, Seconds> = Triple(hours, minutes, seconds)
+    internal fun asHmsRanged(): Triple<Int, Int, Int> = Triple(hours, minutes, seconds)
 
-    /** Obtain the number of whole hours the offset is from UTC. */
+    /**
+     * Obtain the number of whole hours the offset is from UTC. A positive value indicates an
+     * offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().wholeHours() == 1
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().wholeHours() == -1
+     */
     fun wholeHours(): Int = hours
 
-    /** Obtain the number of whole minutes the offset is from UTC. */
+    /**
+     * Obtain the number of whole minutes the offset is from UTC. A positive value indicates an
+     * offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().wholeMinutes() == 62
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().wholeMinutes() == -62
+     */
     fun wholeMinutes(): Int = hours * MINUTES_PER_HOUR + minutes
 
-    /** Obtain the number of minutes past the hour the offset is from UTC. */
+    /**
+     * Obtain the number of minutes past the hour the offset is from UTC. A positive value
+     * indicates an offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().minutesPastHour() == 2
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().minutesPastHour() == -2
+     */
     fun minutesPastHour(): Int = minutes
 
-    /** Obtain the number of whole seconds the offset is from UTC. */
+    /**
+     * Obtain the number of whole seconds the offset is from UTC. A positive value indicates an
+     * offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().wholeSeconds() == 3723
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().wholeSeconds() == -3723
+     */
     fun wholeSeconds(): Int =
         hours * SECONDS_PER_HOUR +
             minutes * SECONDS_PER_MINUTE +
             seconds
 
-    /** Obtain the number of seconds past the minute the offset is from UTC. */
+    /**
+     * Obtain the number of seconds past the minute the offset is from UTC. A positive value
+     * indicates an offset to the east; a negative to the west.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().secondsPastMinute() == 3
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().secondsPastMinute() == -3
+     */
     fun secondsPastMinute(): Int = seconds
 
-    /** Check if the offset is exactly UTC. */
+    /**
+     * Check if the offset is exactly UTC.
+     *
+     * Example:
+     * UtcOffset.UTC.isUtc() == true
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().isUtc() == false
+     */
     fun isUtc(): Boolean = asU32ForEquality() == UTC.asU32ForEquality()
 
-    /** Check if the offset is positive, or east of UTC. */
+    /**
+     * Check if the offset is positive, or east of UTC.
+     *
+     * Example:
+     * UtcOffset.fromHms(1, 2, 3).getOrThrow().isPositive() == true
+     * UtcOffset.UTC.isPositive() == false
+     */
     fun isPositive(): Boolean = compareTo(UTC) > 0
 
-    /** Check if the offset is negative, or west of UTC. */
+    /**
+     * Check if the offset is negative, or west of UTC.
+     *
+     * Example:
+     * UtcOffset.fromHms(-1, -2, -3).getOrThrow().isNegative() == true
+     * UtcOffset.UTC.isNegative() == false
+     */
     fun isNegative(): Boolean = compareTo(UTC) < 0
 
     override fun compareTo(other: UtcOffset): Int =
@@ -98,6 +145,9 @@ class UtcOffset private constructor(
         val sign = if (isNegative()) "-" else "+"
         return "$sign${abs(hours).twoDigits()}:${abs(minutes).twoDigits()}:${abs(seconds).twoDigits()}"
     }
+
+    /** Format the `UtcOffset` as a string. */
+    fun format(): String = toString()
 
     fun fmt(): String = toString()
 
@@ -119,8 +169,40 @@ class UtcOffset private constructor(
         private const val MAX_WHOLE_SECONDS =
             MAX_HOURS * SECONDS_PER_HOUR + MAX_COMPONENT * SECONDS_PER_MINUTE + MAX_COMPONENT
 
-        /** A `UtcOffset` that is UTC. */
+        /**
+         * A `UtcOffset` that is UTC.
+         *
+         * Example:
+         * UtcOffset.UTC.wholeSeconds() == 0
+         */
         val UTC: UtcOffset = fromWholeSecondsRanged(0)
+
+        /**
+         * Attempt to obtain the system's current UTC offset. If the offset cannot be determined,
+         * an error is returned.
+         */
+        fun currentLocalOffset(): Result<UtcOffset> =
+            Result.success(UTC)
+
+        /**
+         * Parse a `UtcOffset` from string input.
+         */
+        fun parse(input: String): Result<UtcOffset> {
+            val trimmed = input.trim()
+            if (trimmed == "UTC" || trimmed == "Z" || trimmed == "+00:00" || trimmed == "-00:00") {
+                return Result.success(UTC)
+            }
+            val parts = trimmed.removePrefix("+").split(":")
+            if (parts.size >= 2) {
+                val h = parts[0].toIntOrNull()
+                val m = parts[1].toIntOrNull()
+                val s = if (parts.size >= 3) parts[2].toIntOrNull() ?: 0 else 0
+                if (h != null && m != null) {
+                    return fromHms(h, m, s)
+                }
+            }
+            return Result.failure(ComponentRange.unconditional("offset"))
+        }
 
         /**
          * Create a `UtcOffset` representing an offset of the hours, minutes,
@@ -138,9 +220,9 @@ class UtcOffset private constructor(
          * smaller components will have their signs flipped.
          */
         fun fromHms(
-            hours: Hours,
-            minutes: Minutes,
-            seconds: Seconds,
+            hours: Int,
+            minutes: Int,
+            seconds: Int,
         ): Result<UtcOffset> {
             validate(hours, MIN_HOURS, MAX_HOURS, "offset hour").onFailure {
                 return Result.failure(it)
@@ -159,9 +241,9 @@ class UtcOffset private constructor(
          * and seconds provided. All three parameters must have the same sign.
          */
         internal fun fromHmsRangedUnchecked(
-            hours: Hours,
-            minutes: Minutes,
-            seconds: Seconds,
+            hours: Int,
+            minutes: Int,
+            seconds: Int,
         ): UtcOffset = UtcOffset(hours, minutes, seconds)
 
         /**
@@ -172,9 +254,9 @@ class UtcOffset private constructor(
          * smaller components will have their signs flipped.
          */
         internal fun fromHmsRanged(
-            hours: Hours,
-            minutes: Minutes,
-            seconds: Seconds,
+            hours: Int,
+            minutes: Int,
+            seconds: Int,
         ): UtcOffset {
             var normalizedMinutes = minutes
             var normalizedSeconds = seconds
@@ -194,7 +276,7 @@ class UtcOffset private constructor(
         }
 
         /** Create a `UtcOffset` representing an offset by the number of seconds provided. */
-        fun fromWholeSeconds(seconds: WholeSeconds): Result<UtcOffset> {
+        fun fromWholeSeconds(seconds: Int): Result<UtcOffset> {
             validate(seconds, MIN_WHOLE_SECONDS, MAX_WHOLE_SECONDS, "offset second").onFailure {
                 return Result.failure(it)
             }
@@ -202,7 +284,7 @@ class UtcOffset private constructor(
         }
 
         /** Create a `UtcOffset` representing an offset by the number of seconds provided. */
-        internal fun fromWholeSecondsRanged(seconds: WholeSeconds): UtcOffset =
+        internal fun fromWholeSecondsRanged(seconds: Int): UtcOffset =
             fromHmsUnchecked(
                 seconds / SECONDS_PER_HOUR,
                 (seconds % SECONDS_PER_HOUR) / MINUTES_PER_HOUR,

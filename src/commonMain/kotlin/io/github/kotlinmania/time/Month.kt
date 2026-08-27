@@ -22,10 +22,20 @@ enum class Month(
     December(12),
     ;
 
-    /** Get the number of days in the month of a given year. */
+    /**
+     * Get the number of days in the month of a given year.
+     *
+     * Example:
+     * Month.February.length(2020) == 29
+     */
     fun length(year: Int): Int = daysInMonth(this, year)
 
-    /** Get the previous month. */
+    /**
+     * Get the previous month.
+     *
+     * Example:
+     * Month.January.previous() == Month.December
+     */
     fun previous(): Month =
         when (this) {
             January -> December
@@ -42,7 +52,12 @@ enum class Month(
             December -> November
         }
 
-    /** Get the next month. */
+    /**
+     * Get the next month.
+     *
+     * Example:
+     * Month.January.next() == Month.February
+     */
     fun next(): Month =
         when (this) {
             January -> February
@@ -59,7 +74,13 @@ enum class Month(
             December -> January
         }
 
-    /** Get the n-th next month. */
+    /**
+     * Get n-th next month.
+     *
+     * Example:
+     * Month.January.nthNext(4) == Month.May
+     * Month.July.nthNext(9) == Month.April
+     */
     fun nthNext(n: Int): Month =
         when ((number - 1 + n.mod(12)).mod(12)) {
             0 -> January
@@ -76,7 +97,13 @@ enum class Month(
             else -> December
         }
 
-    /** Get the n-th previous month. */
+    /**
+     * Get n-th previous month.
+     *
+     * Example:
+     * Month.January.nthPrev(4) == Month.September
+     * Month.July.nthPrev(9) == Month.October
+     */
     fun nthPrev(n: Int): Month =
         when (number - 1 - n.mod(12)) {
             1, -11 -> February

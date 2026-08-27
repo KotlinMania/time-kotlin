@@ -4,12 +4,12 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 17/90 (18.9%)
-- **Function parity:** 91/1014 matched (target 154) — 9.0%
-- **Class/type parity:** 21/156 matched (target 51) — 13.5%
-- **Combined symbol parity:** 112/1170 matched (target 205) — 9.6%
-- **Average inline-code cosine:** 0.52 (function body across 16 matched files)
-- **Average documentation cosine:** 0.85 (doc text across 16 matched files)
+- **Files Present:** 19/90 (21.1%)
+- **Function parity:** 110/997 matched (target 215) — 11.0%
+- **Class/type parity:** 45/156 matched (target 92) — 28.8%
+- **Combined symbol parity:** 155/1153 matched (target 307) — 13.4%
+- **Average inline-code cosine:** 0.57 (function body across 18 matched files)
+- **Average documentation cosine:** 0.88 (doc text across 18 matched files)
 - **Cheat-zeroed Files:** 2
 - **Critical Issues:** 14 files with <0.60 function similarity
 
@@ -98,13 +98,13 @@ Every matched file is listed below with function and type symbol parity.
 ### 7. utc_offset
 
 - **Target:** `time.UtcOffset`
-- **Similarity:** 0.46
+- **Similarity:** 0.47
 - **Dependents:** 1
-- **Priority Score:** 1103905.5
-- **Functions:** 24/31 matched
-- **Missing functions:** `local_offset_at`, `current_local_offset`, `format_into`, `format`, `parse`, `metadata`, `fmt_with_metadata`
-- **Types:** 5/8 matched (target 5)
-- **Missing types:** `UtcOffsetMetadata`, `Metadata`, `Output`
+- **Priority Score:** 1113905.2
+- **Functions:** 27/31 matched (target 34)
+- **Missing functions:** `local_offset_at`, `format_into`, `metadata`, `fmt_with_metadata`
+- **Types:** 1/8 matched (target 1)
+- **Missing types:** `Hours`, `Minutes`, `Seconds`, `WholeSeconds`, `UtcOffsetMetadata`, `Metadata`, `Output`
 
 ### 8. weekday
 
@@ -183,18 +183,29 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 15. util
+### 15. format_description.modifier
+
+- **Target:** `formatdescription.Modifier`
+- **Similarity:** 0.86
+- **Dependents:** 1
+- **Priority Score:** 1004001.4
+- **Functions:** 14/14 matched (target 56)
+- **Missing functions:** _none_
+- **Types:** 26/26 matched
+- **Missing types:** _none_
+
+### 16. util
 
 - **Target:** `time.Util`
-- **Similarity:** 0.62
+- **Similarity:** 0.70
 - **Dependents:** 0
-- **Priority Score:** 20803.8
-- **Functions:** 4/6 matched (target 13)
-- **Missing functions:** `refresh_tz_unchecked`, `refresh_tz`
+- **Priority Score:** 803.0
+- **Functions:** 6/6 matched (target 15)
+- **Missing functions:** _none_
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 16. error.mod
+### 17. error.mod
 
 - **Target:** `time.Error [STUB]`
 - **Similarity:** 0.00
@@ -205,7 +216,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 11)
 - **Missing types:** _none_
 
-### 17. hint
+### 18. hint
 
 - **Target:** `time.Hint`
 - **Similarity:** 0.66
@@ -214,6 +225,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 3/3 matched
 - **Missing functions:** _none_
 - **Types:** 0/0 matched
+- **Missing types:** _none_
+
+### 19. format_description.component
+
+- **Target:** `formatdescription.Component`
+- **Similarity:** 1.00
+- **Dependents:** 0
+- **Priority Score:** 200.0
+- **Functions:** 0/0 matched
+- **Missing functions:** _none_
+- **Types:** 2/2 matched (target 19)
 - **Missing types:** _none_
 
 ## Success Criteria
@@ -225,16 +247,6 @@ For each file to be considered "complete":
 - Documentation ported
 - port-lint header present
 
-## Next Commands
-
-```bash
-# Initialize task queue for systematic porting
-cd tools/ast_distance
-./ast_distance --init-tasks ../../tmp/time/src rust ../../src/commonMain/kotlin/io/github/kotlinmania/time kotlin tasks.json ../../AGENTS.md
-
-# Get next high-priority task
-./ast_distance --assign tasks.json <agent-id>
-```
 ## Reexport / Wiring Modules
 
 These files match `reexport_modules` patterns in `.ast_distance_config.json`. They are filtered out of
@@ -260,3 +272,4 @@ do not treat them as the next implementation target by default.
 | `local_offset_at.mod` | `sys.localoffsetat.Mod` | 0 | `sys/local_offset_at/mod.rs` | `sys/localoffsetat/Mod.kt` |
 | `sys.mod` | `sys.Mod` | 0 | `sys/mod.rs` | `sys/Mod.kt` |
 | `refresh_tz.mod` | `sys.refreshtz.Mod` | 0 | `sys/refresh_tz/mod.rs` | `sys/refreshtz/Mod.kt` |
+
