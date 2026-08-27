@@ -19,7 +19,12 @@ enum class Weekday {
     Sunday,
     ;
 
-    /** Get the previous weekday. */
+    /**
+     * Get the previous weekday.
+     *
+     * Example:
+     * Weekday.Tuesday.previous() == Weekday.Monday
+     */
     fun previous(): Weekday =
         when (this) {
             Monday -> Sunday
@@ -31,7 +36,12 @@ enum class Weekday {
             Sunday -> Saturday
         }
 
-    /** Get the next weekday. */
+    /**
+     * Get the next weekday.
+     *
+     * Example:
+     * Weekday.Monday.next() == Weekday.Tuesday
+     */
     fun next(): Weekday =
         when (this) {
             Monday -> Tuesday
@@ -43,7 +53,13 @@ enum class Weekday {
             Sunday -> Monday
         }
 
-    /** Get the n-th next day. */
+    /**
+     * Get n-th next day.
+     *
+     * Example:
+     * Weekday.Monday.nthNext(1) == Weekday.Tuesday
+     * Weekday.Sunday.nthNext(10) == Weekday.Wednesday
+     */
     fun nthNext(n: Int): Weekday =
         when ((numberDaysFromMonday() + n.mod(7)).mod(7)) {
             0 -> Monday
@@ -55,7 +71,13 @@ enum class Weekday {
             else -> Sunday
         }
 
-    /** Get the n-th previous day. */
+    /**
+     * Get n-th previous day.
+     *
+     * Example:
+     * Weekday.Monday.nthPrev(1) == Weekday.Sunday
+     * Weekday.Sunday.nthPrev(10) == Weekday.Thursday
+     */
     fun nthPrev(n: Int): Weekday =
         when (numberDaysFromMonday() - n.mod(7)) {
             1, -6 -> Tuesday
@@ -67,16 +89,36 @@ enum class Weekday {
             else -> Monday
         }
 
-    /** Get the one-indexed number of days from Monday. */
+    /**
+     * Get the one-indexed number of days from Monday.
+     *
+     * Example:
+     * Weekday.Monday.numberFromMonday() == 1
+     */
     fun numberFromMonday(): Int = numberDaysFromMonday() + 1
 
-    /** Get the one-indexed number of days from Sunday. */
+    /**
+     * Get the one-indexed number of days from Sunday.
+     *
+     * Example:
+     * Weekday.Monday.numberFromSunday() == 2
+     */
     fun numberFromSunday(): Int = numberDaysFromSunday() + 1
 
-    /** Get the zero-indexed number of days from Monday. */
+    /**
+     * Get the zero-indexed number of days from Monday.
+     *
+     * Example:
+     * Weekday.Monday.numberDaysFromMonday() == 0
+     */
     fun numberDaysFromMonday(): Int = ordinal
 
-    /** Get the zero-indexed number of days from Sunday. */
+    /**
+     * Get the zero-indexed number of days from Sunday.
+     *
+     * Example:
+     * Weekday.Monday.numberDaysFromSunday() == 1
+     */
     fun numberDaysFromSunday(): Int =
         when (this) {
             Monday -> 1

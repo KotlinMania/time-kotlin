@@ -14,90 +14,30 @@ package io.github.kotlinmania.time
 sealed interface Error {
     fun fmt(): String =
         when (this) {
-            is ConversionRange -> {
-                val err = this.err
-                err.fmt()
-            }
-            is ComponentRange -> {
-                val err = this.err
-                err.fmt()
-            }
-            is IndeterminateOffset -> {
-                val err = this.err
-                err.fmt()
-            }
-            is Format -> {
-                val err = this.err
-                err.fmt()
-            }
-            is ParseFromDescription -> {
-                val err = this.err
-                err.fmt()
-            }
-            is UnexpectedTrailingCharacters -> {
-                val impossible = this.impossible
-                impossible
-            }
-            is TryFromParsed -> {
-                val err = this.err
-                err.fmt()
-            }
-            is InvalidFormatDescription -> {
-                val err = this.err
-                err.fmt()
-            }
-            is DifferentVariant -> {
-                val err = this.err
-                err.fmt()
-            }
-            is InvalidVariant -> {
-                val err = this.err
-                err.fmt()
-            }
+            is ConversionRange -> err.fmt()
+            is ComponentRange -> err.fmt()
+            is IndeterminateOffset -> err.fmt()
+            is Format -> err.fmt()
+            is ParseFromDescription -> err.fmt()
+            is UnexpectedTrailingCharacters -> never
+            is TryFromParsed -> err.fmt()
+            is InvalidFormatDescription -> err.fmt()
+            is DifferentVariant -> err.fmt()
+            is InvalidVariant -> err.fmt()
         }
 
     fun source(): Throwable? =
         when (this) {
-            is ConversionRange -> {
-                val err = this.err
-                err
-            }
-            is ComponentRange -> {
-                val err = this.err
-                err
-            }
-            is IndeterminateOffset -> {
-                val err = this.err
-                err
-            }
-            is Format -> {
-                val err = this.err
-                err
-            }
-            is ParseFromDescription -> {
-                val err = this.err
-                err
-            }
-            is UnexpectedTrailingCharacters -> {
-                val impossible = this.impossible
-                impossible
-            }
-            is TryFromParsed -> {
-                val err = this.err
-                err
-            }
-            is InvalidFormatDescription -> {
-                val err = this.err
-                err
-            }
-            is DifferentVariant -> {
-                val err = this.err
-                err
-            }
-            is InvalidVariant -> {
-                val err = this.err
-                err
-            }
+            is ConversionRange -> err
+            is ComponentRange -> err
+            is IndeterminateOffset -> err
+            is Format -> err
+            is ParseFromDescription -> err
+            is UnexpectedTrailingCharacters -> never
+            is TryFromParsed -> err
+            is InvalidFormatDescription -> err
+            is DifferentVariant -> err
+            is InvalidVariant -> err
         }
 
     class ConversionRange(
@@ -121,7 +61,7 @@ sealed interface Error {
     ) : Error
 
     class UnexpectedTrailingCharacters private constructor(
-        val impossible: Nothing,
+        val never: Nothing,
     ) : Error
 
     class TryFromParsed(
