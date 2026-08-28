@@ -3,6 +3,6 @@ import Time
 
 @Suite struct TimeExportTests {
     @Test func swiftModuleLoads() {
-        #expect(true)
+        #expect(Bool(true))
     }
 }
