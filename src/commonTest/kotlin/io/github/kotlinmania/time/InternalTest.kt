@@ -1,4 +1,4 @@
-// port-lint: ignore - upstream test source is src/tests.rs.
+// port-lint: tests src/tests.rs
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.ext.numDigits

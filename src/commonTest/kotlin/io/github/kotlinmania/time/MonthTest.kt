@@ -1,4 +1,4 @@
-// port-lint: ignore - upstream test source is tests/integration/month.rs.
+// port-lint: tests tests/integration/month.rs
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
