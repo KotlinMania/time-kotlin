@@ -1,4 +1,4 @@
-// port-lint: ignore - upstream test source is tests/integration/utc_offset.rs.
+// port-lint: tests tests/integration/utc_offset.rs
 package io.github.kotlinmania.time
 
 import kotlin.test.Test
@@ -28,8 +28,8 @@ class UtcOffsetTest {
                 HmsCase(0, 2, -3, offset(0, 2, 3)),
             )
 
-        for ((hours, minutes, seconds, expected) in cases) {
-            assertEquals(expected, UtcOffset.fromHms(hours, minutes, seconds).getOrThrow())
+        for (case in cases) {
+            assertEquals(case.expected, UtcOffset.fromHms(case.hours, case.minutes, case.seconds).getOrThrow())
         }
     }
 

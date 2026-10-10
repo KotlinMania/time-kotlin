@@ -1,4 +1,4 @@
-// port-lint: ignore - upstream test source is tests/integration/util.rs.
+// port-lint: tests tests/integration/util.rs
 package io.github.kotlinmania.time
 
 import kotlin.test.Test

@@ -1,4 +1,4 @@
-// port-lint: ignore - upstream test source is tests/integration/weekday.rs.
+// port-lint: tests tests/integration/weekday.rs
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.InvalidVariant
