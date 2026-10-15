@@ -11,7 +11,7 @@ on:
         required: false
         default: false
 
-# Publishing targets Maven Central via Sonatype OSSRH using external secrets;
+# Publishing targets Maven Central via the Sonatype Central Portal using external secrets;
 # no GitHub-side write permissions are needed. Checkout only requires read.
 permissions:
   contents: read
