@@ -5,9 +5,9 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 19/90 (21.1%)
-- **Function parity:** 110/997 matched (target 215) — 11.0%
-- **Class/type parity:** 45/156 matched (target 92) — 28.8%
-- **Combined symbol parity:** 155/1153 matched (target 307) — 13.4%
+- **Function parity:** 110/997 matched (target 255) — 11.0%
+- **Class/type parity:** 45/156 matched (target 98) — 28.8%
+- **Combined symbol parity:** 155/1153 matched (target 353) — 13.4%
 - **Average inline-code cosine:** 0.57 (function body across 18 matched files)
 - **Average documentation cosine:** 0.88 (doc text across 18 matched files)
 - **Cheat-zeroed Files:** 2
@@ -53,14 +53,17 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 3. month
 
-- **Target:** `time.Month`
-- **Similarity:** 0.58
+- **Target:** `time.Month [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.59
 - **Dependents:** 2
 - **Priority Score:** 2051604.1
-- **Functions:** 10/11 matched (target 12)
+- **Functions:** 10/11 matched (target 21)
 - **Missing functions:** `metadata`
-- **Types:** 1/5 matched (target 1)
+- **Types:** 1/5 matched (target 2)
 - **Missing types:** `MonthMetadata`, `Metadata`, `Err`, `Error`
+- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/month.rs` vs expected `month.rs`
+- **Proposed provenance header:** `// port-lint: tests month.rs` (current: `// port-lint: tests tests/integration/month.rs`)
+- **Lint issues:** 1
 
 ### 4. error.format
 
@@ -97,25 +100,31 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 7. utc_offset
 
-- **Target:** `time.UtcOffset`
+- **Target:** `time.UtcOffset [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.47
 - **Dependents:** 1
 - **Priority Score:** 1113905.2
-- **Functions:** 27/31 matched (target 34)
+- **Functions:** 27/31 matched (target 50)
 - **Missing functions:** `local_offset_at`, `format_into`, `metadata`, `fmt_with_metadata`
-- **Types:** 1/8 matched (target 1)
+- **Types:** 1/8 matched (target 4)
 - **Missing types:** `Hours`, `Minutes`, `Seconds`, `WholeSeconds`, `UtcOffsetMetadata`, `Metadata`, `Output`
+- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/utc_offset.rs` vs expected `utc_offset.rs`
+- **Proposed provenance header:** `// port-lint: tests utc_offset.rs` (current: `// port-lint: tests tests/integration/utc_offset.rs`)
+- **Lint issues:** 1
 
 ### 8. weekday
 
-- **Target:** `time.Weekday`
-- **Similarity:** 0.59
+- **Target:** `time.Weekday [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.60
 - **Dependents:** 1
-- **Priority Score:** 1041504.1
-- **Functions:** 10/11 matched (target 12)
+- **Priority Score:** 1041504.0
+- **Functions:** 10/11 matched (target 22)
 - **Missing functions:** `metadata`
-- **Types:** 1/4 matched (target 1)
+- **Types:** 1/4 matched (target 2)
 - **Missing types:** `WeekdayMetadata`, `Metadata`, `Err`
+- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/weekday.rs` vs expected `weekday.rs`
+- **Proposed provenance header:** `// port-lint: tests weekday.rs` (current: `// port-lint: tests tests/integration/weekday.rs`)
+- **Lint issues:** 1
 
 ### 9. error.parse
 
@@ -196,14 +205,17 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 16. util
 
-- **Target:** `time.Util`
+- **Target:** `time.Util [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.70
 - **Dependents:** 0
 - **Priority Score:** 803.0
-- **Functions:** 6/6 matched (target 15)
+- **Functions:** 6/6 matched (target 20)
 - **Missing functions:** _none_
-- **Types:** 2/2 matched (target 4)
+- **Types:** 2/2 matched (target 5)
 - **Missing types:** _none_
+- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/util.rs` vs expected `util.rs`
+- **Proposed provenance header:** `// port-lint: tests util.rs` (current: `// port-lint: tests tests/integration/util.rs`)
+- **Lint issues:** 1
 
 ### 17. error.mod
 
