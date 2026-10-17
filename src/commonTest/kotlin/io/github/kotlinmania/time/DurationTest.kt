@@ -17,7 +17,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DurationTest {
-
     @Test
     fun unitValues() {
         assertEquals(Duration.ZERO, 0.seconds())

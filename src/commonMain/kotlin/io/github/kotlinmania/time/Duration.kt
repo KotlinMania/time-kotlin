@@ -31,7 +31,6 @@ class Duration internal constructor(
     val nanoseconds: Int,
     internal val padding: Padding = Padding.Optimize,
 ) : Comparable<Duration> {
-
     init {
         require(nanoseconds in -999_999_999..999_999_999) {
             "nanoseconds must be in range -999_999_999..=999_999_999, got $nanoseconds"
@@ -487,7 +486,9 @@ class Duration internal constructor(
             nanoseconds(nanoseconds)
 
         fun <T> timeFn(f: () -> T): Pair<Duration, T> {
-            val mark = kotlin.time.TimeSource.Monotonic.markNow()
+            val mark =
+                kotlin.time.TimeSource.Monotonic
+                    .markNow()
             val result = f()
             val elapsed = mark.elapsedNow()
             return Pair(fromStdDuration(elapsed), result)
@@ -515,13 +516,14 @@ class Duration internal constructor(
             val r = x * y
             val ax = abs(x)
             val ay = abs(y)
-            val overflow = if (x == 0L || y == 0L) {
-                false
-            } else if (x == Long.MIN_VALUE || y == Long.MIN_VALUE) {
-                !(x == Long.MIN_VALUE && y == 1L || x == 1L && y == Long.MIN_VALUE)
-            } else {
-                (ax > Long.MAX_VALUE / ay)
-            }
+            val overflow =
+                if (x == 0L || y == 0L) {
+                    false
+                } else if (x == Long.MIN_VALUE || y == Long.MIN_VALUE) {
+                    !((x == Long.MIN_VALUE && y == 1L) || (x == 1L && y == Long.MIN_VALUE))
+                } else {
+                    (ax > Long.MAX_VALUE / ay)
+                }
             return Pair(r, overflow)
         }
     }

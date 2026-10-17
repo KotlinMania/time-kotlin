@@ -18,7 +18,6 @@ class Time internal constructor(
     private val nanosecond: Int,
     internal val padding: Padding = Padding.Optimize,
 ) : Comparable<Time> {
-
     init {
         require(hour in 0..23) { "hour must be in range 0..=23, got $hour" }
         require(minute in 0..59) { "minute must be in range 0..=59, got $minute" }
@@ -67,9 +66,9 @@ class Time internal constructor(
     /** Determine the [Duration] that, if added to `this`, would result in `other`. */
     fun durationUntil(other: Time): Duration {
         var nanos = other.nanosecond - this.nanosecond
-        var seconds = other.second - this.second
-        var minutes = other.minute - this.minute
-        var hours = other.hour - this.hour
+        val seconds = other.second - this.second
+        val minutes = other.minute - this.minute
+        val hours = other.hour - this.hour
 
         var totalSeconds = hours * 3600 + minutes * 60 + seconds
         if (nanos < 0) {
@@ -274,8 +273,25 @@ class Time internal constructor(
     operator fun minus(duration: Duration): Time =
         adjustingSub(duration).second
 
-    operator fun minus(other: Time): Duration =
-        durationSince(other)
+    operator fun minus(other: Time): Duration {
+        val hourDiff = this.hour - other.hour
+        val minuteDiff = this.minute - other.minute
+        val secondDiff = this.second - other.second
+        val nanosecondDiff = this.nanosecond - other.nanosecond
+
+        var seconds = hourDiff * 3600 + minuteDiff * 60 + secondDiff
+        var nanoseconds = nanosecondDiff
+
+        if (seconds > 0 && nanoseconds < 0) {
+            seconds -= 1
+            nanoseconds += 1_000_000_000
+        } else if (seconds < 0 && nanoseconds > 0) {
+            seconds += 1
+            nanoseconds -= 1_000_000_000
+        }
+
+        return Duration.new(seconds.toLong(), nanoseconds)
+    }
 
     companion object {
         val MIDNIGHT: Time = fromHmsNanosUnchecked(0, 0, 0, 0)
@@ -287,6 +303,19 @@ class Time internal constructor(
             second: Int,
             nanosecond: Int,
         ): Time = Time(hour, minute, second, nanosecond, Padding.Optimize)
+
+        fun fromHmsNanoUnchecked(
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int,
+        ): Time = fromHmsNanosUnchecked(hour, minute, second, nanosecond)
+
+        fun fromHmsUnchecked(
+            hour: Int,
+            minute: Int,
+            second: Int,
+        ): Time = fromHmsNanosUnchecked(hour, minute, second, 0)
 
         fun fromHms(hour: Int, minute: Int, second: Int): Result<Time> {
             if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))

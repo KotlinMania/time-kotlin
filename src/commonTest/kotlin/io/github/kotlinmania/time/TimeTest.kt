@@ -2,15 +2,12 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.ext.hours
-import io.github.kotlinmania.time.ext.nanoseconds
-import io.github.kotlinmania.time.ext.seconds
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TimeTest {
-
     @Test
     fun fromHms() {
         val time = Time.fromHms(1, 2, 3).getOrThrow()
