@@ -1,6 +1,13 @@
 // port-lint: source offset_date_time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
@@ -12,6 +19,13 @@ import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
+import io.github.kotlinmania.time.serde.I8Serialize
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.OFFSET_DATE_TIME_FORMAT
+import io.github.kotlinmania.time.serde.OffsetDateTimeVisitor
+import io.github.kotlinmania.time.serde.U8Serialize
+import io.github.kotlinmania.time.serde.U16Serialize
+import io.github.kotlinmania.time.serde.U32Serialize
 import kotlin.jvm.JvmName
 
 internal val MIN_UNIX_TIMESTAMP: Long =
@@ -26,8 +40,15 @@ internal val MAX_UNIX_TIMESTAMP: Long =
 class OffsetDateTime internal constructor(
     private val localDateTime: PrimitiveDateTime,
     private val offset: UtcOffset,
-) : Comparable<OffsetDateTime> {
-    companion object {
+) : Comparable<OffsetDateTime>, Serialize {
+    companion object : Deserialize<OffsetDateTime> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<OffsetDateTime> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(OffsetDateTimeVisitor)
+            } else {
+                deserializer.deserializeTuple(9, OffsetDateTimeVisitor)
+            }
+
         /** The Julian day of the Unix epoch. */
         private const val UNIX_EPOCH_JULIAN_DAY: Int = 2_440_588
 
@@ -407,4 +428,27 @@ class OffsetDateTime internal constructor(
     @JvmName("formatOwnedSlice")
     fun format(description: List<OwnedFormatItem>): Result<String> =
         OwnedFormatItemSliceFormattable(description).format(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(OFFSET_DATE_TIME_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `OffsetDateTime`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(9).getOrThrow()
+            tuple.serializeElement(I32Serialize(year())).getOrThrow()
+            tuple.serializeElement(U16Serialize(ordinal().toUShort())).getOrThrow()
+            tuple.serializeElement(U8Serialize(hour().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(minute().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(second().toUByte())).getOrThrow()
+            tuple.serializeElement(U32Serialize(nanosecond().toUInt())).getOrThrow()
+            tuple.serializeElement(I8Serialize(offset().wholeHours().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(offset().minutesPastHour().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(offset().secondsPastMinute().toByte())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
 }

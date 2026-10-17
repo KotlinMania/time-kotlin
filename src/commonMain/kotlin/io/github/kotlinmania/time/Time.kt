@@ -1,6 +1,13 @@
 // port-lint: source time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
@@ -10,6 +17,10 @@ import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.TIME_FORMAT
+import io.github.kotlinmania.time.serde.TimeVisitor
+import io.github.kotlinmania.time.serde.U8Serialize
+import io.github.kotlinmania.time.serde.U32Serialize
 import kotlin.jvm.JvmName
 
 /**
@@ -26,7 +37,7 @@ class Time internal constructor(
     private val second: Int,
     private val nanosecond: Int,
     internal val padding: Padding = Padding.Optimize,
-) : Comparable<Time> {
+) : Comparable<Time>, Serialize {
     init {
         require(hour in 0..23) { "hour must be in range 0..=23, got $hour" }
         require(minute in 0..59) { "minute must be in range 0..=59, got $minute" }
@@ -341,7 +352,32 @@ class Time internal constructor(
     fun format(description: List<OwnedFormatItem>): Result<String> =
         OwnedFormatItemSliceFormattable(description).format(this)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(TIME_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `Time`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(4).getOrThrow()
+            tuple.serializeElement(U8Serialize(hour().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(minute().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(second().toUByte())).getOrThrow()
+            tuple.serializeElement(U32Serialize(nanosecond().toUInt())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<Time> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Time> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(TimeVisitor)
+            } else {
+                deserializer.deserializeTuple(4, TimeVisitor)
+            }
+
         val MIDNIGHT: Time = fromHmsNanosUnchecked(0, 0, 0, 0)
         val MAX: Time = fromHmsNanosUnchecked(23, 59, 59, 999_999_999)
 

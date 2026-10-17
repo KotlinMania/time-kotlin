@@ -1,6 +1,13 @@
 // port-lint: source date.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
@@ -10,6 +17,10 @@ import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.DATE_FORMAT
+import io.github.kotlinmania.time.serde.DateVisitor
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.U16Serialize
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -26,7 +37,7 @@ internal const val MAX_YEAR: Int = 999_999
  */
 class Date internal constructor(
     private val value: Int,
-) : Comparable<Date> {
+) : Comparable<Date>, Serialize {
     init {
         require(value != 0) { "date value cannot be 0" }
     }
@@ -436,7 +447,30 @@ class Date internal constructor(
     fun format(description: List<OwnedFormatItem>): Result<String> =
         OwnedFormatItemSliceFormattable(description).format(this)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(DATE_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `Date`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(2).getOrThrow()
+            tuple.serializeElement(I32Serialize(year())).getOrThrow()
+            tuple.serializeElement(U16Serialize(ordinal().toUShort())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<Date> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Date> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(DateVisitor)
+            } else {
+                deserializer.deserializeTuple(2, DateVisitor)
+            }
+
         internal const val MIN_YEAR: Int = io.github.kotlinmania.time.MIN_YEAR
         internal const val MAX_YEAR: Int = io.github.kotlinmania.time.MAX_YEAR
 

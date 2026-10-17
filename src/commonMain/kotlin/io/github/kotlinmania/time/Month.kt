@@ -1,13 +1,19 @@
 // port-lint: source month.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.error.InvalidVariant
+import io.github.kotlinmania.time.serde.MonthVisitor
 
 /** Months of the year. */
 enum class Month(
     val number: Int,
-) {
+) : Serialize {
     January(1),
     February(2),
     March(3),
@@ -138,7 +144,21 @@ enum class Month(
 
     fun fmt(): String = toString()
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+        if (serializer.isHumanReadable()) {
+            serializer.serializeStr(toString())
+        } else {
+            serializer.serializeU8(number.toUByte())
+        }
+
+    companion object : Deserialize<Month> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Month> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(MonthVisitor)
+            } else {
+                deserializer.deserializeU8(MonthVisitor)
+            }
+
         /** Create a `Month` from its numerical value. */
         internal fun fromNumber(number: Int): Result<Month> =
             when (number) {

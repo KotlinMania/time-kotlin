@@ -2,6 +2,7 @@
 package io.github.kotlinmania.time.error
 
 import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serdecore.de.Expected
 import io.github.kotlinmania.time.StdError
 
 /**
@@ -23,7 +24,7 @@ class ComponentRange internal constructor(
      * of other components were different.
      */
     private val conditional: Boolean,
-) : IllegalArgumentException("$componentName was not in range") {
+) : IllegalArgumentException("$componentName was not in range"), Expected {
     override fun equals(other: Any?): Boolean =
         other is ComponentRange &&
             other.componentName == componentName &&
@@ -42,6 +43,8 @@ class ComponentRange internal constructor(
     fun isConditional(): Boolean = conditional
 
     fun fmt(): String = message ?: "$componentName was not in range"
+
+    override fun expecting(): String = "an in-range value"
 
     internal fun intoDeError(): SerdeError =
         SerdeError.custom("invalid $componentName, expected an in-range value")

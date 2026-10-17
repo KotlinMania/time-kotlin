@@ -1,6 +1,13 @@
 // port-lint: source primitive_date_time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
 import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
@@ -9,6 +16,12 @@ import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.PRIMITIVE_DATE_TIME_FORMAT
+import io.github.kotlinmania.time.serde.PrimitiveDateTimeVisitor
+import io.github.kotlinmania.time.serde.U8Serialize
+import io.github.kotlinmania.time.serde.U16Serialize
+import io.github.kotlinmania.time.serde.U32Serialize
 import kotlin.jvm.JvmName
 
 /**
@@ -17,8 +30,15 @@ import kotlin.jvm.JvmName
 class PrimitiveDateTime internal constructor(
     private val date: Date,
     private val time: Time,
-) : Comparable<PrimitiveDateTime> {
-    companion object {
+) : Comparable<PrimitiveDateTime>, Serialize {
+    companion object : Deserialize<PrimitiveDateTime> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<PrimitiveDateTime> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(PrimitiveDateTimeVisitor)
+            } else {
+                deserializer.deserializeTuple(6, PrimitiveDateTimeVisitor)
+            }
+
         /** The smallest value that can be represented by [PrimitiveDateTime]. */
         val MIN: PrimitiveDateTime = PrimitiveDateTime(Date.MIN, Time.MIDNIGHT)
 
@@ -277,4 +297,24 @@ class PrimitiveDateTime internal constructor(
     @JvmName("formatOwnedSlice")
     fun format(description: List<OwnedFormatItem>): Result<String> =
         OwnedFormatItemSliceFormattable(description).format(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(PRIMITIVE_DATE_TIME_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `PrimitiveDateTime`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(6).getOrThrow()
+            tuple.serializeElement(I32Serialize(year())).getOrThrow()
+            tuple.serializeElement(U16Serialize(ordinal().toUShort())).getOrThrow()
+            tuple.serializeElement(U8Serialize(hour().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(minute().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(second().toUByte())).getOrThrow()
+            tuple.serializeElement(U32Serialize(nanosecond().toUInt())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
 }

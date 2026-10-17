@@ -1,6 +1,13 @@
 // port-lint: source utc_offset.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
@@ -10,6 +17,9 @@ import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.I8Serialize
+import io.github.kotlinmania.time.serde.UTC_OFFSET_FORMAT
+import io.github.kotlinmania.time.serde.UtcOffsetVisitor
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -22,7 +32,7 @@ class UtcOffset private constructor(
     private val hours: Int,
     private val minutes: Int,
     private val seconds: Int,
-) : Comparable<UtcOffset> {
+) : Comparable<UtcOffset>, Serialize {
     fun hash(): UInt = asU32ForEquality()
 
     fun eq(other: UtcOffset): Boolean = asU32ForEquality() == other.asU32ForEquality()
@@ -194,7 +204,31 @@ class UtcOffset private constructor(
 
     fun neg(): UtcOffset = fromHmsRanged(-hours, -minutes, -seconds)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(UTC_OFFSET_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `UtcOffset`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(3).getOrThrow()
+            tuple.serializeElement(I8Serialize(wholeHours().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(minutesPastHour().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(secondsPastMinute().toByte())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<UtcOffset> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<UtcOffset> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(UtcOffsetVisitor)
+            } else {
+                deserializer.deserializeTuple(3, UtcOffsetVisitor)
+            }
+
         private const val MINUTES_PER_HOUR = 60
         private const val SECONDS_PER_MINUTE = 60
         private const val SECONDS_PER_HOUR = 3_600
