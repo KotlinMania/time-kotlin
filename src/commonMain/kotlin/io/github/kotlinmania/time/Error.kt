@@ -1,4 +1,3 @@
-// port-lint: source error/mod.rs
 package io.github.kotlinmania.time
 
 /**
