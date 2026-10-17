@@ -1,7 +1,7 @@
 // port-lint: source error/try_from_parsed.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Error converting a `Parsed` struct to another type.
@@ -34,7 +34,7 @@ sealed class TryFromParsed(
         fun from(error: io.github.kotlinmania.time.error.ComponentRange): TryFromParsed =
             ComponentRange(error)
 
-        fun from(error: TryFromParsed): Error = Error.TryFromParsed(error)
+        fun from(error: TryFromParsed): StdError = StdError.TryFromParsed(error)
 
         fun tryFrom(error: TryFromParsed): Result<io.github.kotlinmania.time.error.ComponentRange> =
             when (error) {
@@ -42,9 +42,9 @@ sealed class TryFromParsed(
                 else -> Result.failure(DifferentVariant())
             }
 
-        fun tryFrom(error: Error): Result<TryFromParsed> =
+        fun tryFrom(error: StdError): Result<TryFromParsed> =
             when (error) {
-                is Error.TryFromParsed -> Result.success(error.err)
+                is StdError.TryFromParsed -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
     }

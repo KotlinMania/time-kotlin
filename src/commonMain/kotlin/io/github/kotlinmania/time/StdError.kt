@@ -10,8 +10,8 @@ package io.github.kotlinmania.time
  * This can be used when the exact error returned is not relevant.
  * `Result<T>` will work in these situations.
  */
-sealed interface Error {
-    fun fmt(): String =
+sealed class StdError {
+    open fun fmt(): String =
         when (this) {
             is ConversionRange -> err.fmt()
             is ComponentRange -> err.fmt()
@@ -25,7 +25,7 @@ sealed interface Error {
             is InvalidVariant -> err.fmt()
         }
 
-    fun source(): Throwable? =
+    open fun source(): Throwable? =
         when (this) {
             is ConversionRange -> err
             is ComponentRange -> err
@@ -41,41 +41,41 @@ sealed interface Error {
 
     class ConversionRange(
         val err: io.github.kotlinmania.time.error.ConversionRange,
-    ) : Error
+    ) : StdError()
 
     class ComponentRange(
         val err: io.github.kotlinmania.time.error.ComponentRange,
-    ) : Error
+    ) : StdError()
 
     class IndeterminateOffset(
         val err: io.github.kotlinmania.time.error.IndeterminateOffset,
-    ) : Error
+    ) : StdError()
 
     class Format(
         val err: io.github.kotlinmania.time.error.Format,
-    ) : Error
+    ) : StdError()
 
     class ParseFromDescription(
         val err: io.github.kotlinmania.time.error.ParseFromDescription,
-    ) : Error
+    ) : StdError()
 
     class UnexpectedTrailingCharacters private constructor(
         val never: Nothing,
-    ) : Error
+    ) : StdError()
 
     class TryFromParsed(
         val err: io.github.kotlinmania.time.error.TryFromParsed,
-    ) : Error
+    ) : StdError()
 
     class InvalidFormatDescription(
         val err: io.github.kotlinmania.time.error.InvalidFormatDescription,
-    ) : Error
+    ) : StdError()
 
     class DifferentVariant(
         val err: io.github.kotlinmania.time.error.DifferentVariant,
-    ) : Error
+    ) : StdError()
 
     class InvalidVariant(
         val err: io.github.kotlinmania.time.error.InvalidVariant,
-    ) : Error
+    ) : StdError()
 }

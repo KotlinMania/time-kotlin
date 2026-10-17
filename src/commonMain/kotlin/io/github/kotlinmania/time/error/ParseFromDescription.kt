@@ -1,7 +1,7 @@
 // port-lint: source error/parse_from_description.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Error parsing an input into a `Parsed` struct.
@@ -32,11 +32,11 @@ sealed class ParseFromDescription(
     }
 
     companion object {
-        fun from(error: ParseFromDescription): Error = Error.ParseFromDescription(error)
+        fun from(error: ParseFromDescription): StdError = StdError.ParseFromDescription(error)
 
-        fun tryFrom(error: Error): Result<ParseFromDescription> =
+        fun tryFrom(error: StdError): Result<ParseFromDescription> =
             when (error) {
-                is Error.ParseFromDescription -> Result.success(error.err)
+                is StdError.ParseFromDescription -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
     }
