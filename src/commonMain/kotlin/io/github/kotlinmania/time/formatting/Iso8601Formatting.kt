@@ -155,3 +155,29 @@ internal fun <V, State> formatIso8601Offset(
 
     return Result.success(bytes)
 }
+
+internal object Iso8601Formatting {
+    fun <V, State> formatDate(
+        iso: Iso8601,
+        output: Appendable,
+        value: V,
+        provider: ComponentProvider<V, State>,
+        state: State,
+    ): Result<Int> = formatIso8601Date(iso, output, value, provider, state)
+
+    fun <V, State> formatTime(
+        iso: Iso8601,
+        output: Appendable,
+        value: V,
+        provider: ComponentProvider<V, State>,
+        state: State,
+    ): Result<Int> = formatIso8601Time(iso, output, value, provider, state)
+
+    fun <V, State> formatOffset(
+        iso: Iso8601,
+        output: Appendable,
+        value: V,
+        provider: ComponentProvider<V, State>,
+        state: State,
+    ): Result<Int> = formatIso8601Offset(iso, output, value, provider, state)
+}

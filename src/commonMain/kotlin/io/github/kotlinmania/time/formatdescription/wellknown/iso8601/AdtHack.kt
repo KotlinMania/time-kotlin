@@ -222,3 +222,7 @@ internal fun decodeConfig(encoded: EncodedConfig): Config {
         offsetPrecision = offsetPrecision,
     )
 }
+
+internal fun encode(config: Config): EncodedConfig = encodeConfig(config)
+
+internal fun decode(encoded: EncodedConfig): Config = decodeConfig(encoded)

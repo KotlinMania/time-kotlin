@@ -37,73 +37,73 @@ internal interface ComponentProvider<V, State> {
     val suppliesTimestamp: Boolean get() = false
 
     fun day(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun month(value: V, state: State): Month =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun ordinal(value: V, state: State): UShort =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun weekday(value: V, state: State): Weekday =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun isoWeekNumber(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun mondayBasedWeek(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun sundayBasedWeek(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun calendarYear(value: V, state: State): Int =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun isoYear(value: V, state: State): Int =
-        throw NotImplementedError("type does not supply date components")
+        error("type does not supply date components")
 
     fun hour(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply time components")
+        error("type does not supply time components")
 
     fun minute(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply time components")
+        error("type does not supply time components")
 
     fun period(value: V, state: State): PeriodCase =
-        throw NotImplementedError("type does not supply time components")
+        error("type does not supply time components")
 
     fun second(value: V, state: State): UByte =
-        throw NotImplementedError("type does not supply time components")
+        error("type does not supply time components")
 
     fun nanosecond(value: V, state: State): UInt =
-        throw NotImplementedError("type does not supply time components")
+        error("type does not supply time components")
 
     fun offsetIsNegative(value: V, state: State): Boolean =
-        throw NotImplementedError("type does not supply offset components")
+        error("type does not supply offset components")
 
     fun offsetIsUtc(value: V, state: State): Boolean =
-        throw NotImplementedError("type does not supply offset components")
+        error("type does not supply offset components")
 
     fun offsetHour(value: V, state: State): Byte =
-        throw NotImplementedError("type does not supply offset components")
+        error("type does not supply offset components")
 
     fun offsetMinute(value: V, state: State): Byte =
-        throw NotImplementedError("type does not supply offset components")
+        error("type does not supply offset components")
 
     fun offsetSecond(value: V, state: State): Byte =
-        throw NotImplementedError("type does not supply offset components")
+        error("type does not supply offset components")
 
     fun unixTimestampSeconds(value: V, state: State): Long =
-        throw NotImplementedError("type does not supply timestamp components")
+        error("type does not supply timestamp components")
 
     fun unixTimestampMilliseconds(value: V, state: State): Long =
-        throw NotImplementedError("type does not supply timestamp components")
+        error("type does not supply timestamp components")
 
     fun unixTimestampMicroseconds(value: V, state: State): Pair<Boolean, String> =
-        throw NotImplementedError("type does not supply timestamp components")
+        error("type does not supply timestamp components")
 
     fun unixTimestampNanoseconds(value: V, state: State): Pair<Boolean, String> =
-        throw NotImplementedError("type does not supply timestamp components")
+        error("type does not supply timestamp components")
 }
 
 internal object TimeComponentProvider : ComponentProvider<Time, Unit> {

@@ -9,58 +9,59 @@ import io.github.kotlinmania.rand.distr.StandardUniform
  * Implementation of [Distribution] for various time types (rand 0.8 compatibility surface).
  */
 object Rand08 {
-    val timeDistribution: Distribution<Time> =
-        Distribution { rng ->
+    object TimeDistribution : Distribution<Time> {
+        override fun sample(rng: Rng): Time =
             Time.fromHmsNanosUnchecked(
                 rng.randomRange(0..23),
                 rng.randomRange(0..59),
                 rng.randomRange(0..59),
                 rng.randomRange(0..999_999_999),
             )
-        }
+    }
 
-    val dateDistribution: Distribution<Date> =
-        Distribution { rng ->
+    object DateDistribution : Distribution<Date> {
+        override fun sample(rng: Rng): Date =
             Date.fromJulianDayUnchecked(
                 rng.randomRange(Date.MIN.toJulianDay()..Date.MAX.toJulianDay()),
             )
-        }
+    }
 
-    val utcOffsetDistribution: Distribution<UtcOffset> =
-        Distribution { rng ->
+    object UtcOffsetDistribution : Distribution<UtcOffset> {
+        override fun sample(rng: Rng): UtcOffset =
             UtcOffset.fromHmsRanged(
                 rng.randomRange(-25..25),
                 rng.randomRange(-59..59),
                 rng.randomRange(-59..59),
             )
-        }
+    }
 
-    val primitiveDateTimeDistribution: Distribution<PrimitiveDateTime> =
-        Distribution { rng ->
-            PrimitiveDateTime.new(dateDistribution.sample(rng), timeDistribution.sample(rng))
-        }
+    object PrimitiveDateTimeDistribution : Distribution<PrimitiveDateTime> {
+        override fun sample(rng: Rng): PrimitiveDateTime =
+            PrimitiveDateTime.new(DateDistribution.sample(rng), TimeDistribution.sample(rng))
+    }
 
-    val utcDateTimeDistribution: Distribution<UtcDateTime> =
-        Distribution { rng ->
-            UtcDateTime.new(dateDistribution.sample(rng), timeDistribution.sample(rng))
-        }
+    object UtcDateTimeDistribution : Distribution<UtcDateTime> {
+        override fun sample(rng: Rng): UtcDateTime =
+            UtcDateTime.new(DateDistribution.sample(rng), TimeDistribution.sample(rng))
+    }
 
-    val offsetDateTimeDistribution: Distribution<OffsetDateTime> =
-        Distribution { rng ->
-            val dateTime = primitiveDateTimeDistribution.sample(rng)
-            dateTime.assumeOffset(utcOffsetDistribution.sample(rng))
+    object OffsetDateTimeDistribution : Distribution<OffsetDateTime> {
+        override fun sample(rng: Rng): OffsetDateTime {
+            val dateTime = PrimitiveDateTimeDistribution.sample(rng)
+            return dateTime.assumeOffset(UtcOffsetDistribution.sample(rng))
         }
+    }
 
-    val durationDistribution: Distribution<Duration> =
-        Distribution { rng ->
+    object DurationDistribution : Distribution<Duration> {
+        override fun sample(rng: Rng): Duration =
             Duration.newRanged(
                 rng.nextU64().toLong(),
                 rng.randomRange(-999_999_999..999_999_999),
             )
-        }
+    }
 
-    val weekdayDistribution: Distribution<Weekday> =
-        Distribution { rng ->
+    object WeekdayDistribution : Distribution<Weekday> {
+        override fun sample(rng: Rng): Weekday =
             when (val v = rng.randomRange(0 until 7)) {
                 0 -> Weekday.Monday
                 1 -> Weekday.Tuesday
@@ -73,10 +74,10 @@ object Rand08 {
                     Weekday.Sunday
                 }
             }
-        }
+    }
 
-    val monthDistribution: Distribution<Month> =
-        Distribution { rng ->
+    object MonthDistribution : Distribution<Month> {
+        override fun sample(rng: Rng): Month =
             when (val v = rng.randomRange(1..12)) {
                 1 -> Month.January
                 2 -> Month.February
@@ -94,26 +95,36 @@ object Rand08 {
                     Month.December
                 }
             }
-        }
+    }
+
+    val timeDistribution: Distribution<Time> = TimeDistribution
+    val dateDistribution: Distribution<Date> = DateDistribution
+    val utcOffsetDistribution: Distribution<UtcOffset> = UtcOffsetDistribution
+    val primitiveDateTimeDistribution: Distribution<PrimitiveDateTime> = PrimitiveDateTimeDistribution
+    val utcDateTimeDistribution: Distribution<UtcDateTime> = UtcDateTimeDistribution
+    val offsetDateTimeDistribution: Distribution<OffsetDateTime> = OffsetDateTimeDistribution
+    val durationDistribution: Distribution<Duration> = DurationDistribution
+    val weekdayDistribution: Distribution<Weekday> = WeekdayDistribution
+    val monthDistribution: Distribution<Month> = MonthDistribution
 }
 
-fun StandardUniform.genTime(rng: Rng): Time = Rand08.timeDistribution.sample(rng)
+fun StandardUniform.genTime(rng: Rng): Time = Rand08.TimeDistribution.sample(rng)
 
-fun StandardUniform.genDate(rng: Rng): Date = Rand08.dateDistribution.sample(rng)
+fun StandardUniform.genDate(rng: Rng): Date = Rand08.DateDistribution.sample(rng)
 
-fun StandardUniform.genUtcOffset(rng: Rng): UtcOffset = Rand08.utcOffsetDistribution.sample(rng)
+fun StandardUniform.genUtcOffset(rng: Rng): UtcOffset = Rand08.UtcOffsetDistribution.sample(rng)
 
 fun StandardUniform.genPrimitiveDateTime(rng: Rng): PrimitiveDateTime =
-    Rand08.primitiveDateTimeDistribution.sample(rng)
+    Rand08.PrimitiveDateTimeDistribution.sample(rng)
 
 fun StandardUniform.genUtcDateTime(rng: Rng): UtcDateTime =
-    Rand08.utcDateTimeDistribution.sample(rng)
+    Rand08.UtcDateTimeDistribution.sample(rng)
 
 fun StandardUniform.genOffsetDateTime(rng: Rng): OffsetDateTime =
-    Rand08.offsetDateTimeDistribution.sample(rng)
+    Rand08.OffsetDateTimeDistribution.sample(rng)
 
-fun StandardUniform.genDuration(rng: Rng): Duration = Rand08.durationDistribution.sample(rng)
+fun StandardUniform.genDuration(rng: Rng): Duration = Rand08.DurationDistribution.sample(rng)
 
-fun StandardUniform.genWeekday(rng: Rng): Weekday = Rand08.weekdayDistribution.sample(rng)
+fun StandardUniform.genWeekday(rng: Rng): Weekday = Rand08.WeekdayDistribution.sample(rng)
 
-fun StandardUniform.genMonth(rng: Rng): Month = Rand08.monthDistribution.sample(rng)
+fun StandardUniform.genMonth(rng: Rng): Month = Rand08.MonthDistribution.sample(rng)

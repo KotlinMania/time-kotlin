@@ -254,7 +254,8 @@ class UtcOffset private constructor(
          * be determined, an error is returned.
          */
         fun localOffsetAt(datetime: OffsetDateTime): Result<UtcOffset> =
-            if (datetime.year() >= MIN_YEAR) Result.success(UTC) else Result.success(UTC)
+            io.github.kotlinmania.time.sys.localoffsetat.localOffsetAt(datetime)?.let { Result.success(it) }
+                ?: Result.failure(io.github.kotlinmania.time.error.IndeterminateOffset)
 
         /**
          * Attempt to obtain the system's current UTC offset. If the offset cannot be determined,

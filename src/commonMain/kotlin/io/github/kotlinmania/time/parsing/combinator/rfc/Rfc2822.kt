@@ -57,14 +57,14 @@ private fun ctext(input: ByteArray): ParsedItem<Unit>? {
     }
 }
 
-/** Consume the `quoted_pair` rule. */
+/** Consume the `quotedPair` rule. */
 private fun quotedPair(initialInput: ByteArray): ParsedItem<Unit>? {
     var input = asciiChar('\\'.code.toByte(), initialInput)?.intoInner() ?: return null
     input = text(input).intoInner()
     return ParsedItem(input, Unit)
 }
 
-/** Consume the `no_ws_ctl` rule. */
+/** Consume the `noWsCtl` rule. */
 private fun noWsCtl(input: ByteArray): ParsedItem<Unit>? {
     if (input.isEmpty()) return null
     val b = input[0].toUByte().toInt()

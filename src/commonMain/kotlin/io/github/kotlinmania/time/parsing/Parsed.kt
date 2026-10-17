@@ -435,7 +435,7 @@ class Parsed {
         return if (offsetIsNegative) (-s.toInt()).toByte() else s
     }
 
-    /** Obtain the `unix_timestamp_nanos` component as a 64-bit [Long] (when within [Long] range). */
+    /** Obtain the [unixTimestampNanos] component as a 64-bit [Long] (when within [Long] range). */
     fun unixTimestampNanos(): Long? {
         val sec = unixTimestampSecVal ?: return null
         val nano = unixTimestampNanoVal.toLong()
@@ -454,7 +454,7 @@ class Parsed {
         }
     }
 
-    /** Obtain the `unix_timestamp_nanos` component as a signed decimal [String] (full 128-bit range). */
+    /** Obtain the [unixTimestampNanos] component as a signed decimal [String] (full 128-bit range). */
     fun unixTimestampNanosString(): String? {
         val sec = unixTimestampSecVal ?: return null
         val (isNeg, absStr) = computeTimestampNanosSignAndAbs(sec, unixTimestampNanoVal)
