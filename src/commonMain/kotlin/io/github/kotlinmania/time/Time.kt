@@ -270,8 +270,18 @@ class Time internal constructor(
     operator fun plus(duration: Duration): Time =
         adjustingAdd(duration).second
 
+    operator fun plus(duration: kotlin.time.Duration): Time =
+        duration.toComponents { seconds, nanoseconds ->
+            adjustingAdd(Duration.new(seconds, nanoseconds)).second
+        }
+
     operator fun minus(duration: Duration): Time =
         adjustingSub(duration).second
+
+    operator fun minus(duration: kotlin.time.Duration): Time =
+        duration.toComponents { seconds, nanoseconds ->
+            adjustingSub(Duration.new(seconds, nanoseconds)).second
+        }
 
     operator fun minus(other: Time): Duration {
         val hourDiff = this.hour - other.hour

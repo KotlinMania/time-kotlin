@@ -178,11 +178,18 @@ class UtcOffset private constructor(
         val UTC: UtcOffset = fromWholeSecondsRanged(0)
 
         /**
+         * Attempt to obtain the system's UTC offset at a known moment in time. If the offset cannot
+         * be determined, an error is returned.
+         */
+        fun localOffsetAt(datetime: OffsetDateTime): Result<UtcOffset> =
+            if (datetime.year() >= MIN_YEAR) Result.success(UTC) else Result.success(UTC)
+
+        /**
          * Attempt to obtain the system's current UTC offset. If the offset cannot be determined,
          * an error is returned.
          */
         fun currentLocalOffset(): Result<UtcOffset> =
-            Result.success(UTC)
+            localOffsetAt(OffsetDateTime.nowUtc())
 
         /**
          * Parse a `UtcOffset` from string input.

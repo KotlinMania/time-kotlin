@@ -61,6 +61,9 @@ class PrimitiveDateTime internal constructor(
     /** Get the weekday. */
     fun weekday(): Weekday = date.weekday()
 
+    /** Get the Julian day for the date. The time is not taken into account for this calculation. */
+    fun toJulianDay(): Int = date.toJulianDay()
+
     /** Get the clock hour. */
     fun hour(): Int = time.hour()
 
@@ -97,35 +100,34 @@ class PrimitiveDateTime internal constructor(
     /** Assume the datetime is in the provided offset, creating an [OffsetDateTime]. */
     fun assumeOffset(offset: UtcOffset): OffsetDateTime = OffsetDateTime.newInOffset(date, time, offset)
 
+    /** Assume the datetime represents a moment in UTC, returning a [UtcDateTime]. */
+    fun asUtc(): UtcDateTime = UtcDateTime.fromPrimitive(this)
+
     /** Computes self + duration, returning null if overflow occurred. */
     fun checkedAdd(duration: Duration): PrimitiveDateTime? {
-        val seconds = duration.seconds
-        val nanoseconds = duration.nanoseconds.toLong()
-        val totalNanos =
-            time.nanosecond().toLong() +
-                (time.second().toLong() * 1_000_000_000L) +
-                (time.minute().toLong() * 60_000_000_000L) +
-                (time.hour().toLong() * 3_600_000_000_000L) +
-                (seconds * 1_000_000_000L) +
-                nanoseconds
-
-        val nanosInDay = 86_400_000_000_000L
-        val dayAdjustment = floorDiv(totalNanos, nanosInDay)
-        val newNanosOfDay = floorMod(totalNanos, nanosInDay)
-
-        val newDate = date.checkedAdd(Duration.days(dayAdjustment)) ?: return null
-        val newHour = (newNanosOfDay / 3_600_000_000_000L).toInt()
-        val remHour = newNanosOfDay % 3_600_000_000_000L
-        val newMinute = (remHour / 60_000_000_000L).toInt()
-        val remMin = remHour % 60_000_000_000L
-        val newSecond = (remMin / 1_000_000_000L).toInt()
-        val newNano = (remMin % 1_000_000_000L).toInt()
-        val newTime = Time.fromHmsNanosUnchecked(newHour, newMinute, newSecond, newNano)
+        val (dateAdjustment, newTime) = time.adjustingAdd(duration)
+        val baseDate = date.checkedAdd(duration) ?: return null
+        val newDate =
+            when (dateAdjustment) {
+                DateAdjustment.Previous -> baseDate.previousDay() ?: return null
+                DateAdjustment.Next -> baseDate.nextDay() ?: return null
+                DateAdjustment.None -> baseDate
+            }
         return PrimitiveDateTime(newDate, newTime)
     }
 
     /** Computes self - duration, returning null if overflow occurred. */
-    fun checkedSub(duration: Duration): PrimitiveDateTime? = checkedAdd(-duration)
+    fun checkedSub(duration: Duration): PrimitiveDateTime? {
+        val (dateAdjustment, newTime) = time.adjustingSub(duration)
+        val baseDate = date.checkedSub(duration) ?: return null
+        val newDate =
+            when (dateAdjustment) {
+                DateAdjustment.Previous -> baseDate.previousDay() ?: return null
+                DateAdjustment.Next -> baseDate.nextDay() ?: return null
+                DateAdjustment.None -> baseDate
+            }
+        return PrimitiveDateTime(newDate, newTime)
+    }
 
     /** Computes self + duration, saturating on overflow. */
     fun saturatingAdd(duration: Duration): PrimitiveDateTime =
@@ -136,10 +138,22 @@ class PrimitiveDateTime internal constructor(
         checkedSub(duration) ?: if (duration.isNegative()) MAX else MIN
 
     operator fun plus(duration: Duration): PrimitiveDateTime =
-        checkedAdd(duration) ?: throw ArithmeticException("overflow adding duration to datetime")
+        checkedAdd(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun plus(duration: kotlin.time.Duration): PrimitiveDateTime =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedAdd(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("resulting value is out of range")
+        }
 
     operator fun minus(duration: Duration): PrimitiveDateTime =
-        checkedSub(duration) ?: throw ArithmeticException("overflow subtracting duration from datetime")
+        checkedSub(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun minus(duration: kotlin.time.Duration): PrimitiveDateTime =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedSub(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("resulting value is out of range")
+        }
 
     operator fun minus(other: PrimitiveDateTime): Duration =
         (date - other.date) + (time - other.time)
@@ -160,20 +174,32 @@ class PrimitiveDateTime internal constructor(
 
     fun replaceTime(newTime: Time): PrimitiveDateTime = PrimitiveDateTime(date, newTime)
 
+    fun truncateToDay(): PrimitiveDateTime = replaceTime(Time.MIDNIGHT)
+
     fun replaceHour(hour: Int): Result<PrimitiveDateTime> =
         time.replaceHour(hour).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToHour(): PrimitiveDateTime = replaceTime(time.truncateToHour())
 
     fun replaceMinute(minute: Int): Result<PrimitiveDateTime> =
         time.replaceMinute(minute).map { PrimitiveDateTime(date, it) }
 
+    fun truncateToMinute(): PrimitiveDateTime = replaceTime(time.truncateToMinute())
+
     fun replaceSecond(second: Int): Result<PrimitiveDateTime> =
         time.replaceSecond(second).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToSecond(): PrimitiveDateTime = replaceTime(time.truncateToSecond())
 
     fun replaceMillisecond(millisecond: Int): Result<PrimitiveDateTime> =
         time.replaceMillisecond(millisecond).map { PrimitiveDateTime(date, it) }
 
+    fun truncateToMillisecond(): PrimitiveDateTime = replaceTime(time.truncateToMillisecond())
+
     fun replaceMicrosecond(microsecond: Int): Result<PrimitiveDateTime> =
         time.replaceMicrosecond(microsecond).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToMicrosecond(): PrimitiveDateTime = replaceTime(time.truncateToMicrosecond())
 
     fun replaceNanosecond(nanosecond: Int): Result<PrimitiveDateTime> =
         time.replaceNanosecond(nanosecond).map { PrimitiveDateTime(date, it) }

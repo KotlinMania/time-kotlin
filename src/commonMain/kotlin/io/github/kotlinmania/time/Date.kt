@@ -360,8 +360,20 @@ class Date internal constructor(
     operator fun plus(duration: Duration): Date =
         checkedAdd(duration) ?: throw ArithmeticException("overflow adding duration to date")
 
+    operator fun plus(duration: kotlin.time.Duration): Date =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedAdd(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("overflow adding duration to date")
+        }
+
     operator fun minus(duration: Duration): Date =
         checkedSub(duration) ?: throw ArithmeticException("overflow subtracting duration from date")
+
+    operator fun minus(duration: kotlin.time.Duration): Date =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedSub(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("overflow subtracting duration from date")
+        }
 
     operator fun minus(other: Date): Duration =
         Duration.days((toJulianDay() - other.toJulianDay()).toLong())

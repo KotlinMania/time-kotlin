@@ -18,6 +18,23 @@ class OffsetDateTime internal constructor(
         val UNIX_EPOCH: OffsetDateTime =
             newInOffset(Date.UNIX_EPOCH, Time.MIDNIGHT, UtcOffset.UTC)
 
+        private val MIN_UNIX_TIMESTAMP: Long =
+            newInOffset(Date.MIN, Time.MIDNIGHT, UtcOffset.UTC).unixTimestamp()
+
+        private val MAX_UNIX_TIMESTAMP: Long =
+            newInOffset(Date.MAX, Time.MAX, UtcOffset.UTC).unixTimestamp()
+
+        /** Create a new [OffsetDateTime] with the current date and time in UTC. */
+        fun nowUtc(): OffsetDateTime = from(kotlin.time.Clock.System.now())
+
+        /**
+         * Attempt to create a new [OffsetDateTime] with the current date and time in the local offset.
+         */
+        fun nowLocal(): Result<OffsetDateTime> {
+            val t = nowUtc()
+            return UtcOffset.localOffsetAt(t).map { t.toOffset(it) }
+        }
+
         /** Create a new [OffsetDateTime] with the given [Date], [Time], and [UtcOffset]. */
         fun newInOffset(date: Date, time: Time, offset: UtcOffset): OffsetDateTime =
             OffsetDateTime(PrimitiveDateTime.new(date, time), offset)
@@ -26,21 +43,24 @@ class OffsetDateTime internal constructor(
         fun newUtc(date: Date, time: Time): OffsetDateTime =
             newInOffset(date, time, UtcOffset.UTC)
 
+        /** Convert a [UtcDateTime] to an [OffsetDateTime] in UTC. */
+        fun from(datetime: UtcDateTime): OffsetDateTime =
+            datetime.asPrimitive().assumeUtc()
+
+        /** Convert a [kotlin.time.Instant] to an [OffsetDateTime] in UTC. */
+        fun from(systemTime: kotlin.time.Instant): OffsetDateTime =
+            UtcDateTime.from(systemTime).asPrimitive().assumeUtc()
+
         /** Create an [OffsetDateTime] from the provided unix timestamp in seconds. */
         fun fromUnixTimestamp(timestamp: Long): Result<OffsetDateTime> {
+            if (timestamp < MIN_UNIX_TIMESTAMP || timestamp > MAX_UNIX_TIMESTAMP) {
+                return Result.failure(ComponentRange.conditional("timestamp"))
+            }
             val secondsInDay = 86_400L
-            val dayAdjustment = floorDiv(timestamp, secondsInDay)
+            val dayAdjustment = floorDiv(timestamp, secondsInDay).toInt()
             val secondsOfDay = floorMod(timestamp, secondsInDay).toInt()
 
-            val targetJulianDay = UNIX_EPOCH_JULIAN_DAY + dayAdjustment
-            if (targetJulianDay < Date.MIN.toJulianDay() || targetJulianDay > Date.MAX.toJulianDay()) {
-                return Result.failure(ComponentRange.conditional("unix_timestamp"))
-            }
-
-            val date =
-                Date.fromJulianDay(targetJulianDay.toInt()).getOrElse {
-                    return Result.failure(it)
-                }
+            val date = Date.fromJulianDayUnchecked(UNIX_EPOCH_JULIAN_DAY + dayAdjustment)
             val hour = secondsOfDay / 3600
             val minute = (secondsOfDay % 3600) / 60
             val second = secondsOfDay % 60
@@ -64,22 +84,44 @@ class OffsetDateTime internal constructor(
         }
     }
 
-    /** Convert the datetime to UTC. */
-    fun toUtc(): OffsetDateTime = toOffset(UtcOffset.UTC)
+    internal fun dateTime(): PrimitiveDateTime = localDateTime
 
-    /** Convert the datetime from the current [UtcOffset] to the provided [UtcOffset]. */
+    /** Convert the [OffsetDateTime] from the current [UtcOffset] to the provided [UtcOffset]. */
     fun toOffset(newOffset: UtcOffset): OffsetDateTime =
         checkedToOffset(newOffset) ?: throw ArithmeticException("local datetime out of valid range")
 
     /**
-     * Convert the datetime from the current [UtcOffset] to the provided [UtcOffset],
+     * Convert the [OffsetDateTime] from the current [UtcOffset] to the provided [UtcOffset],
      * returning null if the datetime in the resulting offset is invalid.
      */
     fun checkedToOffset(newOffset: UtcOffset): OffsetDateTime? {
+        if (offset.asU32ForEquality() == newOffset.asU32ForEquality()) {
+            return this
+        }
         val diffSeconds = newOffset.wholeSeconds().toLong() - offset.wholeSeconds().toLong()
         val adjustedLocalDateTime = localDateTime.checkedAdd(Duration.seconds(diffSeconds)) ?: return null
         return OffsetDateTime(adjustedLocalDateTime, newOffset)
     }
+
+    /** Convert the [OffsetDateTime] from the current [UtcOffset] to UTC, returning a [UtcDateTime]. */
+    fun toUtc(): UtcDateTime =
+        checkedToUtc() ?: throw ArithmeticException("local datetime out of valid range")
+
+    /**
+     * Convert the [OffsetDateTime] from the current [UtcOffset] to UTC, returning null if the
+     * UTC date-time is invalid. Returns a [UtcDateTime].
+     */
+    fun checkedToUtc(): UtcDateTime? {
+        if (offset.isUtc()) {
+            return localDateTime.asUtc()
+        }
+        val adjusted = localDateTime.checkedSub(Duration.seconds(offset.wholeSeconds().toLong())) ?: return null
+        return adjusted.asUtc()
+    }
+
+    /** Convert this [OffsetDateTime] to a [kotlin.time.Instant]. */
+    fun toSystemTime(): kotlin.time.Instant =
+        kotlin.time.Instant.fromEpochSeconds(unixTimestamp(), nanosecond())
 
     /** Get the local date component. */
     fun date(): Date = localDateTime.date()
@@ -187,16 +229,28 @@ class OffsetDateTime internal constructor(
         checkedSub(duration) ?: if (duration.isNegative()) newInOffset(Date.MAX, Time.MAX, offset) else newInOffset(Date.MIN, Time.MIDNIGHT, offset)
 
     operator fun plus(duration: Duration): OffsetDateTime =
-        checkedAdd(duration) ?: throw ArithmeticException("overflow adding duration to datetime")
+        checkedAdd(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun plus(duration: kotlin.time.Duration): OffsetDateTime =
+        OffsetDateTime(localDateTime + duration, offset)
 
     operator fun minus(duration: Duration): OffsetDateTime =
-        checkedSub(duration) ?: throw ArithmeticException("overflow subtracting duration from datetime")
+        checkedSub(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun minus(duration: kotlin.time.Duration): OffsetDateTime =
+        OffsetDateTime(localDateTime - duration, offset)
 
     operator fun minus(other: OffsetDateTime): Duration {
         val base = localDateTime - other.localDateTime
         val adjustment = Duration.seconds(offset.wholeSeconds().toLong() - other.offset.wholeSeconds().toLong())
         return base - adjustment
     }
+
+    operator fun minus(other: UtcDateTime): Duration =
+        this - from(other)
+
+    operator fun minus(other: kotlin.time.Instant): Duration =
+        this - from(other)
 
     fun replaceYear(year: Int): Result<OffsetDateTime> =
         localDateTime.replaceYear(year).map { OffsetDateTime(it, offset) }
@@ -214,33 +268,61 @@ class OffsetDateTime internal constructor(
 
     fun replaceTime(newTime: Time): OffsetDateTime = OffsetDateTime(localDateTime.replaceTime(newTime), offset)
 
+    fun replaceDateTime(newDateTime: PrimitiveDateTime): OffsetDateTime = newDateTime.assumeOffset(offset)
+
     fun replaceOffset(newOffset: UtcOffset): OffsetDateTime = OffsetDateTime(localDateTime, newOffset)
+
+    fun truncateToDay(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToDay(), offset)
 
     fun replaceHour(hour: Int): Result<OffsetDateTime> =
         localDateTime.replaceHour(hour).map { OffsetDateTime(it, offset) }
 
+    fun truncateToHour(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToHour(), offset)
+
     fun replaceMinute(minute: Int): Result<OffsetDateTime> =
         localDateTime.replaceMinute(minute).map { OffsetDateTime(it, offset) }
+
+    fun truncateToMinute(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToMinute(), offset)
 
     fun replaceSecond(second: Int): Result<OffsetDateTime> =
         localDateTime.replaceSecond(second).map { OffsetDateTime(it, offset) }
 
+    fun truncateToSecond(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToSecond(), offset)
+
     fun replaceMillisecond(millisecond: Int): Result<OffsetDateTime> =
         localDateTime.replaceMillisecond(millisecond).map { OffsetDateTime(it, offset) }
+
+    fun truncateToMillisecond(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToMillisecond(), offset)
 
     fun replaceMicrosecond(microsecond: Int): Result<OffsetDateTime> =
         localDateTime.replaceMicrosecond(microsecond).map { OffsetDateTime(it, offset) }
 
+    fun truncateToMicrosecond(): OffsetDateTime = OffsetDateTime(localDateTime.truncateToMicrosecond(), offset)
+
     fun replaceNanosecond(nanosecond: Int): Result<OffsetDateTime> =
         localDateTime.replaceNanosecond(nanosecond).map { OffsetDateTime(it, offset) }
 
-    override fun compareTo(other: OffsetDateTime): Int =
-        toUtc().localDateTime.compareTo(other.toUtc().localDateTime)
+    internal fun isValidLeapSecondStandIn(): Boolean {
+        if (nanosecond() != 999_999_999) return false
+        val utc = checkedToUtc() ?: return false
+        return utc.isValidLeapSecondStandIn()
+    }
+
+    override fun compareTo(other: OffsetDateTime): Int {
+        val secCmp = unixTimestamp().compareTo(other.unixTimestamp())
+        return if (secCmp != 0) secCmp else nanosecond().compareTo(other.nanosecond())
+    }
 
     override fun equals(other: Any?): Boolean =
-        other is OffsetDateTime && toUtc().localDateTime == other.toUtc().localDateTime
+        when (other) {
+            is OffsetDateTime ->
+                unixTimestamp() == other.unixTimestamp() && nanosecond() == other.nanosecond()
+            is UtcDateTime ->
+                unixTimestamp() == other.unixTimestamp() && nanosecond() == other.nanosecond()
+            else -> false
+        }
 
-    override fun hashCode(): Int = toUtc().localDateTime.hashCode()
+    override fun hashCode(): Int = 31 * unixTimestamp().hashCode() + nanosecond()
 
     override fun toString(): String = "$localDateTime $offset"
 }
