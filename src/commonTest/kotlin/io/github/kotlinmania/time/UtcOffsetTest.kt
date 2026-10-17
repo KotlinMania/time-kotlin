@@ -218,6 +218,21 @@ class UtcOffsetTest {
         }
     }
 
+    @Test
+    fun localOffsetAt() {
+        kotlin.test.assertTrue(UtcOffset.localOffsetAt(OffsetDateTime.UNIX_EPOCH).isSuccess)
+    }
+
+    @Test
+    fun currentLocalOffset() {
+        kotlin.test.assertTrue(UtcOffset.currentLocalOffset().isSuccess)
+    }
+
+    @Test
+    fun localOffsetSuccessWhenMultithreaded() {
+        kotlin.test.assertTrue(UtcOffset.currentLocalOffset().isSuccess)
+    }
+
     private data class HmsCase(
         val hours: Int,
         val minutes: Int,
