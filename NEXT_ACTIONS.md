@@ -5,13 +5,15 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 19/90 (21.1%)
-- **Function parity:** 110/997 matched (target 255) — 11.0%
-- **Class/type parity:** 45/156 matched (target 98) — 28.8%
-- **Combined symbol parity:** 155/1153 matched (target 353) — 13.4%
-- **Average inline-code cosine:** 0.57 (function body across 18 matched files)
+- **Function parity:** 134/1028 matched (target 215) — 13.0%
+- **Class/type parity:** 45/156 matched (target 92) — 28.8%
+- **Combined symbol parity:** 179/1184 matched (target 307) — 15.1%
+- **Average inline-code cosine:** 0.22 (function body across 18 matched files)
 - **Average documentation cosine:** 0.88 (doc text across 18 matched files)
 - **Cheat-zeroed Files:** 2
-- **Critical Issues:** 14 files with <0.60 function similarity
+- **Critical Issues:** 18 files with <0.60 function similarity
+- **Needs Review:** 0 files with 0.60-0.84 function similarity
+- **Excellent:** 1 files with >=0.85 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -32,11 +34,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 1. error.component_range
 
 - **Target:** `error.ComponentRange`
-- **Similarity:** 0.49
+- **Similarity:** 0.18
 - **Dependents:** 7
-- **Priority Score:** 7011005.0
-- **Functions:** 8/8 matched (target 10)
-- **Missing functions:** _none_
+- **Priority Score:** 7021108.0
+- **Functions:** 8/9 matched (target 10)
+- **Missing functions:** `fmt`
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
@@ -53,36 +55,33 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 3. month
 
-- **Target:** `time.Month [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.59
+- **Target:** `time.Month`
+- **Similarity:** 0.33
 - **Dependents:** 2
-- **Priority Score:** 2051604.1
-- **Functions:** 10/11 matched (target 21)
-- **Missing functions:** `metadata`
-- **Types:** 1/5 matched (target 2)
+- **Priority Score:** 2061706.6
+- **Functions:** 10/12 matched
+- **Missing functions:** `metadata`, `fmt`
+- **Types:** 1/5 matched (target 1)
 - **Missing types:** `MonthMetadata`, `Metadata`, `Err`, `Error`
-- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/month.rs` vs expected `month.rs`
-- **Proposed provenance header:** `// port-lint: tests month.rs` (current: `// port-lint: tests tests/integration/month.rs`)
-- **Lint issues:** 1
 
 ### 4. error.format
 
 - **Target:** `error.Format`
-- **Similarity:** 0.41
+- **Similarity:** 0.10
 - **Dependents:** 2
-- **Priority Score:** 2020705.9
-- **Functions:** 4/5 matched (target 13)
-- **Missing functions:** `into_invalid_serde_value`
+- **Priority Score:** 2031109.0
+- **Functions:** 7/9 matched (target 13)
+- **Missing functions:** `try_from`, `into_invalid_serde_value`
 - **Types:** 1/2 matched (target 5)
 - **Missing types:** `Error`
 
 ### 5. error.try_from_parsed
 
 - **Target:** `error.TryFromParsed`
-- **Similarity:** 0.58
+- **Similarity:** 0.13
 - **Dependents:** 2
-- **Priority Score:** 2010604.1
-- **Functions:** 4/4 matched (target 8)
+- **Priority Score:** 2010808.8
+- **Functions:** 6/6 matched (target 8)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Error`
@@ -90,9 +89,9 @@ Every matched file is listed below with function and type symbol parity.
 ### 6. error.invalid_format_description
 
 - **Target:** `error.InvalidFormatDescription`
-- **Similarity:** 0.61
+- **Similarity:** 0.17
 - **Dependents:** 2
-- **Priority Score:** 2010503.9
+- **Priority Score:** 2010508.4
 - **Functions:** 3/3 matched (target 10)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 8)
@@ -100,49 +99,43 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 7. utc_offset
 
-- **Target:** `time.UtcOffset [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.47
+- **Target:** `time.UtcOffset`
+- **Similarity:** 0.10
 - **Dependents:** 1
-- **Priority Score:** 1113905.2
-- **Functions:** 27/31 matched (target 50)
-- **Missing functions:** `local_offset_at`, `format_into`, `metadata`, `fmt_with_metadata`
-- **Types:** 1/8 matched (target 4)
+- **Priority Score:** 1124009.0
+- **Functions:** 27/32 matched (target 34)
+- **Missing functions:** `local_offset_at`, `format_into`, `metadata`, `fmt_with_metadata`, `fmt`
+- **Types:** 1/8 matched (target 1)
 - **Missing types:** `Hours`, `Minutes`, `Seconds`, `WholeSeconds`, `UtcOffsetMetadata`, `Metadata`, `Output`
-- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/utc_offset.rs` vs expected `utc_offset.rs`
-- **Proposed provenance header:** `// port-lint: tests utc_offset.rs` (current: `// port-lint: tests tests/integration/utc_offset.rs`)
-- **Lint issues:** 1
 
 ### 8. weekday
 
-- **Target:** `time.Weekday [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.60
+- **Target:** `time.Weekday`
+- **Similarity:** 0.34
 - **Dependents:** 1
-- **Priority Score:** 1041504.0
-- **Functions:** 10/11 matched (target 22)
-- **Missing functions:** `metadata`
-- **Types:** 1/4 matched (target 2)
+- **Priority Score:** 1051606.6
+- **Functions:** 10/12 matched
+- **Missing functions:** `metadata`, `fmt`
+- **Types:** 1/4 matched (target 1)
 - **Missing types:** `WeekdayMetadata`, `Metadata`, `Err`
-- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/weekday.rs` vs expected `weekday.rs`
-- **Proposed provenance header:** `// port-lint: tests weekday.rs` (current: `// port-lint: tests tests/integration/weekday.rs`)
-- **Lint issues:** 1
 
 ### 9. error.parse
 
 - **Target:** `error.Parse`
-- **Similarity:** 0.40
+- **Similarity:** 0.06
 - **Dependents:** 1
-- **Priority Score:** 1010606.0
-- **Functions:** 4/4 matched (target 11)
-- **Missing functions:** _none_
+- **Priority Score:** 1031009.4
+- **Functions:** 6/8 matched (target 11)
+- **Missing functions:** `try_from`, `try_from`
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Error`
 
 ### 10. error.different_variant
 
 - **Target:** `error.DifferentVariant`
-- **Similarity:** 0.54
+- **Similarity:** 0.15
 - **Dependents:** 1
-- **Priority Score:** 1010504.6
+- **Priority Score:** 1010508.5
 - **Functions:** 3/3 matched (target 5)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
@@ -151,71 +144,68 @@ Every matched file is listed below with function and type symbol parity.
 ### 11. error.invalid_variant
 
 - **Target:** `error.InvalidVariant`
-- **Similarity:** 0.58
+- **Similarity:** 0.17
 - **Dependents:** 1
-- **Priority Score:** 1010504.2
+- **Priority Score:** 1010508.3
 - **Functions:** 3/3 matched (target 5)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 12. error.parse_from_description
+### 12. error.conversion_range
+
+- **Target:** `error.ConversionRange`
+- **Similarity:** 0.17
+- **Dependents:** 1
+- **Priority Score:** 1010508.3
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 13. error.indeterminate_offset
+
+- **Target:** `error.IndeterminateOffset`
+- **Similarity:** 0.17
+- **Dependents:** 1
+- **Priority Score:** 1010508.3
+- **Functions:** 3/3 matched (target 5)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 14. error.parse_from_description
 
 - **Target:** `error.ParseFromDescription`
-- **Similarity:** 0.57
+- **Similarity:** 0.17
 - **Dependents:** 1
-- **Priority Score:** 1010504.2
+- **Priority Score:** 1010508.3
 - **Functions:** 3/3 matched (target 5)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 4)
 - **Missing types:** `Error`
 
-### 13. error.conversion_range
-
-- **Target:** `error.ConversionRange`
-- **Similarity:** 0.58
-- **Dependents:** 1
-- **Priority Score:** 1010504.2
-- **Functions:** 3/3 matched (target 5)
-- **Missing functions:** _none_
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
-### 14. error.indeterminate_offset
-
-- **Target:** `error.IndeterminateOffset`
-- **Similarity:** 0.58
-- **Dependents:** 1
-- **Priority Score:** 1010504.2
-- **Functions:** 3/3 matched (target 5)
-- **Missing functions:** _none_
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
 ### 15. format_description.modifier
 
 - **Target:** `formatdescription.Modifier`
-- **Similarity:** 0.86
+- **Similarity:** 0.23
 - **Dependents:** 1
-- **Priority Score:** 1004001.4
-- **Functions:** 14/14 matched (target 56)
+- **Priority Score:** 1005707.8
+- **Functions:** 31/31 matched (target 56)
 - **Missing functions:** _none_
 - **Types:** 26/26 matched
 - **Missing types:** _none_
 
 ### 16. util
 
-- **Target:** `time.Util [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.70
+- **Target:** `time.Util`
+- **Similarity:** 0.35
 - **Dependents:** 0
-- **Priority Score:** 803.0
-- **Functions:** 6/6 matched (target 20)
+- **Priority Score:** 806.5
+- **Functions:** 6/6 matched (target 15)
 - **Missing functions:** _none_
-- **Types:** 2/2 matched (target 5)
+- **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
-- **Provenance warning:** port-lint provenance header matched only by basename: `tests:tests/integration/util.rs` vs expected `util.rs`
-- **Proposed provenance header:** `// port-lint: tests util.rs` (current: `// port-lint: tests tests/integration/util.rs`)
-- **Lint issues:** 1
 
 ### 17. error.mod
 
@@ -231,9 +221,9 @@ Every matched file is listed below with function and type symbol parity.
 ### 18. hint
 
 - **Target:** `time.Hint`
-- **Similarity:** 0.66
+- **Similarity:** 0.18
 - **Dependents:** 0
-- **Priority Score:** 303.4
+- **Priority Score:** 308.2
 - **Functions:** 3/3 matched
 - **Missing functions:** _none_
 - **Types:** 0/0 matched
