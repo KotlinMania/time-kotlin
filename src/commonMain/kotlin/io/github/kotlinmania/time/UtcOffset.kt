@@ -2,6 +2,15 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import kotlin.jvm.JvmName
 import kotlin.math.abs
 
 /**
@@ -149,6 +158,35 @@ class UtcOffset private constructor(
     /** Format the `UtcOffset` as a string. */
     fun format(): String = toString()
 
+    /** Format the [UtcOffset] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [UtcOffset] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
+
     fun fmt(): String = toString()
 
     /** Negate this `UtcOffset`. */
@@ -210,6 +248,29 @@ class UtcOffset private constructor(
             }
             return Result.failure(ComponentRange.unconditional("offset"))
         }
+
+        /** Parse a [UtcOffset] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<UtcOffset> =
+            description.parseUtcOffset(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<UtcOffset> =
+            description.parseUtcOffset(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<UtcOffset> =
+            BorrowedFormatItemSliceParsable(description).parseUtcOffset(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<UtcOffset> =
+            BorrowedFormatItemSliceParsable(description).parseUtcOffset(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<UtcOffset> =
+            OwnedFormatItemSliceParsable(description).parseUtcOffset(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<UtcOffset> =
+            OwnedFormatItemSliceParsable(description).parseUtcOffset(input)
 
         /**
          * Create a `UtcOffset` representing an offset of the hours, minutes,

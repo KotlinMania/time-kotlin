@@ -2,6 +2,23 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.computeTimestampNanosSignAndAbs
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
+import kotlin.jvm.JvmName
+
+internal val MIN_UNIX_TIMESTAMP: Long =
+    OffsetDateTime.newInOffset(Date.MIN, Time.MIDNIGHT, UtcOffset.UTC).unixTimestamp()
+
+internal val MAX_UNIX_TIMESTAMP: Long =
+    OffsetDateTime.newInOffset(Date.MAX, Time.MAX, UtcOffset.UTC).unixTimestamp()
 
 /**
  * A [PrimitiveDateTime] with a [UtcOffset].
@@ -17,12 +34,6 @@ class OffsetDateTime internal constructor(
         /** Midnight, 1 January, 1970 (UTC). */
         val UNIX_EPOCH: OffsetDateTime =
             newInOffset(Date.UNIX_EPOCH, Time.MIDNIGHT, UtcOffset.UTC)
-
-        private val MIN_UNIX_TIMESTAMP: Long =
-            newInOffset(Date.MIN, Time.MIDNIGHT, UtcOffset.UTC).unixTimestamp()
-
-        private val MAX_UNIX_TIMESTAMP: Long =
-            newInOffset(Date.MAX, Time.MAX, UtcOffset.UTC).unixTimestamp()
 
         /** Create a new [OffsetDateTime] with the current date and time in UTC. */
         fun nowUtc(): OffsetDateTime = from(kotlin.time.Clock.System.now())
@@ -82,6 +93,42 @@ class OffsetDateTime internal constructor(
             val timeWithNanos = Time.fromHmsNanoUnchecked(base.hour(), base.minute(), base.second(), nanos)
             return Result.success(newInOffset(base.date(), timeWithNanos, UtcOffset.UTC))
         }
+
+        /** Create an [OffsetDateTime] from the provided 128-bit unix timestamp in nanoseconds as a decimal string. */
+        fun fromUnixTimestampNanos(timestamp: String): Result<OffsetDateTime> {
+            val (seconds, nanos) =
+                parseNanosStringToSecAndNano(timestamp)
+                    ?: return Result.failure(ComponentRange.conditional("timestamp"))
+            val base =
+                fromUnixTimestamp(seconds).getOrElse {
+                    return Result.failure(it)
+                }
+            val timeWithNanos = Time.fromHmsNanoUnchecked(base.hour(), base.minute(), base.second(), nanos)
+            return Result.success(newInOffset(base.date(), timeWithNanos, UtcOffset.UTC))
+        }
+
+        /** Parse an [OffsetDateTime] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<OffsetDateTime> =
+            description.parseOffsetDateTime(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<OffsetDateTime> =
+            description.parseOffsetDateTime(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<OffsetDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseOffsetDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<OffsetDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseOffsetDateTime(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<OffsetDateTime> =
+            OwnedFormatItemSliceParsable(description).parseOffsetDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<OffsetDateTime> =
+            OwnedFormatItemSliceParsable(description).parseOffsetDateTime(input)
     }
 
     internal fun dateTime(): PrimitiveDateTime = localDateTime
@@ -212,6 +259,12 @@ class OffsetDateTime internal constructor(
     fun unixTimestampNanos(): Long =
         (unixTimestamp() * 1_000_000_000L) + nanosecond().toLong()
 
+    /** Get the 128-bit Unix timestamp in nanoseconds as a decimal string. */
+    fun unixTimestampNanosString(): String {
+        val (isNeg, absStr) = computeTimestampNanosSignAndAbs(unixTimestamp(), nanosecond())
+        return if (isNeg) "-$absStr" else absStr
+    }
+
     /** Computes self + duration, returning null if overflow occurred. */
     fun checkedAdd(duration: Duration): OffsetDateTime? =
         localDateTime.checkedAdd(duration)?.let { OffsetDateTime(it, offset) }
@@ -325,4 +378,33 @@ class OffsetDateTime internal constructor(
     override fun hashCode(): Int = 31 * unixTimestamp().hashCode() + nanosecond()
 
     override fun toString(): String = "$localDateTime $offset"
+
+    /** Format the [OffsetDateTime] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [OffsetDateTime] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
 }

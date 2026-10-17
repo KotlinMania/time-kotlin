@@ -2,13 +2,22 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import kotlin.jvm.JvmName
 import kotlin.math.abs
 
 /** The minimum valid year. */
-internal const val MIN_YEAR: Int = -9999
+internal const val MIN_YEAR: Int = -999_999
 
 /** The maximum valid year. */
-internal const val MAX_YEAR: Int = 9999
+internal const val MAX_YEAR: Int = 999_999
 
 /**
  * Date in the proleptic Gregorian calendar.
@@ -398,7 +407,39 @@ class Date internal constructor(
         return "$yearStr-$monthStr-$dayStr"
     }
 
+    /** Format the [Date] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [Date] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
+
     companion object {
+        internal const val MIN_YEAR: Int = io.github.kotlinmania.time.MIN_YEAR
+        internal const val MAX_YEAR: Int = io.github.kotlinmania.time.MAX_YEAR
+
         private val DAYS_CUMULATIVE_COMMON =
             intArrayOf(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
         private val DAYS_CUMULATIVE_LEAP =
@@ -521,5 +562,28 @@ class Date internal constructor(
 
             return fromParts(year, leap, ordinal)
         }
+
+        /** Parse a [Date] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<Date> =
+            description.parseDate(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<Date> =
+            description.parseDate(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<Date> =
+            BorrowedFormatItemSliceParsable(description).parseDate(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<Date> =
+            BorrowedFormatItemSliceParsable(description).parseDate(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<Date> =
+            OwnedFormatItemSliceParsable(description).parseDate(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<Date> =
+            OwnedFormatItemSliceParsable(description).parseDate(input)
     }
 }

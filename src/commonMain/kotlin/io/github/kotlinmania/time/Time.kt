@@ -2,6 +2,15 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import kotlin.jvm.JvmName
 
 /**
  * The clock time within a given date. Nanosecond precision.
@@ -303,6 +312,35 @@ class Time internal constructor(
         return Duration.new(seconds.toLong(), nanoseconds)
     }
 
+    /** Format the [Time] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [Time] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
+
     companion object {
         val MIDNIGHT: Time = fromHmsNanosUnchecked(0, 0, 0, 0)
         val MAX: Time = fromHmsNanosUnchecked(23, 59, 59, 999_999_999)
@@ -357,5 +395,28 @@ class Time internal constructor(
             if (nanosecond !in 0..999_999_999) return Result.failure(ComponentRange.conditional("nanosecond"))
             return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
         }
+
+        /** Parse a [Time] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<Time> =
+            description.parseTime(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<Time> =
+            description.parseTime(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<Time> =
+            BorrowedFormatItemSliceParsable(description).parseTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<Time> =
+            BorrowedFormatItemSliceParsable(description).parseTime(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<Time> =
+            OwnedFormatItemSliceParsable(description).parseTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<Time> =
+            OwnedFormatItemSliceParsable(description).parseTime(input)
     }
 }

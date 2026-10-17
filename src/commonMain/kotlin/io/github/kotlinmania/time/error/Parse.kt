@@ -21,6 +21,11 @@ sealed class Parse(
         override fun fmt(): String = error.fmt()
 
         override fun source(): Throwable = error
+
+        override fun equals(other: Any?): Boolean =
+            other is TryFromParsed && error == other.error
+
+        override fun hashCode(): Int = error.hashCode()
     }
 
     class ParseFromDescription(
@@ -29,6 +34,11 @@ sealed class Parse(
         override fun fmt(): String = error.fmt()
 
         override fun source(): Throwable = error
+
+        override fun equals(other: Any?): Boolean =
+            other is ParseFromDescription && error == other.error
+
+        override fun hashCode(): Int = error.hashCode()
     }
 
     companion object {

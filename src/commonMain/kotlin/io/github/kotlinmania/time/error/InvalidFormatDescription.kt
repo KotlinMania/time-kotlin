@@ -18,6 +18,11 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription("unclosed opening bracket at byte index $index") {
         override fun fmt(): String = message ?: "unclosed opening bracket at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is UnclosedOpeningBracket && index == other.index
+
+        override fun hashCode(): Int = index.hashCode()
     }
 
     class InvalidComponentName(
@@ -27,6 +32,11 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription("invalid component name `$name` at byte index $index") {
         override fun fmt(): String = message ?: "invalid component name `$name` at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is InvalidComponentName && name == other.name && index == other.index
+
+        override fun hashCode(): Int = 31 * name.hashCode() + index.hashCode()
     }
 
     class InvalidModifier(
@@ -36,6 +46,11 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription("invalid modifier `$value` at byte index $index") {
         override fun fmt(): String = message ?: "invalid modifier `$value` at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is InvalidModifier && value == other.value && index == other.index
+
+        override fun hashCode(): Int = 31 * value.hashCode() + index.hashCode()
     }
 
     class MissingComponentName(
@@ -43,6 +58,11 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription("missing component name at byte index $index") {
         override fun fmt(): String = message ?: "missing component name at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is MissingComponentName && index == other.index
+
+        override fun hashCode(): Int = index.hashCode()
     }
 
     class MissingRequiredModifier(
@@ -55,6 +75,11 @@ sealed class InvalidFormatDescription(
         ) {
         override fun fmt(): String =
             message ?: "missing required modifier `$name` for component at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is MissingRequiredModifier && name == other.name && index == other.index
+
+        override fun hashCode(): Int = 31 * name.hashCode() + index.hashCode()
     }
 
     class Expected(
@@ -64,6 +89,11 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription("expected $what at byte index $index") {
         override fun fmt(): String = message ?: "expected $what at byte index $index"
+
+        override fun equals(other: Any?): Boolean =
+            other is Expected && what == other.what && index == other.index
+
+        override fun hashCode(): Int = 31 * what.hashCode() + index.hashCode()
     }
 
     class NotSupported(
@@ -75,6 +105,12 @@ sealed class InvalidFormatDescription(
         val index: Int,
     ) : InvalidFormatDescription(formatMessage(what, context, index)) {
         override fun fmt(): String = message ?: formatMessage(what, context, index)
+
+        override fun equals(other: Any?): Boolean =
+            other is NotSupported && what == other.what && context == other.context && index == other.index
+
+        override fun hashCode(): Int =
+            31 * (31 * what.hashCode() + context.hashCode()) + index.hashCode()
     }
 
     companion object {

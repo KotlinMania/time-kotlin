@@ -16,6 +16,10 @@ sealed class ParseFromDescription(
     /** A string literal was not what was expected. */
     class InvalidLiteral : ParseFromDescription("a character literal was not valid") {
         override fun fmt(): String = message ?: "a character literal was not valid"
+
+        override fun equals(other: Any?): Boolean = other is InvalidLiteral
+
+        override fun hashCode(): Int = 1
     }
 
     /** A dynamic component was not valid. */
@@ -23,12 +27,21 @@ sealed class ParseFromDescription(
         val name: String,
     ) : ParseFromDescription("the '$name' component could not be parsed") {
         override fun fmt(): String = message ?: "the '$name' component could not be parsed"
+
+        override fun equals(other: Any?): Boolean =
+            other is InvalidComponent && name == other.name
+
+        override fun hashCode(): Int = name.hashCode()
     }
 
     /** The input was expected to have ended, but there are characters that remain. */
     class UnexpectedTrailingCharacters : ParseFromDescription("unexpected trailing characters; the end of input was expected") {
         override fun fmt(): String =
             message ?: "unexpected trailing characters; the end of input was expected"
+
+        override fun equals(other: Any?): Boolean = other is UnexpectedTrailingCharacters
+
+        override fun hashCode(): Int = 2
     }
 
     companion object {

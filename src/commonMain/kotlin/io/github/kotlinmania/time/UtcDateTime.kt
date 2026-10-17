@@ -2,6 +2,17 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.computeTimestampNanosSignAndAbs
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
+import kotlin.jvm.JvmName
 
 /** The Julian day of the Unix epoch. */
 private const val UNIX_EPOCH_JULIAN_DAY: Int = 2_440_588
@@ -88,6 +99,51 @@ class UtcDateTime internal constructor(
                 ),
             )
         }
+
+        /** Construct a [UtcDateTime] from the provided 128-bit Unix timestamp (in nanoseconds) as a decimal string. */
+        fun fromUnixTimestampNanos(timestamp: String): Result<UtcDateTime> {
+            val (seconds, nanos) =
+                parseNanosStringToSecAndNano(timestamp)
+                    ?: return Result.failure(ComponentRange.conditional("timestamp"))
+            val datetime =
+                fromUnixTimestamp(seconds).getOrElse {
+                    return Result.failure(it)
+                }
+            return Result.success(
+                new(
+                    datetime.date(),
+                    Time.fromHmsNanosUnchecked(
+                        datetime.hour(),
+                        datetime.minute(),
+                        datetime.second(),
+                        nanos,
+                    ),
+                ),
+            )
+        }
+
+        /** Parse a [UtcDateTime] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<UtcDateTime> =
+            description.parseUtcDateTime(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<UtcDateTime> =
+            description.parseUtcDateTime(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<UtcDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseUtcDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<UtcDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseUtcDateTime(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<UtcDateTime> =
+            OwnedFormatItemSliceParsable(description).parseUtcDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<UtcDateTime> =
+            OwnedFormatItemSliceParsable(description).parseUtcDateTime(input)
     }
 
     /**
@@ -131,6 +187,12 @@ class UtcDateTime internal constructor(
     /** Get the Unix timestamp in nanoseconds. */
     fun unixTimestampNanos(): Long =
         unixTimestamp() * 1_000_000_000L + nanosecond().toLong()
+
+    /** Get the 128-bit Unix timestamp in nanoseconds as a decimal string. */
+    fun unixTimestampNanosString(): String {
+        val (isNeg, absStr) = computeTimestampNanosSignAndAbs(unixTimestamp(), nanosecond())
+        return if (isNeg) "-$absStr" else absStr
+    }
 
     /** Get the [Date] component of the [UtcDateTime]. */
     fun date(): Date = inner.date()
@@ -339,4 +401,33 @@ class UtcDateTime internal constructor(
     override fun hashCode(): Int = inner.hashCode()
 
     override fun toString(): String = "${date()} ${time()} +00"
+
+    /** Format the [UtcDateTime] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [UtcDateTime] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
 }

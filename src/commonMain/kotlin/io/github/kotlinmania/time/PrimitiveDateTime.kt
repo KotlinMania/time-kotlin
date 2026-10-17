@@ -1,6 +1,16 @@
 // port-lint: source primitive_date_time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import kotlin.jvm.JvmName
+
 /**
  * Combined date and time.
  */
@@ -17,6 +27,29 @@ class PrimitiveDateTime internal constructor(
 
         /** Create a new [PrimitiveDateTime] from a [Date] and [Time]. */
         fun new(date: Date, time: Time): PrimitiveDateTime = PrimitiveDateTime(date, time)
+
+        /** Parse a [PrimitiveDateTime] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<PrimitiveDateTime> =
+            description.parseDateTime(input.encodeToByteArray())
+
+        fun parse(input: ByteArray, description: Parsable): Result<PrimitiveDateTime> =
+            description.parseDateTime(input)
+
+        @JvmName("parseBorrowedSlice")
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<PrimitiveDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesBorrowedSlice")
+        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<PrimitiveDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseDateTime(input)
+
+        @JvmName("parseOwnedSlice")
+        fun parse(input: String, description: List<OwnedFormatItem>): Result<PrimitiveDateTime> =
+            OwnedFormatItemSliceParsable(description).parseDateTime(input.encodeToByteArray())
+
+        @JvmName("parseBytesOwnedSlice")
+        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<PrimitiveDateTime> =
+            OwnedFormatItemSliceParsable(description).parseDateTime(input)
     }
 
     /** Get the date component. */
@@ -215,4 +248,33 @@ class PrimitiveDateTime internal constructor(
     override fun hashCode(): Int = 31 * date.hashCode() + time.hashCode()
 
     override fun toString(): String = "$date $time"
+
+    /** Format the [PrimitiveDateTime] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    @JvmName("formatIntoBorrowedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    @JvmName("formatIntoOwnedSlice")
+    fun formatInto(
+        output: StringBuilder,
+        description: List<OwnedFormatItem>,
+    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [PrimitiveDateTime] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    @JvmName("formatBorrowedSlice")
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    @JvmName("formatOwnedSlice")
+    fun format(description: List<OwnedFormatItem>): Result<String> =
+        OwnedFormatItemSliceFormattable(description).format(this)
 }

@@ -1,6 +1,7 @@
 // port-lint: source error/component_range.rs
 package io.github.kotlinmania.time.error
 
+import io.github.kotlinmania.serde.SerdeError
 import io.github.kotlinmania.time.StdError
 
 /**
@@ -42,6 +43,9 @@ class ComponentRange internal constructor(
 
     fun fmt(): String = message ?: "$componentName was not in range"
 
+    internal fun intoDeError(): SerdeError =
+        SerdeError.custom("invalid $componentName, expected an in-range value")
+
     companion object {
         /** Create a new `ComponentRange` error that is not conditional. */
         fun unconditional(name: String): ComponentRange = ComponentRange(name, false)
@@ -61,3 +65,7 @@ class ComponentRange internal constructor(
             "invalid ${error.name()}, expected an in-range value"
     }
 }
+
+internal fun Throwable.intoDeError(): SerdeError =
+    if (this is ComponentRange) intoDeError() else SerdeError.custom(message ?: toString())
+

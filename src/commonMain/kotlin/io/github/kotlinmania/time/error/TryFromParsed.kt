@@ -19,6 +19,10 @@ sealed class TryFromParsed(
     class InsufficientInformation : TryFromParsed("the `Parsed` struct did not include enough information to construct the type") {
         override fun fmt(): String =
             message ?: "the `Parsed` struct did not include enough information to construct the type"
+
+        override fun equals(other: Any?): Boolean = other is InsufficientInformation
+
+        override fun hashCode(): Int = 1
     }
 
     /** Some component contained an invalid value for the type. */
@@ -28,6 +32,11 @@ sealed class TryFromParsed(
         override fun fmt(): String = error.fmt()
 
         override fun source(): Throwable = error
+
+        override fun equals(other: Any?): Boolean =
+            other is ComponentRange && error == other.error
+
+        override fun hashCode(): Int = error.hashCode()
     }
 
     companion object {
