@@ -1,7 +1,7 @@
 // port-lint: source error/conversion_range.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Conversion range error.
@@ -19,11 +19,11 @@ class ConversionRange : IllegalArgumentException("Source value is out of range f
     fun fmt(): String = message ?: "Source value is out of range for the target type"
 
     companion object {
-        fun from(error: ConversionRange): Error = Error.ConversionRange(error)
+        fun from(error: ConversionRange): StdError = StdError.ConversionRange(error)
 
-        fun tryFrom(error: Error): Result<ConversionRange> =
+        fun tryFrom(error: StdError): Result<ConversionRange> =
             when (error) {
-                is Error.ConversionRange -> Result.success(error.err)
+                is StdError.ConversionRange -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
     }

@@ -1,7 +1,7 @@
 // port-lint: source error/invalid_variant.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Invalid variant error.
@@ -19,11 +19,11 @@ class InvalidVariant : IllegalArgumentException("value was not a valid variant")
     fun fmt(): String = message ?: "value was not a valid variant"
 
     companion object {
-        fun from(error: InvalidVariant): Error = Error.InvalidVariant(error)
+        fun from(error: InvalidVariant): StdError = StdError.InvalidVariant(error)
 
-        fun tryFrom(error: Error): Result<InvalidVariant> =
+        fun tryFrom(error: StdError): Result<InvalidVariant> =
             when (error) {
-                is Error.InvalidVariant -> Result.success(error.err)
+                is StdError.InvalidVariant -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
     }

@@ -1,7 +1,7 @@
 // port-lint: source error/parse.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Error that occurred at some stage of parsing.
@@ -38,10 +38,10 @@ sealed class Parse(
         fun from(error: io.github.kotlinmania.time.error.ParseFromDescription): Parse =
             ParseFromDescription(error)
 
-        fun from(error: Parse): Error =
+        fun from(error: Parse): StdError =
             when (error) {
-                is TryFromParsed -> Error.TryFromParsed(error.error)
-                is ParseFromDescription -> Error.ParseFromDescription(error.error)
+                is TryFromParsed -> StdError.TryFromParsed(error.error)
+                is ParseFromDescription -> StdError.ParseFromDescription(error.error)
             }
 
         fun tryFromParsed(error: Parse): Result<io.github.kotlinmania.time.error.TryFromParsed> =
@@ -58,10 +58,10 @@ sealed class Parse(
                 else -> Result.failure(DifferentVariant())
             }
 
-        fun tryFrom(error: Error): Result<Parse> =
+        fun tryFrom(error: StdError): Result<Parse> =
             when (error) {
-                is Error.ParseFromDescription -> Result.success(ParseFromDescription(error.err))
-                is Error.TryFromParsed -> Result.success(TryFromParsed(error.err))
+                is StdError.ParseFromDescription -> Result.success(ParseFromDescription(error.err))
+                is StdError.TryFromParsed -> Result.success(TryFromParsed(error.err))
                 else -> Result.failure(DifferentVariant())
             }
     }

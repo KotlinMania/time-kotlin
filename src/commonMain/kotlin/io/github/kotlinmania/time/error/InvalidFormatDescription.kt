@@ -1,7 +1,7 @@
 // port-lint: source error/invalid_format_description.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Invalid format description.
@@ -78,11 +78,11 @@ sealed class InvalidFormatDescription(
     }
 
     companion object {
-        fun from(error: InvalidFormatDescription): Error = Error.InvalidFormatDescription(error)
+        fun from(error: InvalidFormatDescription): StdError = StdError.InvalidFormatDescription(error)
 
-        fun tryFrom(error: Error): Result<InvalidFormatDescription> =
+        fun tryFrom(error: StdError): Result<InvalidFormatDescription> =
             when (error) {
-                is Error.InvalidFormatDescription -> Result.success(error.err)
+                is StdError.InvalidFormatDescription -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
 

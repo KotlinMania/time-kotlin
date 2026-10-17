@@ -1,7 +1,7 @@
 // port-lint: source error/format.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.Error
+import io.github.kotlinmania.time.StdError
 
 /**
  * Error formatting a struct.
@@ -61,7 +61,7 @@ sealed class Format(
 
         fun from(error: Throwable): Format = StdIo(error)
 
-        fun from(error: Format): Error = Error.Format(error)
+        fun from(error: Format): StdError = StdError.Format(error)
 
         fun tryFrom(error: Format): Result<io.github.kotlinmania.time.error.ComponentRange> =
             when (error) {
@@ -69,9 +69,9 @@ sealed class Format(
                 else -> Result.failure(DifferentVariant())
             }
 
-        fun tryFrom(error: Error): Result<Format> =
+        fun tryFrom(error: StdError): Result<Format> =
             when (error) {
-                is Error.Format -> Result.success(error.err)
+                is StdError.Format -> Result.success(error.err)
                 else -> Result.failure(DifferentVariant())
             }
 

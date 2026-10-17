@@ -107,6 +107,10 @@ internal object RangeValidated {
     fun isLeapYear(year: Int): Boolean =
         io.github.kotlinmania.time
             .isLeapYear(year)
+
+    fun daysInYear(year: Int): Int =
+        io.github.kotlinmania.time
+            .daysInYear(year)
 }
 
 object LocalOffset {
@@ -129,13 +133,24 @@ object LocalOffset {
 private fun isoWeekPredicate(year: Int): Int =
     floorMod(year + floorDiv(year, 4) - floorDiv(year, 100) + floorDiv(year, 400), 7)
 
-private fun floorDiv(value: Int, divisor: Int): Int {
+internal fun floorDiv(value: Int, divisor: Int): Int {
     val quotient = value / divisor
     val remainder = value % divisor
     return if (remainder != 0 && (value xor divisor) < 0) quotient - 1 else quotient
 }
 
-private fun floorMod(value: Int, divisor: Int): Int {
+internal fun floorDiv(value: Long, divisor: Long): Long {
+    val quotient = value / divisor
+    val remainder = value % divisor
+    return if (remainder != 0L && (value xor divisor) < 0L) quotient - 1L else quotient
+}
+
+internal fun floorMod(value: Int, divisor: Int): Int {
     val remainder = value % divisor
     return if (remainder < 0) remainder + divisor else remainder
+}
+
+internal fun floorMod(value: Long, divisor: Long): Long {
+    val remainder = value % divisor
+    return if (remainder < 0L) remainder + divisor else remainder
 }
