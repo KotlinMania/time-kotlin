@@ -1,8 +1,8 @@
 // port-lint: tests tests/integration/rand.rs
 package io.github.kotlinmania.time
 
-import io.github.kotlinmania.rand.StepRng
 import io.github.kotlinmania.rand.distr.StandardUniform
+import io.github.kotlinmania.rand.rngs.StepRng
 import kotlin.test.Test
 
 class RandTest {
