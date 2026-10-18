@@ -36,6 +36,7 @@ import io.github.kotlinmania.time.formatdescription.parse.parseBorrowed
 import io.github.kotlinmania.time.formatdescription.parse.parseOwned
 import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeBorrowed
 import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeOwned
+import io.github.kotlinmania.time.macros.formatDescription
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -126,6 +127,67 @@ class ParseFormatDescriptionTest {
                 Padding.Zero to "padding:zero",
                 Padding.None to "padding:none",
             )
+        val hourIs12HourClock =
+            listOf(
+                false to "repr:24",
+                true to "repr:12",
+            )
+        val periodIsUppercase =
+            listOf(
+                true to "case:upper",
+                false to "case:lower",
+            )
+        val monthReprs =
+            listOf(
+                MonthRepr.Numerical to "repr:numerical",
+                MonthRepr.Long to "repr:long",
+                MonthRepr.Short to "repr:short",
+            )
+        val weekdayReprs =
+            listOf(
+                WeekdayRepr.Short to "repr:short",
+                WeekdayRepr.Long to "repr:long",
+                WeekdayRepr.Sunday to "repr:sunday",
+                WeekdayRepr.Monday to "repr:monday",
+            )
+        val weekNumberReprs =
+            listOf(
+                WeekNumberRepr.Iso to "repr:iso",
+                WeekNumberRepr.Sunday to "repr:sunday",
+                WeekNumberRepr.Monday to "repr:monday",
+            )
+        val yearReprs =
+            listOf(
+                YearRepr.Full to "repr:full",
+                YearRepr.Century to "repr:century",
+                YearRepr.LastTwo to "repr:last_two",
+            )
+        val yearRanges =
+            listOf(
+                YearRange.Standard to "range:standard",
+                YearRange.Extended to "range:extended",
+            )
+        val yearIsIsoWeekBased =
+            listOf(
+                false to "base:calendar",
+                true to "base:iso_week",
+            )
+        val signIsMandatory =
+            listOf(
+                false to "sign:automatic",
+                true to "sign:mandatory",
+            )
+        val weekdayIsOneIndexed =
+            listOf(
+                true to "one_indexed:true",
+                false to "one_indexed:false",
+            )
+        val caseSensitives =
+            listOf(
+                true to "case_sensitive:true",
+                false to "case_sensitive:false",
+            )
+
         for ((pad, str) in paddings) {
             assertEquals(
                 listOf(BorrowedFormatItem.Component(Component.Day(Day.default().withPadding(pad)))),
@@ -151,6 +213,103 @@ class ParseFormatDescriptionTest {
                 listOf(BorrowedFormatItem.Component(Component.Second(Second.default().withPadding(pad)))),
                 parse("[second $str]").getOrThrow(),
             )
+            for ((is12, hStr) in hourIs12HourClock) {
+                assertEquals(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour.default().withPadding(pad).withIs12HourClock(is12)),
+                        ),
+                    ),
+                    parse("[hour $str $hStr]").getOrThrow(),
+                )
+            }
+            for ((cs, csStr) in caseSensitives) {
+                for ((mRepr, mStr) in monthReprs) {
+                    assertEquals(
+                        listOf(
+                            BorrowedFormatItem.Component(
+                                Component.Month(
+                                    Month.default().withPadding(pad).withRepr(mRepr).withCaseSensitive(cs),
+                                ),
+                            ),
+                        ),
+                        parse("[month $str $csStr $mStr]").getOrThrow(),
+                    )
+                }
+            }
+            for ((wRepr, wStr) in weekNumberReprs) {
+                assertEquals(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.WeekNumber(WeekNumber.default().withPadding(pad).withRepr(wRepr)),
+                        ),
+                    ),
+                    parse("[week_number $str $wStr]").getOrThrow(),
+                )
+            }
+            for ((sign, sStr) in signIsMandatory) {
+                assertEquals(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.OffsetHour(OffsetHour.default().withPadding(pad).withSignIsMandatory(sign)),
+                        ),
+                    ),
+                    parse("[offset_hour $str $sStr]").getOrThrow(),
+                )
+            }
+            for ((yRepr, yReprStr) in yearReprs) {
+                for ((yRange, yRangeStr) in yearRanges) {
+                    for ((iso, isoStr) in yearIsIsoWeekBased) {
+                        for ((sign, sStr) in signIsMandatory) {
+                            assertEquals(
+                                listOf(
+                                    BorrowedFormatItem.Component(
+                                        Component.Year(
+                                            Year.default()
+                                                .withPadding(pad)
+                                                .withRepr(yRepr)
+                                                .withRange(yRange)
+                                                .withIsoWeekBased(iso)
+                                                .withSignIsMandatory(sign),
+                                        ),
+                                    ),
+                                ),
+                                parse("[year $str $yReprStr $yRangeStr $isoStr $sStr]").getOrThrow(),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        for ((cs, csStr) in caseSensitives) {
+            for ((upper, uStr) in periodIsUppercase) {
+                assertEquals(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Period(Period.default().withIsUppercase(upper).withCaseSensitive(cs)),
+                        ),
+                    ),
+                    parse("[period $uStr $csStr]").getOrThrow(),
+                )
+            }
+            for ((oneIdx, oStr) in weekdayIsOneIndexed) {
+                for ((wdRepr, wdStr) in weekdayReprs) {
+                    assertEquals(
+                        listOf(
+                            BorrowedFormatItem.Component(
+                                Component.Weekday(
+                                    Weekday.default()
+                                        .withRepr(wdRepr)
+                                        .withOneIndexed(oneIdx)
+                                        .withCaseSensitive(cs),
+                                ),
+                            ),
+                        ),
+                        parse("[weekday $csStr $oStr $wdStr]").getOrThrow(),
+                    )
+                }
+            }
         }
 
         val trailingInputs =
@@ -201,7 +360,7 @@ class ParseFormatDescriptionTest {
                 UnixTimestampPrecision.Nanosecond to "precision:nanosecond",
             )
         for ((prec, pStr) in precisions) {
-            for ((sign, sStr) in listOf(false to "sign:automatic", true to "sign:mandatory")) {
+            for ((sign, sStr) in signIsMandatory) {
                 assertEquals(
                     listOf(
                         BorrowedFormatItem.Component(
@@ -214,13 +373,169 @@ class ParseFormatDescriptionTest {
                 )
             }
         }
+    }
 
-        for ((range, rStr) in listOf(YearRange.Standard to "range:standard", YearRange.Extended to "range:extended")) {
-            assertEquals(
-                listOf(BorrowedFormatItem.Component(Component.Year(Year.default().withRange(range)))),
-                parse("[year $rStr]").getOrThrow(),
-            )
-        }
+    @Test
+    fun optional() {
+        assertEquals(
+            OwnedFormatItem.Optional(
+                OwnedFormatItem.Compound(
+                    listOf(
+                        OwnedFormatItem.Literal(":".encodeToByteArray()),
+                        OwnedFormatItem.Component(Component.Year(Year.default())),
+                    ),
+                ),
+            ),
+            parseOwned(2, "[optional [:[year]]]").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Optional(
+                OwnedFormatItem.Component(Component.Year(Year.default())),
+            ),
+            parseOwned(2, "[optional [[year]]]").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Optional(
+                OwnedFormatItem.Literal("[".encodeToByteArray()),
+            ),
+            parseOwned(2, """[optional [\[]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Optional(
+                OwnedFormatItem.Compound(
+                    listOf(
+                        OwnedFormatItem.Literal(" ".encodeToByteArray()),
+                        OwnedFormatItem.Literal("[".encodeToByteArray()),
+                        OwnedFormatItem.Literal(" ".encodeToByteArray()),
+                    ),
+                ),
+            ),
+            parseOwned(2, """[optional [ \[ ]]""").getOrThrow(),
+        )
+    }
+
+    @Test
+    fun first() {
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(OwnedFormatItem.Literal("a".encodeToByteArray())),
+            ),
+            parseOwned(2, "[first [a]]").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(
+                    OwnedFormatItem.Literal("a".encodeToByteArray()),
+                    OwnedFormatItem.Literal("b".encodeToByteArray()),
+                ),
+            ),
+            parseOwned(2, "[first [a] [b]]").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(
+                    OwnedFormatItem.Literal("a".encodeToByteArray()),
+                    OwnedFormatItem.Literal("b".encodeToByteArray()),
+                ),
+            ),
+            parseOwned(2, "[first [a][b]]").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(
+                    OwnedFormatItem.Literal("a".encodeToByteArray()),
+                    OwnedFormatItem.Literal("[".encodeToByteArray()),
+                ),
+            ),
+            parseOwned(2, """[first [a][\[]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(
+                    OwnedFormatItem.Literal("a".encodeToByteArray()),
+                    OwnedFormatItem.Compound(
+                        listOf(
+                            OwnedFormatItem.Literal("[".encodeToByteArray()),
+                            OwnedFormatItem.Literal("[".encodeToByteArray()),
+                        ),
+                    ),
+                ),
+            ),
+            parseOwned(2, """[first [a][\[\[]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.First(
+                listOf(
+                    OwnedFormatItem.Component(
+                        Component.Period(
+                            Period.default().withIsUppercase(true).withCaseSensitive(true),
+                        ),
+                    ),
+                    OwnedFormatItem.Component(
+                        Component.Period(
+                            Period.default().withIsUppercase(false).withCaseSensitive(true),
+                        ),
+                    ),
+                ),
+            ),
+            parseOwned(2, "[first [[period case:upper]] [[period case:lower]] ]").getOrThrow(),
+        )
+    }
+
+    @Test
+    fun backslashEscape() {
+        assertEquals(
+            OwnedFormatItem.Optional(OwnedFormatItem.Literal("]".encodeToByteArray())),
+            parseOwned(2, """[optional [\]]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Optional(OwnedFormatItem.Literal("[".encodeToByteArray())),
+            parseOwned(2, """[optional [\[]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Optional(OwnedFormatItem.Literal("\\".encodeToByteArray())),
+            parseOwned(2, """[optional [\\]]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Literal("\\".encodeToByteArray()),
+            parseOwned(2, """\\""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Literal("[".encodeToByteArray()),
+            parseOwned(2, """\[""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Literal("]".encodeToByteArray()),
+            parseOwned(2, """\]""").getOrThrow(),
+        )
+        assertEquals(
+            OwnedFormatItem.Compound(
+                listOf(
+                    OwnedFormatItem.Literal("foo".encodeToByteArray()),
+                    OwnedFormatItem.Literal("\\".encodeToByteArray()),
+                ),
+            ),
+            parseOwned(2, """foo\\""").getOrThrow(),
+        )
+        assertEquals(
+            listOf(BorrowedFormatItem.Literal("\\".encodeToByteArray())),
+            parseBorrowed(2, """\\""").getOrThrow(),
+        )
+        assertEquals(
+            listOf(BorrowedFormatItem.Literal("[".encodeToByteArray())),
+            parseBorrowed(2, """\[""").getOrThrow(),
+        )
+        assertEquals(
+            listOf(BorrowedFormatItem.Literal("]".encodeToByteArray())),
+            parseBorrowed(2, """\]""").getOrThrow(),
+        )
+        assertEquals(
+            listOf(
+                BorrowedFormatItem.Literal("foo".encodeToByteArray()),
+                BorrowedFormatItem.Literal("\\".encodeToByteArray()),
+            ),
+            parseBorrowed(2, """foo\\""").getOrThrow(),
+        )
     }
 
     @Test

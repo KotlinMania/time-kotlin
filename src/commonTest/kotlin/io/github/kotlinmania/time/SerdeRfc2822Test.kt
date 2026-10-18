@@ -85,7 +85,7 @@ class SerdeRfc2822Test {
             )
         assertTokens(
             value.compact(),
-            deserializer.compact(),
+            deserializer.compactDe(),
             listOf(
                 Token.Struct("Test", 2),
                 Token.Str("dt"),

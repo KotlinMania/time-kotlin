@@ -12,7 +12,12 @@ import io.github.kotlinmania.time.formatdescription.wellknown.OffsetPrecision
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc2822
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc3339
 import io.github.kotlinmania.time.formatdescription.wellknown.TimePrecision
+import io.github.kotlinmania.time.macros.date
+import io.github.kotlinmania.time.macros.datetime
 import io.github.kotlinmania.time.macros.formatDescription
+import io.github.kotlinmania.time.macros.offset
+import io.github.kotlinmania.time.macros.time
+import io.github.kotlinmania.time.macros.utcDatetime
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

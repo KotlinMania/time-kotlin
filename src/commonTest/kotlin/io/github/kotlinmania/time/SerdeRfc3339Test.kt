@@ -10,6 +10,7 @@ import io.github.kotlinmania.serdecore.de.StringDeserialize
 import io.github.kotlinmania.serdecore.de.Visitor
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
+import io.github.kotlinmania.serdejson.fromStr
 import io.github.kotlinmania.serdetest.Token
 import io.github.kotlinmania.serdetest.assertDeTokensError
 import io.github.kotlinmania.serdetest.assertSerTokensError
@@ -18,6 +19,7 @@ import io.github.kotlinmania.serdetest.compact
 import io.github.kotlinmania.time.macros.datetime
 import io.github.kotlinmania.time.serde.Rfc3339Serde
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SerdeRfc3339Test {
     private data class WithDtTest(
@@ -85,7 +87,7 @@ class SerdeRfc3339Test {
             )
         assertTokens(
             value1.compact(),
-            deserializer.compact(),
+            deserializer.compactDe(),
             listOf(
                 Token.Struct("Test", 2),
                 Token.Str("dt"),
@@ -103,7 +105,7 @@ class SerdeRfc3339Test {
             )
         assertTokens(
             value2.compact(),
-            deserializer.compact(),
+            deserializer.compactDe(),
             listOf(
                 Token.Struct("Test", 2),
                 Token.Str("dt"),
@@ -135,6 +137,43 @@ class SerdeRfc3339Test {
                 Token.Str("dt"),
             ),
             "The offset_second component cannot be formatted into the requested format.",
+        )
+    }
+
+    @Test
+    fun parseJson() {
+        val parsed =
+            fromStr("""{"dt": "2000-01-01T00:00:00Z", "option_dt": null}""", deserializer).getOrThrow()
+        assertEquals(
+            WithDtTest(
+                datetime("2000-01-01 00:00:00 UTC"),
+                null,
+            ),
+            parsed,
+        )
+    }
+
+    @Test
+    fun issue479() {
+        val aJson = """{"dt": "2022-05-01T10:20:42.123Z"}"""
+        val bJson = """{"dt": "2022-05-01T10:20:42.123Z", "option_dt": "2022-05-01T10:20:42.123Z"}"""
+
+        val a = fromStr(aJson, deserializer).getOrThrow()
+        val b = fromStr(bJson, deserializer).getOrThrow()
+
+        assertEquals(
+            WithDtTest(
+                datetime("2022-05-01 10:20:42.123 UTC"),
+                null,
+            ),
+            a,
+        )
+        assertEquals(
+            WithDtTest(
+                datetime("2022-05-01 10:20:42.123 UTC"),
+                datetime("2022-05-01 10:20:42.123 UTC"),
+            ),
+            b,
         )
     }
 }

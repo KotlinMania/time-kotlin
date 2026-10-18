@@ -147,13 +147,13 @@ internal data class StringSerialize(
 /**
  * Custom format serializer/deserializer corresponding to `time::serde::format_description!`.
  */
-class FormatDescriptionSerde<T>(
-    private val typeName: String,
-    private val formatDescriptionString: String?,
-    private val formatter: (T) -> Result<String>,
-    private val parser: (String) -> Result<T>,
+class FormatDescriptionSerde<T> internal constructor(
+    internal val typeName: String,
+    internal val formatDescriptionString: String?,
+    internal val formatter: (T) -> Result<String>,
+    internal val parser: (String) -> Result<T>,
 ) : Deserialize<T> {
-    private val valueVisitor =
+    internal val valueVisitor =
         object : Visitor<T> {
             override fun expecting(): String =
                 if (formatDescriptionString != null) {
@@ -180,20 +180,22 @@ class FormatDescriptionSerde<T>(
     override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<T> =
         deserializer.deserializeStr(valueVisitor)
 
-    val option: OptionSerde = OptionSerde()
+    val option: OptionSerde<T> = OptionSerde(this)
 
-    inner class OptionSerde : Deserialize<T?> {
+    class OptionSerde<T> internal constructor(
+        private val parent: FormatDescriptionSerde<T>,
+    ) : Deserialize<T?> {
         private val optionVisitor =
             object : Visitor<T?> {
                 override fun expecting(): String =
-                    if (formatDescriptionString != null) {
-                        "an `Option<$typeName>` in the format \"$formatDescriptionString\""
+                    if (parent.formatDescriptionString != null) {
+                        "an `Option<${parent.typeName}>` in the format \"${parent.formatDescriptionString}\""
                     } else {
-                        "an `Option<$typeName>`"
+                        "an `Option<${parent.typeName}>`"
                     }
 
                 override fun <D : Deserializer> visitSome(deserializer: D): SerdeResult<T?> =
-                    deserializer.deserializeStr(valueVisitor).map { it }
+                    deserializer.deserializeStr(parent.valueVisitor).map { it }
 
                 override fun visitNone(): SerdeResult<T?> = SerdeResult.success(null)
 
@@ -203,7 +205,7 @@ class FormatDescriptionSerde<T>(
         fun <Ok> serialize(option: T?, serializer: Serializer<Ok>): SerdeResult<Ok> {
             if (option == null) return serializer.serializeNone()
             val str =
-                formatter(option).getOrElse {
+                parent.formatter(option).getOrElse {
                     return SerdeResult.failure(SerdeError.custom(it.message ?: it.toString()))
                 }
             return serializer.serializeSome(StringSerialize(str))

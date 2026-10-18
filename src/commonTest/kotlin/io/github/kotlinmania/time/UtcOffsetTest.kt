@@ -1,6 +1,7 @@
 // port-lint: tests tests/integration/utc_offset.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.time.macros.offset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

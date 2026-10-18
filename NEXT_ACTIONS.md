@@ -5,9 +5,9 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 73/90 (81.1%)
-- **Function parity:** 808/1026 matched (target 1446) — 78.8%
-- **Class/type parity:** 77/155 matched (target 220) — 49.7%
-- **Combined symbol parity:** 885/1181 matched (target 1666) — 74.9%
+- **Function parity:** 808/1026 matched (target 1444) — 78.8%
+- **Class/type parity:** 77/155 matched (target 219) — 49.7%
+- **Combined symbol parity:** 885/1181 matched (target 1663) — 74.9%
 - **Average inline-code cosine:** 0.18 (function body across 73 matched files)
 - **Average documentation cosine:** 0.65 (doc text across 73 matched files)
 - **Cheat-zeroed Files:** 5
@@ -357,18 +357,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 30. error.conversion_range
-
-- **Target:** `error.ConversionRange`
-- **Similarity:** 0.16
-- **Dependents:** 1
-- **Priority Score:** 1010508.4
-- **Functions:** 3/3 matched (target 6)
-- **Missing functions:** _none_
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
-### 31. error.parse_from_description
+### 30. error.parse_from_description
 
 - **Target:** `error.ParseFromDescription`
 - **Similarity:** 0.15
@@ -379,7 +368,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 4)
 - **Missing types:** `Error`
 
-### 32. error.indeterminate_offset
+### 31. error.indeterminate_offset
 
 - **Target:** `error.IndeterminateOffset`
 - **Similarity:** 0.16
@@ -390,7 +379,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 33. error.invalid_variant
+### 32. error.invalid_variant
 
 - **Target:** `error.InvalidVariant`
 - **Similarity:** 0.16
@@ -401,9 +390,20 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
+### 33. error.conversion_range
+
+- **Target:** `error.ConversionRange`
+- **Similarity:** 0.16
+- **Dependents:** 1
+- **Priority Score:** 1010508.4
+- **Functions:** 3/3 matched (target 6)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
 ### 34. format_description.modifier
 
-- **Target:** `formatdescription.Modifier`
+- **Target:** `modifier.Modifier`
 - **Similarity:** 0.23
 - **Dependents:** 1
 - **Priority Score:** 1005707.8
@@ -412,9 +412,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 26/26 matched
 - **Missing types:** _none_
 
-### 35. serde.rfc2822
+### 35. serde.rfc3339
 
-- **Target:** `serde.Rfc2822`
+- **Target:** `serde.Rfc3339`
 - **Similarity:** 0.21
 - **Dependents:** 1
 - **Priority Score:** 1000407.9
@@ -423,9 +423,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 2)
 - **Missing types:** _none_
 
-### 36. serde.rfc3339
+### 36. serde.rfc2822
 
-- **Target:** `serde.Rfc3339`
+- **Target:** `serde.Rfc2822`
 - **Similarity:** 0.21
 - **Dependents:** 1
 - **Priority Score:** 1000407.9
@@ -628,9 +628,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.40
 - **Dependents:** 0
 - **Priority Score:** 806.0
-- **Functions:** 6/6 matched (target 18)
+- **Functions:** 6/6 matched (target 16)
 - **Missing functions:** _none_
-- **Types:** 2/2 matched (target 4)
+- **Types:** 2/2 matched (target 3)
 - **Missing types:** _none_
 
 ### 55. local_offset_at.windows
@@ -820,18 +820,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 72. macros
-
-- **Target:** `time.Macros [ZERO]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 10.0
-- **Functions:** 0/0 matched (target 21)
-- **Missing functions:** _none_
-- **Types:** 0/0 matched
-- **Missing types:** _none_
-
-### 73. internal_macros
+### 72. internal_macros
 
 - **Target:** `time.InternalMacros [ZERO]`
 - **Similarity:** 0.00
@@ -840,6 +829,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 0/0 matched (target 7)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
+- **Missing types:** _none_
+
+### 73. macros
+
+- **Target:** `macros.Macros [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 10.0
+- **Functions:** 0/0 matched (target 21)
+- **Missing functions:** _none_
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
 ## Success Criteria

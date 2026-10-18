@@ -10,6 +10,8 @@ import io.github.kotlinmania.serdecore.de.StringDeserialize
 import io.github.kotlinmania.serdecore.de.Visitor
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
+import io.github.kotlinmania.serdejson.fromStr
+import io.github.kotlinmania.serdejson.toStr
 import io.github.kotlinmania.serdetest.Token
 import io.github.kotlinmania.serdetest.assertDeTokens
 import io.github.kotlinmania.serdetest.assertDeTokensError
@@ -19,6 +21,7 @@ import io.github.kotlinmania.serdetest.compact
 import io.github.kotlinmania.time.macros.datetime
 import io.github.kotlinmania.time.serde.Iso8601Serde
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SerdeIso8601Test {
     private data class WithDtTest(
@@ -86,7 +89,7 @@ class SerdeIso8601Test {
             )
         assertTokens(
             value1.compact(),
-            deserializer.compact(),
+            deserializer.compactDe(),
             listOf(
                 Token.Struct("Test", 2),
                 Token.Str("dt"),
@@ -104,7 +107,7 @@ class SerdeIso8601Test {
             )
         assertTokens(
             value2.compact(),
-            deserializer.compact(),
+            deserializer.compactDe(),
             listOf(
                 Token.Struct("Test", 2),
                 Token.Str("dt"),
@@ -155,5 +158,20 @@ class SerdeIso8601Test {
                 Token.StructEnd,
             ),
         )
+    }
+
+    @Test
+    fun issue724Truncation() {
+        val value = datetime("2025-01-10 23:01:16.000081999 UTC")
+        val demoSer =
+            object : Serialize {
+                override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+                    Iso8601Serde.serialize(value, serializer)
+            }
+        val serialized = toStr(demoSer).getOrThrow()
+        assertEquals("\"+002025-01-10T23:01:16.000081999Z\"", serialized)
+
+        val deserialized = fromStr(serialized, Iso8601Serde).getOrThrow()
+        assertEquals(value, deserialized)
     }
 }

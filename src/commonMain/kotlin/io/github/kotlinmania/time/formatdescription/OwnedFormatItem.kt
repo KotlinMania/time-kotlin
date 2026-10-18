@@ -41,8 +41,6 @@ sealed class OwnedFormatItem : Formattable, Parsable {
     class Compound(
         val items: List<OwnedFormatItem>,
     ) : OwnedFormatItem() {
-        constructor(items: Array<OwnedFormatItem>) : this(items.toList())
-
         override fun equals(other: Any?): Boolean =
             other is Compound && items == other.items
 
@@ -71,8 +69,6 @@ sealed class OwnedFormatItem : Formattable, Parsable {
     class First(
         val items: List<OwnedFormatItem>,
     ) : OwnedFormatItem() {
-        constructor(items: Array<OwnedFormatItem>) : this(items.toList())
-
         override fun equals(other: Any?): Boolean =
             other is First && items == other.items
 

@@ -22,6 +22,9 @@ import io.github.kotlinmania.time.formatdescription.modifier.Weekday
 import io.github.kotlinmania.time.formatdescription.modifier.WeekdayRepr
 import io.github.kotlinmania.time.formatdescription.modifier.Year
 import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
+import io.github.kotlinmania.time.macros.date
+import io.github.kotlinmania.time.macros.formatDescription
+import io.github.kotlinmania.time.macros.time
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
