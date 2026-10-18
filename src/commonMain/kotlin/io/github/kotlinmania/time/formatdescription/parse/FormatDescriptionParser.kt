@@ -64,6 +64,17 @@ internal fun parseStaticBorrowed(
     return Result.success(result)
 }
 
+/** Attach [Location] information to each byte in the iterator. */
+internal fun attachLocation(iter: Iterator<Byte>): Sequence<Pair<Byte, Location>> =
+    sequence {
+        var bytePos = 0
+        for (byte in iter) {
+            val location = Location(byte = bytePos)
+            bytePos += 1
+            yield(byte to location)
+        }
+    }
+
 /** A location within a string. */
 internal data class Location(
     val byte: Int,
@@ -73,6 +84,12 @@ internal data class Location(
     fun toSelf(): Span = Span(start = this, end = this)
 
     fun offset(amount: Int): Location = Location(byte = byte + amount)
+
+    fun error(message: String): ErrorInner =
+        ErrorInner(
+            message = message,
+            span = Span(start = this, end = this),
+        )
 }
 
 /** A start and end point within a string. */
@@ -89,6 +106,12 @@ internal data class Span(
 
     fun shrinkToAfter(pos: Int): Span =
         Span(start = Location(byte = start.byte + pos + 1), end = end)
+
+    fun error(message: String): ErrorInner =
+        ErrorInner(
+            message = message,
+            span = this,
+        )
 }
 
 /** A value with an associated [Span]. */
@@ -98,3 +121,26 @@ internal data class Spanned<out T>(
 )
 
 internal fun <T> T.spanned(span: Span): Spanned<T> = Spanned(this, span)
+
+/** The internal error type. */
+internal data class ErrorInner(
+    val message: String,
+    val span: Span,
+)
+
+/** A complete error description. */
+internal data class ParseError(
+    val inner: Unused<ErrorInner>,
+    val publicError: InvalidFormatDescription,
+) {
+    fun toInvalidFormatDescription(): InvalidFormatDescription = publicError
+}
+
+/** A value that may be used in the future, but currently is not. */
+internal data class Unused<out T>(
+    val value: T,
+)
+
+/** Indicate that a value is currently unused. */
+internal fun <T> unused(value: T): Unused<T> = Unused(value)
+

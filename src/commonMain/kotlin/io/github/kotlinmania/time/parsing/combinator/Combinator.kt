@@ -97,13 +97,13 @@ internal fun nToMDigitString(
     var input = initialInput
     val sb = StringBuilder(m)
 
-    for (i in 0 until n) {
+    repeat(n) {
         val parsed = anyDigit(input) ?: return null
         input = parsed.remaining
         sb.append(parsed.value.toInt().toChar())
     }
 
-    for (i in n until m) {
+    for (_ in n until m) {
         val parsed = anyDigit(input) ?: break
         input = parsed.remaining
         sb.append(parsed.value.toInt().toChar())
@@ -227,7 +227,7 @@ internal fun <T : Any> nToMDigitsPadded(
             Padding.Space -> {
                 var value = integer.zero
                 var padWidth = 0
-                for (i in 0 until (n - 1)) {
+                for (_ in 0 until (n - 1)) {
                     val parsed = asciiChar(' '.code.toByte(), input)
                     if (parsed != null) {
                         padWidth += 1

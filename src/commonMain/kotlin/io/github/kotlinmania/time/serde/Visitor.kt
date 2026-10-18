@@ -82,9 +82,7 @@ internal object DurationVisitor : Visitor<Duration> {
             return SerdeResult.failure(
                 SerdeError.invalidValue(
                     Unexpected.Str(v),
-                    object : Expected {
-                        override fun expecting(): String = "a decimal point"
-                    },
+                    Expected { "a decimal point" },
                 ),
             )
         }
@@ -95,9 +93,7 @@ internal object DurationVisitor : Visitor<Duration> {
                 ?: return SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Str(secondsStr),
-                        object : Expected {
-                            override fun expecting(): String = "seconds"
-                        },
+                        Expected { "seconds" },
                     ),
                 )
         var nanoseconds =
@@ -105,9 +101,7 @@ internal object DurationVisitor : Visitor<Duration> {
                 ?: return SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Str(nanosecondsStr),
-                        object : Expected {
-                            override fun expecting(): String = "nanoseconds"
-                        },
+                        Expected { "nanoseconds" },
                     ),
                 )
         if (seconds < 0L || (seconds == 0L && v.startsWith("-"))) {
@@ -382,9 +376,7 @@ internal object WeekdayVisitor : Visitor<Weekday> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Unsigned(v),
-                        object : Expected {
-                            override fun expecting(): String = "a value in the range 1..=7"
-                        },
+                        Expected { "a value in the range 1..=7" },
                     ),
                 )
         }
@@ -396,9 +388,7 @@ internal object WeekdayVisitor : Visitor<Weekday> {
             SerdeResult.failure(
                 SerdeError.invalidValue(
                     Unexpected.Signed(v),
-                    object : Expected {
-                        override fun expecting(): String = "a value in the range 1..=7"
-                    },
+                    Expected { "a value in the range 1..=7" },
                 ),
             )
         }
@@ -448,9 +438,7 @@ internal object MonthVisitor : Visitor<Month> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Unsigned(v),
-                        object : Expected {
-                            override fun expecting(): String = "a value in the range 1..=12"
-                        },
+                        Expected { "a value in the range 1..=12" },
                     ),
                 )
         }
@@ -462,9 +450,7 @@ internal object MonthVisitor : Visitor<Month> {
             SerdeResult.failure(
                 SerdeError.invalidValue(
                     Unexpected.Signed(v),
-                    object : Expected {
-                        override fun expecting(): String = "a value in the range 1..=12"
-                    },
+                    Expected { "a value in the range 1..=12" },
                 ),
             )
         }
