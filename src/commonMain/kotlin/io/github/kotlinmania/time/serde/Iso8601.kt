@@ -11,7 +11,6 @@ import io.github.kotlinmania.time.formatdescription.wellknown.Config
 import io.github.kotlinmania.time.formatdescription.wellknown.Iso8601
 import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.EncodedConfig
 
-
 /** The configuration of ISO 8601 used for serde implementations. */
 internal val SERDE_CONFIG: EncodedConfig =
     Config.DEFAULT.setYearIsSixDigits(true).encode()

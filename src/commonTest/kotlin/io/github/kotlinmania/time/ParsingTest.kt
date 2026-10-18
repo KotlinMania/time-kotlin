@@ -9,7 +9,6 @@ import io.github.kotlinmania.time.formatdescription.Component
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
 import io.github.kotlinmania.time.formatdescription.modifier.End
 import io.github.kotlinmania.time.formatdescription.modifier.Ignore
-import io.github.kotlinmania.time.formatdescription.modifier.Month as MonthMod
 import io.github.kotlinmania.time.formatdescription.modifier.MonthRepr
 import io.github.kotlinmania.time.formatdescription.modifier.Ordinal
 import io.github.kotlinmania.time.formatdescription.modifier.Padding
@@ -20,14 +19,12 @@ import io.github.kotlinmania.time.formatdescription.modifier.UnixTimestamp
 import io.github.kotlinmania.time.formatdescription.modifier.UnixTimestampPrecision
 import io.github.kotlinmania.time.formatdescription.modifier.WeekNumber
 import io.github.kotlinmania.time.formatdescription.modifier.WeekNumberRepr
-import io.github.kotlinmania.time.formatdescription.modifier.Weekday as WeekdayMod
 import io.github.kotlinmania.time.formatdescription.modifier.WeekdayRepr
 import io.github.kotlinmania.time.formatdescription.modifier.Year
 import io.github.kotlinmania.time.formatdescription.modifier.YearRange
 import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
 import io.github.kotlinmania.time.formatdescription.parse.parse
 import io.github.kotlinmania.time.formatdescription.parse.parseOwned
-
 import io.github.kotlinmania.time.formatdescription.wellknown.Iso8601
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc2822
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc3339
@@ -43,6 +40,8 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import io.github.kotlinmania.time.formatdescription.modifier.Month as MonthMod
+import io.github.kotlinmania.time.formatdescription.modifier.Weekday as WeekdayMod
 
 class ParsingTest {
     private fun assertInvalidLiteral(res: Result<*>) {
@@ -119,10 +118,11 @@ class ParsingTest {
         assertEquals(datetime(2021, 1, 2, 3, 4, 5, 0, 0), OffsetDateTime.parse("Sat,(\\\n)02 Jan 2021 03:04:05 GMT", Rfc2822).unwrap())
         assertEquals(
             time(3, 4, 5),
-            Time.parse(
-                "  \t Sat,\r\n (\tfoo012FOO!)(\u0001\u000b\u000e\u007f)(\\\u0000)(\\\u0001\\\t\\(\\)\\\\\\\u007f)(\\\n\\\u000b)02 \r\n  \r\n Jan 2021 03:04:05 GMT",
-                Rfc2822
-            ).unwrap()
+            Time
+                .parse(
+                    "  \t Sat,\r\n (\tfoo012FOO!)(\u0001\u000b\u000e\u007f)(\\\u0000)(\\\u0001\\\t\\(\\)\\\\\\\u007f)(\\\n\\\u000b)02 \r\n  \r\n Jan 2021 03:04:05 GMT",
+                    Rfc2822,
+                ).unwrap(),
         )
     }
 
@@ -245,11 +245,31 @@ class ParsingTest {
     fun iso8601() {
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 4, 5, 0, 0)), OffsetDateTime.parse("2021-01-02T03:04:05Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 4, 5, 0, 0)), OffsetDateTime.parse("2021-002T03:04:05Z", Iso8601.DEFAULT))
-        assertEquals(TimeResult.Ok(Date.fromIsoWeekDate(2021, 1u, Weekday.Tuesday).unwrap().withHms(3u, 4u, 5u).unwrap().assumeUtc()), OffsetDateTime.parse("2021-W01-2T03:04:05Z", Iso8601.DEFAULT))
+        assertEquals(
+            TimeResult.Ok(
+                Date
+                    .fromIsoWeekDate(2021, 1u, Weekday.Tuesday)
+                    .unwrap()
+                    .withHms(3u, 4u, 5u)
+                    .unwrap()
+                    .assumeUtc(),
+            ),
+            OffsetDateTime.parse("2021-W01-2T03:04:05Z", Iso8601.DEFAULT),
+        )
         assertEquals(TimeResult.Ok(datetime(-2021, 1, 2, 3, 4, 5, 0, 1)), OffsetDateTime.parse("-002021-01-02T03:04:05+01:00", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 6, 0, 0, 0)), OffsetDateTime.parse("20210102T03.1Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 4, 6, 0, 0)), OffsetDateTime.parse("2021002T0304.1Z", Iso8601.DEFAULT))
-        assertEquals(TimeResult.Ok(Date.fromIsoWeekDate(2021, 1u, Weekday.Tuesday).unwrap().withHmsNano(3u, 4u, 5u, 100_000_000u).unwrap().assumeOffset(offset(-1))), OffsetDateTime.parse("2021W012T030405.1-0100", Iso8601.DEFAULT))
+        assertEquals(
+            TimeResult.Ok(
+                Date
+                    .fromIsoWeekDate(2021, 1u, Weekday.Tuesday)
+                    .unwrap()
+                    .withHmsNano(3u, 4u, 5u, 100_000_000u)
+                    .unwrap()
+                    .assumeOffset(offset(-1)),
+            ),
+            OffsetDateTime.parse("2021W012T030405.1-0100", Iso8601.DEFAULT),
+        )
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 0, 0, 0, 0)), OffsetDateTime.parse("20210102T03Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(datetime(2021, 1, 2, 3, 4, 0, 0, 0)), OffsetDateTime.parse("20210102T0304Z", Iso8601.DEFAULT))
 
@@ -259,7 +279,18 @@ class ParsingTest {
         assertEquals(TimeResult.Ok(datetime(-2021, 1, 2, 3, 4, 5, 0, 1).toUtc()), UtcDateTime.parse("-002021-01-02T03:04:05+01:00", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(utcDatetime(2021, 1, 2, 3, 6, 0)), UtcDateTime.parse("20210102T03.1Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(utcDatetime(2021, 1, 2, 3, 4, 6)), UtcDateTime.parse("2021002T0304.1Z", Iso8601.DEFAULT))
-        assertEquals(TimeResult.Ok(Date.fromIsoWeekDate(2021, 1u, Weekday.Tuesday).unwrap().withHmsNano(3u, 4u, 5u, 100_000_000u).unwrap().assumeOffset(offset(-1)).toUtc()), UtcDateTime.parse("2021W012T030405.1-0100", Iso8601.DEFAULT))
+        assertEquals(
+            TimeResult.Ok(
+                Date
+                    .fromIsoWeekDate(2021, 1u, Weekday.Tuesday)
+                    .unwrap()
+                    .withHmsNano(3u, 4u, 5u, 100_000_000u)
+                    .unwrap()
+                    .assumeOffset(offset(-1))
+                    .toUtc(),
+            ),
+            UtcDateTime.parse("2021W012T030405.1-0100", Iso8601.DEFAULT),
+        )
         assertEquals(TimeResult.Ok(utcDatetime(2021, 1, 2, 3, 0, 0)), UtcDateTime.parse("20210102T03Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(utcDatetime(2021, 1, 2, 3, 4, 0)), UtcDateTime.parse("20210102T0304Z", Iso8601.DEFAULT))
         assertEquals(TimeResult.Ok(offset(7)), UtcOffset.parse("+07", Iso8601.DEFAULT))
@@ -296,17 +327,18 @@ class ParsingTest {
 
     @Test
     fun parseTime() {
-        val formatInputOutput = listOf(
-            Triple(parse("[hour repr:12] [period]").unwrap(), "01 PM", time(13, 0)),
-            Triple(parse("[hour]").unwrap(), "12", time(12, 0)),
-            Triple(parse("[hour]:[minute]:[second]").unwrap(), "13:02:03", time(13, 2, 3)),
-            Triple(parse("[hour repr:12]:[minute] [period]").unwrap(), "01:02 PM", time(13, 2)),
-            Triple(parse("[hour]:[minute]").unwrap(), "01:02", time(1, 2)),
-            Triple(parse("[hour repr:12]:[minute] [period]").unwrap(), "01:02 AM", time(1, 2)),
-            Triple(parse("[hour]:[minute]").unwrap(), "01:02", time(1, 2)),
-            Triple(parse("[hour repr:12] [period]").unwrap(), "12 AM", time(0, 0)),
-            Triple(parse("[hour repr:12] [period]").unwrap(), "12 PM", time(12, 0)),
-        )
+        val formatInputOutput =
+            listOf(
+                Triple(parse("[hour repr:12] [period]").unwrap(), "01 PM", time(13, 0)),
+                Triple(parse("[hour]").unwrap(), "12", time(12, 0)),
+                Triple(parse("[hour]:[minute]:[second]").unwrap(), "13:02:03", time(13, 2, 3)),
+                Triple(parse("[hour repr:12]:[minute] [period]").unwrap(), "01:02 PM", time(13, 2)),
+                Triple(parse("[hour]:[minute]").unwrap(), "01:02", time(1, 2)),
+                Triple(parse("[hour repr:12]:[minute] [period]").unwrap(), "01:02 AM", time(1, 2)),
+                Triple(parse("[hour]:[minute]").unwrap(), "01:02", time(1, 2)),
+                Triple(parse("[hour repr:12] [period]").unwrap(), "12 AM", time(0, 0)),
+                Triple(parse("[hour repr:12] [period]").unwrap(), "12 PM", time(12, 0)),
+            )
 
         for ((fd, input, output) in formatInputOutput) {
             assertEquals(output, Time.parse(input, fd).unwrap())
@@ -338,21 +370,22 @@ class ParsingTest {
 
     @Test
     fun parseDate() {
-        val formatInputOutput = listOf(
-            Triple(parse("[year]-[month]-[day]").unwrap(), "2021-01-02", date(2021, 1, 2)),
-            Triple(parse("[year repr:century range:standard][year repr:last_two]-[month]-[day]").unwrap(), "2021-01-02", date(2021, 1, 2)),
-            Triple(parse("[year]-[ordinal]").unwrap(), "2021-002", date(2021, 2)),
-            Triple(parse("[year base:iso_week]-W[week_number]-[weekday repr:monday]").unwrap(), "2020-W53-6", date(2021, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:monday]-[weekday repr:monday]").unwrap(), "2021-W00-6", date(2021, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2021-W00-6", date(2021, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2023-W01-1", date(2023, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2022-W00-7", date(2022, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2026-W00-5", date(2026, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2025-W00-4", date(2025, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2019-W00-3", date(2019, 1, 2)),
-            Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2018-W01-2", date(2018, 1, 2)),
-            Triple(parse("[year padding:space]-W[week_number repr:sunday padding:none]-[weekday repr:sunday]").unwrap(), " 201-W01-2", date(201, 1, 6)),
-        )
+        val formatInputOutput =
+            listOf(
+                Triple(parse("[year]-[month]-[day]").unwrap(), "2021-01-02", date(2021, 1, 2)),
+                Triple(parse("[year repr:century range:standard][year repr:last_two]-[month]-[day]").unwrap(), "2021-01-02", date(2021, 1, 2)),
+                Triple(parse("[year]-[ordinal]").unwrap(), "2021-002", date(2021, 2)),
+                Triple(parse("[year base:iso_week]-W[week_number]-[weekday repr:monday]").unwrap(), "2020-W53-6", date(2021, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:monday]-[weekday repr:monday]").unwrap(), "2021-W00-6", date(2021, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2021-W00-6", date(2021, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2023-W01-1", date(2023, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2022-W00-7", date(2022, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2026-W00-5", date(2026, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2025-W00-4", date(2025, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2019-W00-3", date(2019, 1, 2)),
+                Triple(parse("[year]-W[week_number repr:sunday]-[weekday repr:sunday]").unwrap(), "2018-W01-2", date(2018, 1, 2)),
+                Triple(parse("[year padding:space]-W[week_number repr:sunday padding:none]-[weekday repr:sunday]").unwrap(), " 201-W01-2", date(201, 1, 6)),
+            )
 
         for ((fd, input, output) in formatInputOutput) {
             assertEquals(output, Date.parse(input, fd).unwrap())
@@ -436,30 +469,206 @@ class ParsingTest {
             return parsed
         }
 
-        assertEquals(2021, parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.Full).withRange(YearRange.Extended).withIsoWeekBased(false).withSignIsMandatory(false)), "2021").year())
+        assertEquals(
+            2021,
+            parseComp(
+                Component.Year(
+                    Year
+                        .default()
+                        .withPadding(Padding.Zero)
+                        .withRepr(YearRepr.Full)
+                        .withRange(YearRange.Extended)
+                        .withIsoWeekBased(false)
+                        .withSignIsMandatory(false),
+                ),
+                "2021",
+            ).year(),
+        )
         run {
-            val p = parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.Century).withRange(YearRange.Extended).withIsoWeekBased(false).withSignIsMandatory(false)), "20")
+            val p =
+                parseComp(
+                    Component.Year(
+                        Year
+                            .default()
+                            .withPadding(Padding.Zero)
+                            .withRepr(YearRepr.Century)
+                            .withRange(YearRange.Extended)
+                            .withIsoWeekBased(false)
+                            .withSignIsMandatory(false),
+                    ),
+                    "20",
+                )
             assertEquals(20, p.yearCentury())
             assertEquals(false, p.yearCenturyIsNegative())
         }
-        assertEquals(21u, parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.LastTwo).withRange(YearRange.Extended).withIsoWeekBased(false).withSignIsMandatory(false)), "21").yearLastTwo())
-        assertEquals(2021, parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.Full).withRange(YearRange.Extended).withIsoWeekBased(true).withSignIsMandatory(false)), "2021").isoYear())
+        assertEquals(
+            21u,
+            parseComp(
+                Component.Year(
+                    Year
+                        .default()
+                        .withPadding(Padding.Zero)
+                        .withRepr(YearRepr.LastTwo)
+                        .withRange(YearRange.Extended)
+                        .withIsoWeekBased(false)
+                        .withSignIsMandatory(false),
+                ),
+                "21",
+            ).yearLastTwo(),
+        )
+        assertEquals(
+            2021,
+            parseComp(
+                Component.Year(
+                    Year
+                        .default()
+                        .withPadding(Padding.Zero)
+                        .withRepr(YearRepr.Full)
+                        .withRange(YearRange.Extended)
+                        .withIsoWeekBased(true)
+                        .withSignIsMandatory(false),
+                ),
+                "2021",
+            ).isoYear(),
+        )
         run {
-            val p = parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.Century).withRange(YearRange.Extended).withIsoWeekBased(true).withSignIsMandatory(false)), "20")
+            val p =
+                parseComp(
+                    Component.Year(
+                        Year
+                            .default()
+                            .withPadding(Padding.Zero)
+                            .withRepr(YearRepr.Century)
+                            .withRange(YearRange.Extended)
+                            .withIsoWeekBased(true)
+                            .withSignIsMandatory(false),
+                    ),
+                    "20",
+                )
             assertEquals(20, p.isoYearCentury())
             assertEquals(false, p.isoYearCenturyIsNegative())
         }
-        assertEquals(21u, parseComp(Component.Year(Year.default().withPadding(Padding.Zero).withRepr(YearRepr.LastTwo).withRange(YearRange.Extended).withIsoWeekBased(true).withSignIsMandatory(false)), "21").isoYearLastTwo())
+        assertEquals(
+            21u,
+            parseComp(
+                Component.Year(
+                    Year
+                        .default()
+                        .withPadding(Padding.Zero)
+                        .withRepr(YearRepr.LastTwo)
+                        .withRange(YearRange.Extended)
+                        .withIsoWeekBased(true)
+                        .withSignIsMandatory(false),
+                ),
+                "21",
+            ).isoYearLastTwo(),
+        )
         assertEquals(Month.January, parseComp(Component.Month(MonthMod.default().withPadding(Padding.Space).withRepr(MonthRepr.Numerical)), " 1").month())
-        assertEquals(Month.January, parseComp(Component.Month(MonthMod.default().withPadding(Padding.None).withRepr(MonthRepr.Short).withCaseSensitive(true)), "Jan").month())
-        assertEquals(Month.January, parseComp(Component.Month(MonthMod.default().withPadding(Padding.None).withRepr(MonthRepr.Short).withCaseSensitive(false)), "jAn").month())
-        assertEquals(Month.January, parseComp(Component.Month(MonthMod.default().withPadding(Padding.None).withRepr(MonthRepr.Long).withCaseSensitive(true)), "January").month())
-        assertEquals(Month.January, parseComp(Component.Month(MonthMod.default().withPadding(Padding.None).withRepr(MonthRepr.Long).withCaseSensitive(false)), "jAnUaRy").month())
+        assertEquals(
+            Month.January,
+            parseComp(
+                Component.Month(
+                    MonthMod
+                        .default()
+                        .withPadding(Padding.None)
+                        .withRepr(MonthRepr.Short)
+                        .withCaseSensitive(true),
+                ),
+                "Jan",
+            ).month(),
+        )
+        assertEquals(
+            Month.January,
+            parseComp(
+                Component.Month(
+                    MonthMod
+                        .default()
+                        .withPadding(Padding.None)
+                        .withRepr(MonthRepr.Short)
+                        .withCaseSensitive(false),
+                ),
+                "jAn",
+            ).month(),
+        )
+        assertEquals(
+            Month.January,
+            parseComp(
+                Component.Month(
+                    MonthMod
+                        .default()
+                        .withPadding(Padding.None)
+                        .withRepr(MonthRepr.Long)
+                        .withCaseSensitive(true),
+                ),
+                "January",
+            ).month(),
+        )
+        assertEquals(
+            Month.January,
+            parseComp(
+                Component.Month(
+                    MonthMod
+                        .default()
+                        .withPadding(Padding.None)
+                        .withRepr(MonthRepr.Long)
+                        .withCaseSensitive(false),
+                ),
+                "jAnUaRy",
+            ).month(),
+        )
         assertEquals(12u, parseComp(Component.Ordinal(Ordinal.default().withPadding(Padding.Zero)), "012").ordinal())
-        assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Short).withOneIndexed(false).withCaseSensitive(true)), "Sun").weekday())
-        assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Short).withOneIndexed(false).withCaseSensitive(false)), "sUn").weekday())
-        assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Long).withOneIndexed(false).withCaseSensitive(true)), "Sunday").weekday())
-        assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Long).withOneIndexed(false).withCaseSensitive(false)), "sUnDaY").weekday())
+        assertEquals(
+            Weekday.Sunday,
+            parseComp(
+                Component.Weekday(
+                    WeekdayMod
+                        .default()
+                        .withRepr(WeekdayRepr.Short)
+                        .withOneIndexed(false)
+                        .withCaseSensitive(true),
+                ),
+                "Sun",
+            ).weekday(),
+        )
+        assertEquals(
+            Weekday.Sunday,
+            parseComp(
+                Component.Weekday(
+                    WeekdayMod
+                        .default()
+                        .withRepr(WeekdayRepr.Short)
+                        .withOneIndexed(false)
+                        .withCaseSensitive(false),
+                ),
+                "sUn",
+            ).weekday(),
+        )
+        assertEquals(
+            Weekday.Sunday,
+            parseComp(
+                Component.Weekday(
+                    WeekdayMod
+                        .default()
+                        .withRepr(WeekdayRepr.Long)
+                        .withOneIndexed(false)
+                        .withCaseSensitive(true),
+                ),
+                "Sunday",
+            ).weekday(),
+        )
+        assertEquals(
+            Weekday.Sunday,
+            parseComp(
+                Component.Weekday(
+                    WeekdayMod
+                        .default()
+                        .withRepr(WeekdayRepr.Long)
+                        .withOneIndexed(false)
+                        .withCaseSensitive(false),
+                ),
+                "sUnDaY",
+            ).weekday(),
+        )
         assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Sunday).withOneIndexed(false)), "0").weekday())
         assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Sunday).withOneIndexed(true)), "1").weekday())
         assertEquals(Weekday.Sunday, parseComp(Component.Weekday(WeekdayMod.default().withRepr(WeekdayRepr.Monday).withOneIndexed(false)), "6").weekday())
@@ -501,10 +710,12 @@ class ParsingTest {
     fun parseOptional() {
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -512,10 +723,12 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -523,10 +736,12 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01".encodeToByteArray(),
-                BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01".encodeToByteArray(),
+                        BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())),
+                    ).unwrap()
             assertContentEquals("2021-01".encodeToByteArray(), remaining)
             assertNull(parsed.year())
             assertNull(parsed.month())
@@ -534,10 +749,12 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01".encodeToByteArray(),
-                OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01".encodeToByteArray(),
+                        OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))),
+                    ).unwrap()
             assertContentEquals("2021-01".encodeToByteArray(), remaining)
             assertNull(parsed.year())
             assertNull(parsed.month())
@@ -549,10 +766,12 @@ class ParsingTest {
     fun parseFirst() {
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -560,10 +779,12 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.from(BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))))
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        OwnedFormatItem.from(BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -587,16 +808,18 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                BorrowedFormatItem.First(
-                    listOf(
-                        BorrowedFormatItem.Compound(parse("[period]").unwrap()),
-                        BorrowedFormatItem.Compound(parse("x").unwrap()),
-                        BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()),
-                    )
-                )
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        BorrowedFormatItem.First(
+                            listOf(
+                                BorrowedFormatItem.Compound(parse("[period]").unwrap()),
+                                BorrowedFormatItem.Compound(parse("x").unwrap()),
+                                BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()),
+                            ),
+                        ),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -604,18 +827,20 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val remaining = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.from(
-                    BorrowedFormatItem.First(
-                        listOf(
-                            BorrowedFormatItem.Compound(parse("[period]").unwrap()),
-                            BorrowedFormatItem.Compound(parse("x").unwrap()),
-                            BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()),
-                        )
-                    )
-                )
-            ).unwrap()
+            val remaining =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        OwnedFormatItem.from(
+                            BorrowedFormatItem.First(
+                                listOf(
+                                    BorrowedFormatItem.Compound(parse("[period]").unwrap()),
+                                    BorrowedFormatItem.Compound(parse("x").unwrap()),
+                                    BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()),
+                                ),
+                            ),
+                        ),
+                    ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
             assertEquals(Month.January, parsed.month())
@@ -623,30 +848,34 @@ class ParsingTest {
         }
         run {
             val parsed = Parsed.new()
-            val err = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                BorrowedFormatItem.First(
-                    listOf(
-                        BorrowedFormatItem.Compound(parse("[period]").unwrap()),
-                        BorrowedFormatItem.Compound(parse("x").unwrap()),
-                    )
-                )
-            ).unwrapErr()
+            val err =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        BorrowedFormatItem.First(
+                            listOf(
+                                BorrowedFormatItem.Compound(parse("[period]").unwrap()),
+                                BorrowedFormatItem.Compound(parse("x").unwrap()),
+                            ),
+                        ),
+                    ).unwrapErr()
             assertEquals(ParseFromDescription.InvalidComponent("period"), err)
         }
         run {
             val parsed = Parsed.new()
-            val err = parsed.parseItem(
-                "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.from(
-                    BorrowedFormatItem.First(
-                        listOf(
-                            BorrowedFormatItem.Compound(parse("[period]").unwrap()),
-                            BorrowedFormatItem.Compound(parse("x").unwrap()),
-                        )
-                    )
-                )
-            ).unwrapErr()
+            val err =
+                parsed
+                    .parseItem(
+                        "2021-01-02".encodeToByteArray(),
+                        OwnedFormatItem.from(
+                            BorrowedFormatItem.First(
+                                listOf(
+                                    BorrowedFormatItem.Compound(parse("[period]").unwrap()),
+                                    BorrowedFormatItem.Compound(parse("x").unwrap()),
+                                ),
+                            ),
+                        ),
+                    ).unwrapErr()
             assertEquals(ParseFromDescription.InvalidComponent("period"), err)
         }
     }

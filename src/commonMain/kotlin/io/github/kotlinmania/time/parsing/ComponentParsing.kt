@@ -44,11 +44,12 @@ internal fun parseYear(
         YearRepr.Full -> {
             val (afterSign, parsedSign) = opt(::sign)(input)
             if (parsedSign != null) {
-                val (rem, year) = if (modifiers.range == YearRange.Extended) {
-                    nToMDigitsPadded(4, 6, modifiers.padding, UIntInteger)(afterSign) ?: return null
-                } else {
-                    exactlyNDigitsPadded(4, modifiers.padding, UIntInteger)(afterSign) ?: return null
-                }
+                val (rem, year) =
+                    if (modifiers.range == YearRange.Extended) {
+                        nToMDigitsPadded(4, 6, modifiers.padding, UIntInteger)(afterSign) ?: return null
+                    } else {
+                        exactlyNDigitsPadded(4, modifiers.padding, UIntInteger)(afterSign) ?: return null
+                    }
                 val signedYear = year.toInt()
                 ParsedItem(
                     rem,
@@ -64,14 +65,16 @@ internal fun parseYear(
                 ParsedItem(rem, year.toInt() to false)
             }
         }
+
         YearRepr.Century -> {
             val (afterSign, parsedSign) = opt(::sign)(input)
             if (parsedSign != null) {
-                val (rem, year) = if (modifiers.range == YearRange.Extended) {
-                    nToMDigitsPadded(2, 4, modifiers.padding, UIntInteger)(afterSign) ?: return null
-                } else {
-                    exactlyNDigitsPadded(2, modifiers.padding, UIntInteger)(afterSign) ?: return null
-                }
+                val (rem, year) =
+                    if (modifiers.range == YearRange.Extended) {
+                        nToMDigitsPadded(2, 4, modifiers.padding, UIntInteger)(afterSign) ?: return null
+                    } else {
+                        exactlyNDigitsPadded(2, modifiers.padding, UIntInteger)(afterSign) ?: return null
+                    }
                 val signedYear = year.toInt()
                 ParsedItem(
                     rem,
@@ -87,6 +90,7 @@ internal fun parseYear(
                 ParsedItem(rem, year.toInt() to false)
             }
         }
+
         YearRepr.LastTwo -> {
             exactlyNDigitsPadded(2, modifiers.padding, UIntInteger)(input)
                 ?.map { v -> v.toInt() to false }
@@ -103,51 +107,55 @@ internal fun parseMonth(
             exactlyNDigitsPadded(2, modifiers.padding, UByteInteger)(input)
                 ?.flatMap { n -> if (n == 0.toUByte()) null else Month.fromNumber(n.toInt()).getOrNull() }
         }
+
         MonthRepr.Long, MonthRepr.Short -> {
             if (input.size < 3) return null
             val rest = input.copyOfRange(3, input.size)
-            val prefix = if (modifiers.caseSensitive) {
-                "${input[0].toInt().toChar()}${input[1].toInt().toChar()}${input[2].toInt().toChar()}"
-            } else {
-                val c0 = input[0].toInt().toChar().uppercaseChar()
-                val c1 = input[1].toInt().toChar().lowercaseChar()
-                val c2 = input[2].toInt().toChar().lowercaseChar()
-                "$c0$c1$c2"
-            }
+            val prefix =
+                if (modifiers.caseSensitive) {
+                    "${input[0].toInt().toChar()}${input[1].toInt().toChar()}${input[2].toInt().toChar()}"
+                } else {
+                    val c0 = input[0].toInt().toChar().uppercaseChar()
+                    val c1 = input[1].toInt().toChar().lowercaseChar()
+                    val c2 = input[2].toInt().toChar().lowercaseChar()
+                    "$c0$c1$c2"
+                }
 
-            val month = when (prefix) {
-                "Jan" -> Month.January
-                "Feb" -> Month.February
-                "Mar" -> Month.March
-                "Apr" -> Month.April
-                "May" -> Month.May
-                "Jun" -> Month.June
-                "Jul" -> Month.July
-                "Aug" -> Month.August
-                "Sep" -> Month.September
-                "Oct" -> Month.October
-                "Nov" -> Month.November
-                "Dec" -> Month.December
-                else -> return null
-            }
+            val month =
+                when (prefix) {
+                    "Jan" -> Month.January
+                    "Feb" -> Month.February
+                    "Mar" -> Month.March
+                    "Apr" -> Month.April
+                    "May" -> Month.May
+                    "Jun" -> Month.June
+                    "Jul" -> Month.July
+                    "Aug" -> Month.August
+                    "Sep" -> Month.September
+                    "Oct" -> Month.October
+                    "Nov" -> Month.November
+                    "Dec" -> Month.December
+                    else -> return null
+                }
 
             if (modifiers.repr == MonthRepr.Short) {
                 return ParsedItem(rest, month)
             }
 
-            val expectedRemaining = when (month) {
-                Month.January -> "uary"
-                Month.February -> "ruary"
-                Month.March -> "ch"
-                Month.April -> "il"
-                Month.May -> ""
-                Month.June -> "e"
-                Month.July -> "y"
-                Month.August -> "ust"
-                Month.September -> "tember"
-                Month.October -> "ober"
-                Month.November, Month.December -> "ember"
-            }
+            val expectedRemaining =
+                when (month) {
+                    Month.January -> "uary"
+                    Month.February -> "ruary"
+                    Month.March -> "ch"
+                    Month.April -> "il"
+                    Month.May -> ""
+                    Month.June -> "e"
+                    Month.July -> "y"
+                    Month.August -> "ust"
+                    Month.September -> "tember"
+                    Month.October -> "ober"
+                    Month.November, Month.December -> "ember"
+                }
 
             matchRemainingAscii(rest, expectedRemaining, modifiers.caseSensitive)?.let { tail ->
                 ParsedItem(tail, month)
@@ -171,42 +179,46 @@ internal fun parseWeekday(
         WeekdayRepr.Long, WeekdayRepr.Short -> {
             if (input.size < 3) return null
             val rest = input.copyOfRange(3, input.size)
-            val prefix = if (modifiers.caseSensitive) {
-                "${input[0].toInt().toChar()}${input[1].toInt().toChar()}${input[2].toInt().toChar()}"
-            } else {
-                val c0 = input[0].toInt().toChar().uppercaseChar()
-                val c1 = input[1].toInt().toChar().lowercaseChar()
-                val c2 = input[2].toInt().toChar().lowercaseChar()
-                "$c0$c1$c2"
-            }
+            val prefix =
+                if (modifiers.caseSensitive) {
+                    "${input[0].toInt().toChar()}${input[1].toInt().toChar()}${input[2].toInt().toChar()}"
+                } else {
+                    val c0 = input[0].toInt().toChar().uppercaseChar()
+                    val c1 = input[1].toInt().toChar().lowercaseChar()
+                    val c2 = input[2].toInt().toChar().lowercaseChar()
+                    "$c0$c1$c2"
+                }
 
-            val weekday = when (prefix) {
-                "Mon" -> Weekday.Monday
-                "Tue" -> Weekday.Tuesday
-                "Wed" -> Weekday.Wednesday
-                "Thu" -> Weekday.Thursday
-                "Fri" -> Weekday.Friday
-                "Sat" -> Weekday.Saturday
-                "Sun" -> Weekday.Sunday
-                else -> return null
-            }
+            val weekday =
+                when (prefix) {
+                    "Mon" -> Weekday.Monday
+                    "Tue" -> Weekday.Tuesday
+                    "Wed" -> Weekday.Wednesday
+                    "Thu" -> Weekday.Thursday
+                    "Fri" -> Weekday.Friday
+                    "Sat" -> Weekday.Saturday
+                    "Sun" -> Weekday.Sunday
+                    else -> return null
+                }
 
             if (modifiers.repr == WeekdayRepr.Short) {
                 return ParsedItem(rest, weekday)
             }
 
-            val expectedRemaining = when (weekday) {
-                Weekday.Monday, Weekday.Friday, Weekday.Sunday -> "day"
-                Weekday.Tuesday -> "sday"
-                Weekday.Wednesday -> "nesday"
-                Weekday.Thursday -> "rsday"
-                Weekday.Saturday -> "urday"
-            }
+            val expectedRemaining =
+                when (weekday) {
+                    Weekday.Monday, Weekday.Friday, Weekday.Sunday -> "day"
+                    Weekday.Tuesday -> "sday"
+                    Weekday.Wednesday -> "nesday"
+                    Weekday.Thursday -> "rsday"
+                    Weekday.Saturday -> "urday"
+                }
 
             matchRemainingAscii(rest, expectedRemaining, modifiers.caseSensitive)?.let { tail ->
                 ParsedItem(tail, weekday)
             }
         }
+
         WeekdayRepr.Sunday, WeekdayRepr.Monday -> {
             if (input.isEmpty()) return null
             val rawDigit = input[0].toUByte()
@@ -231,11 +243,12 @@ private fun matchRemainingAscii(
     for (i in expected.indices) {
         val actualChar = rest[i].toInt().toChar()
         val expChar = expected[i]
-        val matches = if (caseSensitive) {
-            actualChar == expChar
-        } else {
-            actualChar.lowercaseChar() == expChar.lowercaseChar()
-        }
+        val matches =
+            if (caseSensitive) {
+                actualChar == expChar
+            } else {
+                actualChar.lowercaseChar() == expChar.lowercaseChar()
+            }
         if (!matches) return null
     }
     return rest.copyOfRange(expected.length, rest.size)
@@ -315,15 +328,42 @@ internal fun parseSubsecond(
     modifiers: Subsecond,
 ): ParsedItem<UInt>? =
     when (modifiers.digits) {
-        SubsecondDigits.One -> ExactlyNDigits.parse1(input)?.map { it.toUInt() * 100_000_000u }
-        SubsecondDigits.Two -> ExactlyNDigits.parse2(input)?.map { it.toUInt() * 10_000_000u }
-        SubsecondDigits.Three -> ExactlyNDigits.parse3(input)?.map { it.toUInt() * 1_000_000u }
-        SubsecondDigits.Four -> ExactlyNDigits.parse4(input)?.map { it.toUInt() * 100_000u }
-        SubsecondDigits.Five -> ExactlyNDigits.parse5(input)?.map { it * 10_000u }
-        SubsecondDigits.Six -> ExactlyNDigits.parse6(input)?.map { it * 1_000u }
-        SubsecondDigits.Seven -> ExactlyNDigits.parse7(input)?.map { it * 100u }
-        SubsecondDigits.Eight -> ExactlyNDigits.parse8(input)?.map { it * 10u }
-        SubsecondDigits.Nine -> ExactlyNDigits.parse9(input)
+        SubsecondDigits.One -> {
+            ExactlyNDigits.parse1(input)?.map { it.toUInt() * 100_000_000u }
+        }
+
+        SubsecondDigits.Two -> {
+            ExactlyNDigits.parse2(input)?.map { it.toUInt() * 10_000_000u }
+        }
+
+        SubsecondDigits.Three -> {
+            ExactlyNDigits.parse3(input)?.map { it.toUInt() * 1_000_000u }
+        }
+
+        SubsecondDigits.Four -> {
+            ExactlyNDigits.parse4(input)?.map { it.toUInt() * 100_000u }
+        }
+
+        SubsecondDigits.Five -> {
+            ExactlyNDigits.parse5(input)?.map { it * 10_000u }
+        }
+
+        SubsecondDigits.Six -> {
+            ExactlyNDigits.parse6(input)?.map { it * 1_000u }
+        }
+
+        SubsecondDigits.Seven -> {
+            ExactlyNDigits.parse7(input)?.map { it * 100u }
+        }
+
+        SubsecondDigits.Eight -> {
+            ExactlyNDigits.parse8(input)?.map { it * 10u }
+        }
+
+        SubsecondDigits.Nine -> {
+            ExactlyNDigits.parse9(input)
+        }
+
         SubsecondDigits.OneOrMore -> {
             val first = anyDigit(input) ?: return null
             var rem = first.remaining
@@ -336,7 +376,6 @@ internal fun parseSubsecond(
                 multiplier /= 10u
             }
             ParsedItem(rem, value)
-
         }
     }
 
@@ -388,25 +427,34 @@ internal fun parseUnixTimestamp(
     val (afterSign, parsedSign) = opt(::sign)(input)
     if (parsedSign == null && modifiers.signIsMandatory) return null
 
-    val (rem, rawDigits) = when (modifiers.precision) {
-        UnixTimestampPrecision.Second ->
-            nToMDigitString(1, 14, afterSign)?.let { it.remaining to "${it.value}000000000" }
-        UnixTimestampPrecision.Millisecond ->
-            nToMDigitString(1, 17, afterSign)?.let { it.remaining to "${it.value}000000" }
-        UnixTimestampPrecision.Microsecond ->
-            nToMDigitString(1, 20, afterSign)?.let { it.remaining to "${it.value}000" }
-        UnixTimestampPrecision.Nanosecond ->
-            nToMDigitString(1, 23, afterSign)?.let { it.remaining to it.value }
-    } ?: return null
+    val (rem, rawDigits) =
+        when (modifiers.precision) {
+            UnixTimestampPrecision.Second -> {
+                nToMDigitString(1, 14, afterSign)?.let { it.remaining to "${it.value}000000000" }
+            }
+
+            UnixTimestampPrecision.Millisecond -> {
+                nToMDigitString(1, 17, afterSign)?.let { it.remaining to "${it.value}000000" }
+            }
+
+            UnixTimestampPrecision.Microsecond -> {
+                nToMDigitString(1, 20, afterSign)?.let { it.remaining to "${it.value}000" }
+            }
+
+            UnixTimestampPrecision.Nanosecond -> {
+                nToMDigitString(1, 23, afterSign)?.let { it.remaining to it.value }
+            }
+        } ?: return null
 
     val trimmed = rawDigits.trimStart('0')
-    val normalized = if (trimmed.isEmpty()) {
-        "0"
-    } else if (parsedSign == Sign.Negative) {
-        "-$trimmed"
-    } else {
-        trimmed
-    }
+    val normalized =
+        if (trimmed.isEmpty()) {
+            "0"
+        } else if (parsedSign == Sign.Negative) {
+            "-$trimmed"
+        } else {
+            trimmed
+        }
 
     return ParsedItem(rem, normalized)
 }

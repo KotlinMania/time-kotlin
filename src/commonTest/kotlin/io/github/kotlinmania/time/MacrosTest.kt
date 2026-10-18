@@ -313,7 +313,8 @@ class MacrosTest {
             listOf(
                 BorrowedFormatItem.Component(
                     Component.Year(
-                        Year.default()
+                        Year
+                            .default()
                             .withRepr(YearRepr.Full)
                             .withIsoWeekBased(false)
                             .withPadding(Padding.Zero)
@@ -338,7 +339,8 @@ class MacrosTest {
             listOf(
                 BorrowedFormatItem.Component(
                     Component.UnixTimestamp(
-                        UnixTimestamp.default()
+                        UnixTimestamp
+                            .default()
                             .withPrecision(UnixTimestampPrecision.Nanosecond)
                             .withSignIsMandatory(true),
                     ),

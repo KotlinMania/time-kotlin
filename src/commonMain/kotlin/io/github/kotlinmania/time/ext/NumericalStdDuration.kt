@@ -2,8 +2,8 @@
 package io.github.kotlinmania.time.ext
 
 import kotlin.time.Duration as StdDuration
-import kotlin.time.Duration.Companion.milliseconds as stdMillis
 import kotlin.time.Duration.Companion.microseconds as stdMicros
+import kotlin.time.Duration.Companion.milliseconds as stdMillis
 import kotlin.time.Duration.Companion.nanoseconds as stdNanos
 import kotlin.time.Duration.Companion.seconds as stdSecs
 

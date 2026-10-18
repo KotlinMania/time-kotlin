@@ -63,12 +63,30 @@ object Rand08 {
     object WeekdayDistribution : Distribution<Weekday> {
         override fun sample(rng: Rng): Weekday =
             when (val v = rng.randomRange(0 until 7)) {
-                0 -> Weekday.Monday
-                1 -> Weekday.Tuesday
-                2 -> Weekday.Wednesday
-                3 -> Weekday.Thursday
-                4 -> Weekday.Friday
-                5 -> Weekday.Saturday
+                0 -> {
+                    Weekday.Monday
+                }
+
+                1 -> {
+                    Weekday.Tuesday
+                }
+
+                2 -> {
+                    Weekday.Wednesday
+                }
+
+                3 -> {
+                    Weekday.Thursday
+                }
+
+                4 -> {
+                    Weekday.Friday
+                }
+
+                5 -> {
+                    Weekday.Saturday
+                }
+
                 else -> {
                     check(v == 6)
                     Weekday.Sunday
@@ -79,17 +97,50 @@ object Rand08 {
     object MonthDistribution : Distribution<Month> {
         override fun sample(rng: Rng): Month =
             when (val v = rng.randomRange(1..12)) {
-                1 -> Month.January
-                2 -> Month.February
-                3 -> Month.March
-                4 -> Month.April
-                5 -> Month.May
-                6 -> Month.June
-                7 -> Month.July
-                8 -> Month.August
-                9 -> Month.September
-                10 -> Month.October
-                11 -> Month.November
+                1 -> {
+                    Month.January
+                }
+
+                2 -> {
+                    Month.February
+                }
+
+                3 -> {
+                    Month.March
+                }
+
+                4 -> {
+                    Month.April
+                }
+
+                5 -> {
+                    Month.May
+                }
+
+                6 -> {
+                    Month.June
+                }
+
+                7 -> {
+                    Month.July
+                }
+
+                8 -> {
+                    Month.August
+                }
+
+                9 -> {
+                    Month.September
+                }
+
+                10 -> {
+                    Month.October
+                }
+
+                11 -> {
+                    Month.November
+                }
+
                 else -> {
                     check(v == 12)
                     Month.December

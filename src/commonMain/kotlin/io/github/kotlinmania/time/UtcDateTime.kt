@@ -18,9 +18,9 @@ import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
 import io.github.kotlinmania.time.serde.I32Serialize
 import io.github.kotlinmania.time.serde.PRIMITIVE_DATE_TIME_FORMAT
-import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U16Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.UtcDateTimeVisitor
 
 /** The Julian day of the Unix epoch. */
@@ -31,7 +31,8 @@ private const val UNIX_EPOCH_JULIAN_DAY: Int = 2_440_588
  */
 class UtcDateTime internal constructor(
     private val inner: PrimitiveDateTime,
-) : Comparable<UtcDateTime>, Serialize {
+) : Comparable<UtcDateTime>,
+    Serialize {
     companion object : Deserialize<UtcDateTime> {
         override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<UtcDateTime> =
             if (deserializer.isHumanReadable()) {
@@ -50,7 +51,11 @@ class UtcDateTime internal constructor(
         val MAX: UtcDateTime = new(Date.MAX, Time.MAX)
 
         /** Create a new [UtcDateTime] with the current date and time. */
-        fun now(): UtcDateTime = from(kotlin.time.Clock.System.now())
+        fun now(): UtcDateTime =
+            from(
+                kotlin.time.Clock.System
+                    .now(),
+            )
 
         /** Create a new [UtcDateTime] from the provided [Date] and [Time]. */
         fun new(date: Date, time: Time): UtcDateTime =
@@ -392,10 +397,17 @@ class UtcDateTime internal constructor(
 
     override fun equals(other: Any?): Boolean =
         when (other) {
-            is UtcDateTime -> inner == other.inner
-            is OffsetDateTime ->
+            is UtcDateTime -> {
+                inner == other.inner
+            }
+
+            is OffsetDateTime -> {
                 unixTimestamp() == other.unixTimestamp() && nanosecond() == other.nanosecond()
-            else -> false
+            }
+
+            else -> {
+                false
+            }
         }
 
     override fun hashCode(): Int = inner.hashCode()

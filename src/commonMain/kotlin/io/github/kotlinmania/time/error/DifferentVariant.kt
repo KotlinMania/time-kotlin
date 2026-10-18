@@ -26,4 +26,3 @@ object DifferentVariant : IllegalArgumentException("value was of a different var
             else -> Result.failure(DifferentVariant())
         }
 }
-

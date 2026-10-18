@@ -62,10 +62,14 @@ interface Formattable {
 }
 
 /** Adapter to treat a slice/list of [BorrowedFormatItem] as a [Formattable]. */
-class BorrowedFormatItemSliceFormattable(val items: List<BorrowedFormatItem>) : Formattable
+class BorrowedFormatItemSliceFormattable(
+    val items: List<BorrowedFormatItem>,
+) : Formattable
 
 /** Adapter to treat a slice/list of [OwnedFormatItem] as a [Formattable]. */
-class OwnedFormatItemSliceFormattable(val items: List<OwnedFormatItem>) : Formattable
+class OwnedFormatItemSliceFormattable(
+    val items: List<OwnedFormatItem>,
+) : Formattable
 
 /** Format the item into the provided output, returning the number of bytes written. */
 internal fun <V, State> Formattable.formatInto(
@@ -104,16 +108,29 @@ private fun <V, State> formatBorrowedInto(
     state: State,
 ): Result<Int> =
     when (item) {
-        is BorrowedFormatItem.Literal -> write(output, item.bytes)
-        is BorrowedFormatItem.Component -> formatComponent(output, item.component, value, provider, state)
-        is BorrowedFormatItem.Compound -> formatBorrowedListInto(item.items, output, value, provider, state)
-        is BorrowedFormatItem.Optional -> formatBorrowedInto(item.item, output, value, provider, state)
-        is BorrowedFormatItem.First ->
+        is BorrowedFormatItem.Literal -> {
+            write(output, item.bytes)
+        }
+
+        is BorrowedFormatItem.Component -> {
+            formatComponent(output, item.component, value, provider, state)
+        }
+
+        is BorrowedFormatItem.Compound -> {
+            formatBorrowedListInto(item.items, output, value, provider, state)
+        }
+
+        is BorrowedFormatItem.Optional -> {
+            formatBorrowedInto(item.item, output, value, provider, state)
+        }
+
+        is BorrowedFormatItem.First -> {
             if (item.items.isEmpty()) {
                 Result.success(0)
             } else {
                 formatBorrowedInto(item.items[0], output, value, provider, state)
             }
+        }
     }
 
 internal fun <V, State> formatBorrowedListInto(
@@ -138,16 +155,29 @@ private fun <V, State> formatOwnedInto(
     state: State,
 ): Result<Int> =
     when (item) {
-        is OwnedFormatItem.Literal -> write(output, item.bytes)
-        is OwnedFormatItem.Component -> formatComponent(output, item.component, value, provider, state)
-        is OwnedFormatItem.Compound -> formatOwnedListInto(item.items, output, value, provider, state)
-        is OwnedFormatItem.Optional -> formatOwnedInto(item.item, output, value, provider, state)
-        is OwnedFormatItem.First ->
+        is OwnedFormatItem.Literal -> {
+            write(output, item.bytes)
+        }
+
+        is OwnedFormatItem.Component -> {
+            formatComponent(output, item.component, value, provider, state)
+        }
+
+        is OwnedFormatItem.Compound -> {
+            formatOwnedListInto(item.items, output, value, provider, state)
+        }
+
+        is OwnedFormatItem.Optional -> {
+            formatOwnedInto(item.item, output, value, provider, state)
+        }
+
+        is OwnedFormatItem.First -> {
             if (item.items.isEmpty()) {
                 Result.success(0)
             } else {
                 formatOwnedInto(item.items[0], output, value, provider, state)
             }
+        }
     }
 
 internal fun <V, State> formatOwnedListInto(

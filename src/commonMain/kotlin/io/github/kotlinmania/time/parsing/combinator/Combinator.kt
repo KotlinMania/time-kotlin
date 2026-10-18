@@ -65,11 +65,12 @@ internal fun <T : Any> nToMDigits(
         val parsed = anyDigit(input) ?: return null
         input = parsed.remaining
         val digit = (parsed.value - '0'.code.toUByte()).toUByte()
-        value = if (i != integer.maxNumDigits - 1) {
-            integer.pushDigit(value, digit)
-        } else {
-            integer.checkedPushDigit(value, digit) ?: return null
-        }
+        value =
+            if (i != integer.maxNumDigits - 1) {
+                integer.pushDigit(value, digit)
+            } else {
+                integer.checkedPushDigit(value, digit) ?: return null
+            }
     }
 
     // Optional
@@ -77,11 +78,12 @@ internal fun <T : Any> nToMDigits(
         val parsed = anyDigit(input) ?: break
         input = parsed.remaining
         val digit = (parsed.value - '0'.code.toUByte()).toUByte()
-        value = if (i != integer.maxNumDigits - 1) {
-            integer.pushDigit(value, digit)
-        } else {
-            integer.checkedPushDigit(value, digit) ?: return null
-        }
+        value =
+            if (i != integer.maxNumDigits - 1) {
+                integer.pushDigit(value, digit)
+            } else {
+                integer.checkedPushDigit(value, digit) ?: return null
+            }
     }
 
     return ParsedItem(input, value)
@@ -165,10 +167,11 @@ internal object ExactlyNDigits {
         ) {
             return null
         }
-        val value = (
-            (a - '0'.code.toUByte()) * 100u +
-                (b - '0'.code.toUByte()) * 10u +
-                (c - '0'.code.toUByte())
+        val value =
+            (
+                (a - '0'.code.toUByte()) * 100u +
+                    (b - '0'.code.toUByte()) * 10u +
+                    (c - '0'.code.toUByte())
             ).toUShort()
         return ParsedItem(input.copyOfRange(3, input.size), value)
     }
@@ -206,7 +209,6 @@ internal object ExactlyNDigits {
     }
 }
 
-
 /** Consume exactly `n` digits, returning the numerical value. */
 internal fun <T : Any> exactlyNDigitsPadded(
     n: Int,
@@ -225,7 +227,10 @@ internal fun <T : Any> nToMDigitsPadded(
     return parser@{ initialInput ->
         var input = initialInput
         when (padding) {
-            Padding.None -> nToMDigits(1, m, integer, input)
+            Padding.None -> {
+                nToMDigits(1, m, integer, input)
+            }
+
             Padding.Space -> {
                 var value = integer.zero
                 var padWidth = 0
@@ -246,11 +251,12 @@ internal fun <T : Any> nToMDigitsPadded(
                     val parsed = anyDigit(input) ?: return@parser null
                     input = parsed.remaining
                     val digit = (parsed.value - '0'.code.toUByte()).toUByte()
-                    value = if (i != integer.maxNumDigits - 1) {
-                        integer.pushDigit(value, digit)
-                    } else {
-                        integer.checkedPushDigit(value, digit) ?: return@parser null
-                    }
+                    value =
+                        if (i != integer.maxNumDigits - 1) {
+                            integer.pushDigit(value, digit)
+                        } else {
+                            integer.checkedPushDigit(value, digit) ?: return@parser null
+                        }
                 }
 
                 // Optional
@@ -258,16 +264,20 @@ internal fun <T : Any> nToMDigitsPadded(
                     val parsed = anyDigit(input) ?: break
                     input = parsed.remaining
                     val digit = (parsed.value - '0'.code.toUByte()).toUByte()
-                    value = if (i - padWidth != integer.maxNumDigits - 1) {
-                        integer.pushDigit(value, digit)
-                    } else {
-                        integer.checkedPushDigit(value, digit) ?: return@parser null
-                    }
+                    value =
+                        if (i - padWidth != integer.maxNumDigits - 1) {
+                            integer.pushDigit(value, digit)
+                        } else {
+                            integer.checkedPushDigit(value, digit) ?: return@parser null
+                        }
                 }
 
                 ParsedItem(input, value)
             }
-            Padding.Zero -> nToMDigits(n, m, integer, input)
+
+            Padding.Zero -> {
+                nToMDigits(n, m, integer, input)
+            }
         }
     }
 }

@@ -65,6 +65,7 @@ internal val Iso8601.formatDate: Boolean
             FormattedComponents.DateTime,
             FormattedComponents.DateTimeOffset,
             -> true
+
             else -> false
         }
 
@@ -77,6 +78,7 @@ internal val Iso8601.formatTime: Boolean
             FormattedComponents.DateTimeOffset,
             FormattedComponents.TimeOffset,
             -> true
+
             else -> false
         }
 
@@ -88,6 +90,7 @@ internal val Iso8601.formatOffset: Boolean
             FormattedComponents.DateTimeOffset,
             FormattedComponents.TimeOffset,
             -> true
+
             else -> false
         }
 

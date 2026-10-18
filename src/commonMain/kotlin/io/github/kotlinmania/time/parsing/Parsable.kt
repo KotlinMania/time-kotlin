@@ -41,18 +41,35 @@ interface Parsable {
         parsed: Parsed,
     ): Result<ByteArray> =
         when (this) {
-            is BorrowedFormatItem -> parsed.parseItem(input, this).fold(
-                onSuccess = { Result.success(it) },
-                onFailure = { Result.failure(Parse.FromDescription(it as ParseFromDescription)) },
-            )
-            is OwnedFormatItem -> parsed.parseItem(input, this).fold(
-                onSuccess = { Result.success(it) },
-                onFailure = { Result.failure(Parse.FromDescription(it as ParseFromDescription)) },
-            )
-            is Rfc2822 -> parseIntoRfc2822(input, parsed)
-            is Rfc3339 -> parseIntoRfc3339(input, parsed)
-            is Iso8601 -> parseIntoIso8601(this, input, parsed)
-            else -> Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+            is BorrowedFormatItem -> {
+                parsed.parseItem(input, this).fold(
+                    onSuccess = { Result.success(it) },
+                    onFailure = { Result.failure(Parse.FromDescription(it as ParseFromDescription)) },
+                )
+            }
+
+            is OwnedFormatItem -> {
+                parsed.parseItem(input, this).fold(
+                    onSuccess = { Result.success(it) },
+                    onFailure = { Result.failure(Parse.FromDescription(it as ParseFromDescription)) },
+                )
+            }
+
+            is Rfc2822 -> {
+                parseIntoRfc2822(input, parsed)
+            }
+
+            is Rfc3339 -> {
+                parseIntoRfc3339(input, parsed)
+            }
+
+            is Iso8601 -> {
+                parseIntoIso8601(this, input, parsed)
+            }
+
+            else -> {
+                Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+            }
         }
 
     /** Parse the item into a new [Parsed] struct. */
@@ -130,7 +147,9 @@ interface Parsable {
 }
 
 /** Adapter to treat a slice/list of [BorrowedFormatItem] as a [Parsable]. */
-class BorrowedFormatItemSliceParsable(val items: List<BorrowedFormatItem>) : Parsable {
+class BorrowedFormatItemSliceParsable(
+    val items: List<BorrowedFormatItem>,
+) : Parsable {
     override fun parseInto(input: ByteArray, parsed: Parsed): Result<ByteArray> =
         parsed.parseItems(input, items).fold(
             onSuccess = { Result.success(it) },
@@ -139,7 +158,9 @@ class BorrowedFormatItemSliceParsable(val items: List<BorrowedFormatItem>) : Par
 }
 
 /** Adapter to treat a slice/list of [OwnedFormatItem] as a [Parsable]. */
-class OwnedFormatItemSliceParsable(val items: List<OwnedFormatItem>) : Parsable {
+class OwnedFormatItemSliceParsable(
+    val items: List<OwnedFormatItem>,
+) : Parsable {
     override fun parseInto(input: ByteArray, parsed: Parsed): Result<ByteArray> =
         parsed.parseOwnedItems(input, items).fold(
             onSuccess = { Result.success(it) },
@@ -152,14 +173,15 @@ private fun parseIntoRfc2822(initialInput: ByteArray, parsed: Parsed): Result<By
     val comma: (ByteArray) -> ParsedItem<Unit>? = { asciiChar(','.code.toByte(), it) }
 
     var input = opt(::cfws)(initialInput).intoInner()
-    val weekday = parseWeekday(
-        input,
-        io.github.kotlinmania.time.formatdescription.modifier.Weekday(
-            repr = WeekdayRepr.Short,
-            oneIndexed = false,
-            caseSensitive = false,
-        ),
-    )
+    val weekday =
+        parseWeekday(
+            input,
+            io.github.kotlinmania.time.formatdescription.modifier.Weekday(
+                repr = WeekdayRepr.Short,
+                oneIndexed = false,
+                caseSensitive = false,
+            ),
+        )
     if (weekday != null) {
         input = weekday.consumeValue { parsed.setWeekday(it) }
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("weekday")))
@@ -186,54 +208,64 @@ private fun parseIntoRfc2822(initialInput: ByteArray, parsed: Parsed): Result<By
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
 
     val year4 = ExactlyNDigits.parse4(input)
-    input = if (year4 != null) {
-        val afterYear = year4.flatMap { y -> if (y >= 1900u) y else null }
-            ?.consumeValue { parsed.setYear(it.toShort().toInt()) }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
-        fws(afterYear)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    } else {
-        val afterYear = ExactlyNDigits.parse2(input)
-            ?.map { y -> y.toUInt() }
-            ?.map { y -> if (y < 50u) y + 2000u else y + 1900u }
-            ?.map { y -> y.toInt() }
-            ?.consumeValue { parsed.setYear(it) }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
-        cfws(afterYear)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    }
+    input =
+        if (year4 != null) {
+            val afterYear =
+                year4
+                    .flatMap { y -> if (y >= 1900u) y else null }
+                    ?.consumeValue { parsed.setYear(it.toShort().toInt()) }
+                    ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+            fws(afterYear)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+        } else {
+            val afterYear =
+                ExactlyNDigits
+                    .parse2(input)
+                    ?.map { y -> y.toUInt() }
+                    ?.map { y -> if (y < 50u) y + 2000u else y + 1900u }
+                    ?.map { y -> y.toInt() }
+                    ?.consumeValue { parsed.setYear(it) }
+                    ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+            cfws(afterYear)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+        }
 
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setHour24(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
     input = opt(::cfws)(input).intoInner()
     input = colon(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
     input = opt(::cfws)(input).intoInner()
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setMinute(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
 
     val maybeColon = colon(opt(::cfws)(input).intoInner())
-    input = if (maybeColon != null) {
-        var rem = maybeColon.intoInner()
-        rem = opt(::cfws)(rem).intoInner()
-        rem = ExactlyNDigits.parse2(rem)
-            ?.consumeValue { parsed.setSecond(it) }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
-        cfws(rem)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    } else {
-        cfws(input)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    }
+    input =
+        if (maybeColon != null) {
+            var rem = maybeColon.intoInner()
+            rem = opt(::cfws)(rem).intoInner()
+            rem = ExactlyNDigits
+                .parse2(rem)
+                ?.consumeValue { parsed.setSecond(it) }
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
+            cfws(rem)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+        } else {
+            cfws(input)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+        }
 
     parsed.leapSecondAllowed = true
 
     val zLit = zoneLiteral(input)
     if (zLit != null) {
-        val rem = zLit.consumeValue { parsed.setOffsetHour(it) }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+        val rem =
+            zLit.consumeValue { parsed.setOffsetHour(it) }
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
         parsed.setOffsetMinuteSigned(0)
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
         parsed.setOffsetSecondSigned(0)
@@ -241,19 +273,21 @@ private fun parseIntoRfc2822(initialInput: ByteArray, parsed: Parsed): Result<By
         return Result.success(rem)
     }
 
-    val signItem = sign(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+    val signItem =
+        sign(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
     val offsetSign = signItem.value
-    input = ExactlyNDigits.parse2(signItem.remaining)
+    input = ExactlyNDigits
+        .parse2(signItem.remaining)
         ?.map { h ->
             when (offsetSign) {
                 Sign.Negative -> (-h.toInt()).toByte()
                 Sign.Positive -> h.toByte()
             }
-        }
-        ?.consumeValue { parsed.setOffsetHour(it) }
+        }?.consumeValue { parsed.setOffsetHour(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setOffsetMinuteSigned(it.toByte()) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
 
@@ -266,14 +300,15 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     val comma: (ByteArray) -> ParsedItem<Unit>? = { asciiChar(','.code.toByte(), it) }
 
     var input = opt(::cfws)(initialInput).intoInner()
-    val weekday = parseWeekday(
-        input,
-        io.github.kotlinmania.time.formatdescription.modifier.Weekday(
-            repr = WeekdayRepr.Short,
-            oneIndexed = false,
-            caseSensitive = false,
-        ),
-    )
+    val weekday =
+        parseWeekday(
+            input,
+            io.github.kotlinmania.time.formatdescription.modifier.Weekday(
+                repr = WeekdayRepr.Short,
+                oneIndexed = false,
+                caseSensitive = false,
+            ),
+        )
     if (weekday != null) {
         input = weekday.discardValue()
         input = comma(input)?.intoInner()
@@ -281,21 +316,23 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         input = opt(::cfws)(input).intoInner()
     }
 
-    val dayItem = oneOrTwoDigits(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("day")))
+    val dayItem =
+        oneOrTwoDigits(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("day")))
     input = dayItem.remaining
     val day = dayItem.value
 
     input = cfws(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    val monthItem = parseMonth(
-        input,
-        io.github.kotlinmania.time.formatdescription.modifier.Month(
-            padding = Padding.None,
-            repr = MonthRepr.Short,
-            caseSensitive = false,
-        ),
-    ) ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("month")))
+    val monthItem =
+        parseMonth(
+            input,
+            io.github.kotlinmania.time.formatdescription.modifier.Month(
+                padding = Padding.None,
+                repr = MonthRepr.Short,
+                caseSensitive = false,
+            ),
+        ) ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("month")))
     input = monthItem.remaining
     val month = monthItem.value
 
@@ -303,31 +340,37 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
 
     val year4 = ExactlyNDigits.parse4(input)
-    val year: UShort = if (year4 != null) {
-        val validYear = year4.flatMap { y -> if (y >= 1900u) y else null }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
-        input = fws(validYear.remaining)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-        validYear.value
-    } else {
-        val year2 = ExactlyNDigits.parse2(input)
-            ?.map { y -> y.toUShort() }
-            ?.map { y -> if (y < 50u) (y + 2000u).toUShort() else (y + 1900u).toUShort() }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
-        input = cfws(year2.remaining)?.intoInner()
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-        year2.value
-    }
+    val year: UShort =
+        if (year4 != null) {
+            val validYear =
+                year4.flatMap { y -> if (y >= 1900u) y else null }
+                    ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+            input = fws(validYear.remaining)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+            validYear.value
+        } else {
+            val year2 =
+                ExactlyNDigits
+                    .parse2(input)
+                    ?.map { y -> y.toUShort() }
+                    ?.map { y -> if (y < 50u) (y + 2000u).toUShort() else (y + 1900u).toUShort() }
+                    ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+            input = cfws(year2.remaining)?.intoInner()
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+            year2.value
+        }
 
-    val hourItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
+    val hourItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
     val hour = hourItem.value
     input = opt(::cfws)(hourItem.remaining).intoInner()
     input = colon(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
     input = opt(::cfws)(input).intoInner()
-    val minuteItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
+    val minuteItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
     val minute = minuteItem.value
     input = minuteItem.remaining
 
@@ -336,8 +379,9 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     if (maybeColon != null) {
         var rem = maybeColon.intoInner()
         rem = opt(::cfws)(rem).intoInner()
-        val secItem = ExactlyNDigits.parse2(rem)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
+        val secItem =
+            ExactlyNDigits.parse2(rem)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
         second = secItem.value
         input = cfws(secItem.remaining)?.intoInner()
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
@@ -355,25 +399,30 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         offsetHour = zLit.value
         offsetMinute = 0
     } else {
-        val signItem = sign(input)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+        val signItem =
+            sign(input)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
         val offsetSign = signItem.value
-        val offHourItem = ExactlyNDigits.parse2(signItem.remaining)
-            ?.map { h ->
-                when (offsetSign) {
-                    Sign.Negative -> (-h.toInt()).toByte()
-                    Sign.Positive -> h.toByte()
+        val offHourItem =
+            ExactlyNDigits
+                .parse2(signItem.remaining)
+                ?.map { h ->
+                    when (offsetSign) {
+                        Sign.Negative -> (-h.toInt()).toByte()
+                        Sign.Positive -> h.toByte()
+                    }
                 }
-            }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
-        val offMinItem = ExactlyNDigits.parse2(offHourItem.remaining)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+        val offMinItem =
+            ExactlyNDigits.parse2(offHourItem.remaining)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
         input = offMinItem.remaining
         offsetHour = offHourItem.value
-        offsetMinute = when (offsetSign) {
-            Sign.Negative -> (-offMinItem.value.toInt()).toByte()
-            Sign.Positive -> offMinItem.value.toByte()
-        }
+        offsetMinute =
+            when (offsetSign) {
+                Sign.Negative -> (-offMinItem.value.toInt()).toByte()
+                Sign.Positive -> offMinItem.value.toByte()
+            }
     }
 
     input = opt(::cfws)(input).intoInner()
@@ -382,23 +431,27 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     }
 
     var nanosecond = 0
-    val leapSecondInput = if (second == 60.toUByte()) {
-        second = 59u
-        nanosecond = 999_999_999
-        true
-    } else {
-        false
-    }
+    val leapSecondInput =
+        if (second == 60.toUByte()) {
+            second = 59u
+            nanosecond = 999_999_999
+            true
+        } else {
+            false
+        }
 
-    val date = Date.fromCalendarDate(year.toShort().toInt(), month, day.toInt()).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
-    val time = Time.fromHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
-    val offset = UtcOffset.fromHms(offsetHour.toInt(), offsetMinute.toInt(), 0).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
+    val date =
+        Date.fromCalendarDate(year.toShort().toInt(), month, day.toInt()).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
+    val time =
+        Time.fromHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
+    val offset =
+        UtcOffset.fromHms(offsetHour.toInt(), offsetMinute.toInt(), 0).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
     val dt = OffsetDateTime.newInOffset(date, time, offset)
 
     if (leapSecondInput && !dt.isValidLeapSecondStandIn()) {
@@ -414,18 +467,22 @@ private fun parseIntoRfc3339(initialInput: ByteArray, parsed: Parsed): Result<By
     val dash: (ByteArray) -> ParsedItem<Unit>? = { asciiChar('-'.code.toByte(), it) }
     val colon: (ByteArray) -> ParsedItem<Unit>? = { asciiChar(':'.code.toByte(), it) }
 
-    var input = ExactlyNDigits.parse4(initialInput)
-        ?.consumeValue { parsed.setYear(it.toShort().toInt()) }
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+    var input =
+        ExactlyNDigits
+            .parse4(initialInput)
+            ?.consumeValue { parsed.setYear(it.toShort().toInt()) }
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
     input = dash(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.flatMap { v -> if (v > 0u) Month.fromNumber(v.toInt()).getOrNull() else null }
         ?.consumeValue { parsed.setMonth(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("month")))
     input = dash(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { v -> if (v > 0u) parsed.setDay(v) else null }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("day")))
 
@@ -434,24 +491,28 @@ private fun parseIntoRfc3339(initialInput: ByteArray, parsed: Parsed): Result<By
     }
     input = input.copyOfRange(1, input.size)
 
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setHour24(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
     input = colon(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setMinute(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
     input = colon(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.consumeValue { parsed.setSecond(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
 
     val dot = asciiChar('.'.code.toByte(), input)
     if (dot != null) {
-        val firstDigit = anyDigit(dot.remaining)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
+        val firstDigit =
+            anyDigit(dot.remaining)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
         var rem = firstDigit.remaining
         var value = (firstDigit.value - '0'.code.toUByte()) * 100_000_000u
         var multiplier = 10_000_000u
@@ -479,29 +540,30 @@ private fun parseIntoRfc3339(initialInput: ByteArray, parsed: Parsed): Result<By
         return Result.success(zChar.remaining)
     }
 
-    val signItem = sign(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+    val signItem =
+        sign(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
     val offsetSign = signItem.value
-    input = ExactlyNDigits.parse2(signItem.remaining)
+    input = ExactlyNDigits
+        .parse2(signItem.remaining)
         ?.filter { it <= 23u }
         ?.map { h ->
             when (offsetSign) {
                 Sign.Negative -> (-h.toInt()).toByte()
                 Sign.Positive -> h.toByte()
             }
-        }
-        ?.consumeValue { parsed.setOffsetHour(it) }
+        }?.consumeValue { parsed.setOffsetHour(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
     input = colon(input)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    input = ExactlyNDigits.parse2(input)
+    input = ExactlyNDigits
+        .parse2(input)
         ?.map { m ->
             when (offsetSign) {
                 Sign.Negative -> (-m.toInt()).toByte()
                 Sign.Positive -> m.toByte()
             }
-        }
-        ?.consumeValue { parsed.setOffsetMinuteSigned(it) }
+        }?.consumeValue { parsed.setOffsetMinuteSigned(it) }
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
 
     return Result.success(input)
@@ -511,19 +573,24 @@ private fun parseRfc3339OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     val dash: (ByteArray) -> ParsedItem<Unit>? = { asciiChar('-'.code.toByte(), it) }
     val colon: (ByteArray) -> ParsedItem<Unit>? = { asciiChar(':'.code.toByte(), it) }
 
-    val yearItem = ExactlyNDigits.parse4(initialInput)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
+    val yearItem =
+        ExactlyNDigits.parse4(initialInput)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("year")))
     val year = yearItem.value
-    var input = dash(yearItem.remaining)?.intoInner()
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    val monthItem = ExactlyNDigits.parse2(input)
-        ?.flatMap { if (it > 0u) it else null }
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("month")))
+    var input =
+        dash(yearItem.remaining)?.intoInner()
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
+    val monthItem =
+        ExactlyNDigits
+            .parse2(input)
+            ?.flatMap { if (it > 0u) it else null }
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("month")))
     val monthNum = monthItem.value
     input = dash(monthItem.remaining)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    val dayItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("day")))
+    val dayItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("day")))
     val day = dayItem.value
     input = dayItem.remaining
 
@@ -532,26 +599,30 @@ private fun parseRfc3339OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     }
     input = input.copyOfRange(1, input.size)
 
-    val hourItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
+    val hourItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("hour")))
     val hour = hourItem.value
     input = colon(hourItem.remaining)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    val minItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
+    val minItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("minute")))
     val minute = minItem.value
     input = colon(minItem.remaining)?.intoInner()
         ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-    val secItem = ExactlyNDigits.parse2(input)
-        ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
+    val secItem =
+        ExactlyNDigits.parse2(input)
+            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("second")))
     var second = secItem.value
     input = secItem.remaining
 
     var nanosecond: UInt
     val dot = asciiChar('.'.code.toByte(), input)
     if (dot != null) {
-        val firstDigit = anyDigit(dot.remaining)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
+        val firstDigit =
+            anyDigit(dot.remaining)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
         var rem = firstDigit.remaining
         var value = (firstDigit.value - '0'.code.toUByte()) * 100_000_000u
         var multiplier = 10_000_000u
@@ -574,49 +645,58 @@ private fun parseRfc3339OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         input = zChar.remaining
         offset = UtcOffset.UTC
     } else {
-        val signItem = sign(input)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+        val signItem =
+            sign(input)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
         val offsetSign = signItem.value
-        val offHourItem = ExactlyNDigits.parse2(signItem.remaining)
-            ?.filter { it <= 23u }
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
+        val offHourItem =
+            ExactlyNDigits
+                .parse2(signItem.remaining)
+                ?.filter { it <= 23u }
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset hour")))
         val offHour = offHourItem.value
         input = colon(offHourItem.remaining)?.intoInner()
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidLiteral))
-        val offMinItem = ExactlyNDigits.parse2(input)
-            ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
+        val offMinItem =
+            ExactlyNDigits.parse2(input)
+                ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("offset minute")))
         val offMin = offMinItem.value
         input = offMinItem.remaining
 
-        offset = when (offsetSign) {
-            Sign.Negative -> UtcOffset.fromHms(-offHour.toInt(), -offMin.toInt(), 0)
-            Sign.Positive -> UtcOffset.fromHms(offHour.toInt(), offMin.toInt(), 0)
-        }.getOrElse {
-            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-        }
+        offset =
+            when (offsetSign) {
+                Sign.Negative -> UtcOffset.fromHms(-offHour.toInt(), -offMin.toInt(), 0)
+                Sign.Positive -> UtcOffset.fromHms(offHour.toInt(), offMin.toInt(), 0)
+            }.getOrElse {
+                return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+            }
     }
 
     if (input.isNotEmpty()) {
         return Result.failure(Parse.FromDescription(ParseFromDescription.UnexpectedTrailingCharacters))
     }
 
-    val leapSecondInput = if (second == 60.toUByte()) {
-        second = 59u
-        nanosecond = 999_999_999u
-        true
-    } else {
-        false
-    }
+    val leapSecondInput =
+        if (second == 60.toUByte()) {
+            second = 59u
+            nanosecond = 999_999_999u
+            true
+        } else {
+            false
+        }
 
-    val month = Month.fromNumber(monthNum.toInt()).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
-    val date = Date.fromCalendarDate(year.toShort().toInt(), month, day.toInt()).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
-    val time = Time.fromHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond.toInt()).getOrElse {
-        return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
-    }
+    val month =
+        Month.fromNumber(monthNum.toInt()).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
+    val date =
+        Date.fromCalendarDate(year.toShort().toInt(), month, day.toInt()).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
+    val time =
+        Time.fromHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond.toInt()).getOrElse {
+            return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
+        }
     val dt = OffsetDateTime.newInOffset(date, time, offset)
 
     if (leapSecondInput && !dt.isValidLeapSecondStandIn()) {

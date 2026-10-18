@@ -16,13 +16,13 @@ import io.github.kotlinmania.time.formatting.computeTimestampNanosSignAndAbs
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
-import io.github.kotlinmania.time.serde.I8Serialize
 import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.I8Serialize
 import io.github.kotlinmania.time.serde.OFFSET_DATE_TIME_FORMAT
 import io.github.kotlinmania.time.serde.OffsetDateTimeVisitor
-import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U16Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
 
 internal val MIN_UNIX_TIMESTAMP: Long =
     OffsetDateTime.newInOffset(Date.MIN, Time.MIDNIGHT, UtcOffset.UTC).unixTimestamp()
@@ -36,7 +36,8 @@ internal val MAX_UNIX_TIMESTAMP: Long =
 class OffsetDateTime internal constructor(
     private val localDateTime: PrimitiveDateTime,
     private val offset: UtcOffset,
-) : Comparable<OffsetDateTime>, Serialize {
+) : Comparable<OffsetDateTime>,
+    Serialize {
     companion object : Deserialize<OffsetDateTime> {
         override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<OffsetDateTime> =
             if (deserializer.isHumanReadable()) {
@@ -53,7 +54,11 @@ class OffsetDateTime internal constructor(
             newInOffset(Date.UNIX_EPOCH, Time.MIDNIGHT, UtcOffset.UTC)
 
         /** Create a new [OffsetDateTime] with the current date and time in UTC. */
-        fun nowUtc(): OffsetDateTime = from(kotlin.time.Clock.System.now())
+        fun nowUtc(): OffsetDateTime =
+            from(
+                kotlin.time.Clock.System
+                    .now(),
+            )
 
         /**
          * Attempt to create a new [OffsetDateTime] with the current date and time in the local offset.
@@ -369,11 +374,17 @@ class OffsetDateTime internal constructor(
 
     override fun equals(other: Any?): Boolean =
         when (other) {
-            is OffsetDateTime ->
+            is OffsetDateTime -> {
                 unixTimestamp() == other.unixTimestamp() && nanosecond() == other.nanosecond()
-            is UtcDateTime ->
+            }
+
+            is UtcDateTime -> {
                 unixTimestamp() == other.unixTimestamp() && nanosecond() == other.nanosecond()
-            else -> false
+            }
+
+            else -> {
+                false
+            }
         }
 
     override fun hashCode(): Int = 31 * unixTimestamp().hashCode() + nanosecond()

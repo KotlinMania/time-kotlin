@@ -45,6 +45,7 @@ internal fun <V, State> formatIso8601Date(
             bytes += writeIf(output, iso.useSeparators, "-").getOrElse { return Result.failure(it) }
             bytes += formatNumberPadZero(2, output, provider.day(value, state).toUInt()).getOrElse { return Result.failure(it) }
         }
+
         DateKind.Week -> {
             val year = provider.isoYear(value, state)
             if (iso.yearIsSixDigits) {
@@ -60,6 +61,7 @@ internal fun <V, State> formatIso8601Date(
             bytes += writeIf(output, iso.useSeparators, "-").getOrElse { return Result.failure(it) }
             bytes += formatNumberPadZero(1, output, provider.weekday(value, state).numberFromMonday().toUInt()).getOrElse { return Result.failure(it) }
         }
+
         DateKind.Ordinal -> {
             val year = provider.calendarYear(value, state)
             if (iso.yearIsSixDigits) {
@@ -100,6 +102,7 @@ internal fun <V, State> formatIso8601Time(
                     provider.nanosecond(value, state).toDouble() / 3_600_000_000_000.0
             bytes += formatFloat(output, hours, 2u, tp.decimalDigits).getOrElse { return Result.failure(it) }
         }
+
         is TimePrecision.Minute -> {
             bytes += formatNumberPadZero(2, output, provider.hour(value, state).toUInt()).getOrElse { return Result.failure(it) }
             bytes += writeIf(output, iso.useSeparators, ":").getOrElse { return Result.failure(it) }
@@ -109,6 +112,7 @@ internal fun <V, State> formatIso8601Time(
                     provider.nanosecond(value, state).toDouble() / 60_000_000_000.0
             bytes += formatFloat(output, minutes, 2u, tp.decimalDigits).getOrElse { return Result.failure(it) }
         }
+
         is TimePrecision.Second -> {
             bytes += formatNumberPadZero(2, output, provider.hour(value, state).toUInt()).getOrElse { return Result.failure(it) }
             bytes += writeIf(output, iso.useSeparators, ":").getOrElse { return Result.failure(it) }

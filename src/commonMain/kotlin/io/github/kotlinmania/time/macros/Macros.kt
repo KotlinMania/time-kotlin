@@ -52,28 +52,34 @@ fun date(s: String): Date {
 fun time(s: String): Time {
     var working = s.trim()
     val lower = working.lowercase()
-    val isAm: Boolean? = when {
-        lower.endsWith("am") -> {
-            working = working.substring(0, working.length - 2).trim()
-            true
+    val isAm: Boolean? =
+        when {
+            lower.endsWith("am") -> {
+                working = working.substring(0, working.length - 2).trim()
+                true
+            }
+
+            lower.endsWith("pm") -> {
+                working = working.substring(0, working.length - 2).trim()
+                false
+            }
+
+            else -> {
+                null
+            }
         }
-        lower.endsWith("pm") -> {
-            working = working.substring(0, working.length - 2).trim()
-            false
-        }
-        else -> null
-    }
 
     var subsecondNanos = 0
     val dotIdx = working.indexOf('.')
     if (dotIdx != -1) {
         val fracRaw = working.substring(dotIdx + 1).replace("_", "").trim()
         working = working.substring(0, dotIdx).trim()
-        val padded = if (fracRaw.length >= 9) {
-            fracRaw.substring(0, 9)
-        } else {
-            fracRaw.padEnd(9, '0')
-        }
+        val padded =
+            if (fracRaw.length >= 9) {
+                fracRaw.substring(0, 9)
+            } else {
+                fracRaw.padEnd(9, '0')
+            }
         subsecondNanos = padded.toInt()
     }
 
@@ -82,17 +88,22 @@ fun time(s: String): Time {
     val minute = if (parts.size >= 2) parts[1].toInt() else 0
     val second = if (parts.size >= 3) parts[2].toInt() else 0
 
-    val hour = when (isAm) {
-        true -> {
-            require(rawHour in 1..12) { "12-hour clock hour must be in 1..12" }
-            if (rawHour == 12) 0 else rawHour
+    val hour =
+        when (isAm) {
+            true -> {
+                require(rawHour in 1..12) { "12-hour clock hour must be in 1..12" }
+                if (rawHour == 12) 0 else rawHour
+            }
+
+            false -> {
+                require(rawHour in 1..12) { "12-hour clock hour must be in 1..12" }
+                if (rawHour == 12) 12 else rawHour + 12
+            }
+
+            null -> {
+                rawHour
+            }
         }
-        false -> {
-            require(rawHour in 1..12) { "12-hour clock hour must be in 1..12" }
-            if (rawHour == 12) 12 else rawHour + 12
-        }
-        null -> rawHour
-    }
 
     return Time.fromHmsNano(hour, minute, second, subsecondNanos).getOrThrow()
 }
@@ -105,21 +116,23 @@ fun offset(s: String): UtcOffset {
     if (trimmed.equals("UTC", ignoreCase = true) || trimmed.equals("Z", ignoreCase = true)) {
         return UtcOffset.UTC
     }
-    val isNegative = when {
-        trimmed.startsWith('-') -> true
-        trimmed.startsWith('+') -> false
-        else -> throw IllegalArgumentException("Offset must start with + or - or be UTC: $s")
-    }
+    val isNegative =
+        when {
+            trimmed.startsWith('-') -> true
+            trimmed.startsWith('+') -> false
+            else -> throw IllegalArgumentException("Offset must start with + or - or be UTC: $s")
+        }
     val parts = trimmed.substring(1).split(':')
     val h = parts[0].toInt()
     val m = if (parts.size >= 2) parts[1].toInt() else 0
     val sec = if (parts.size >= 3) parts[2].toInt() else 0
     val signMul = if (isNegative) -1 else 1
-    return UtcOffset.fromHms(
-        h * signMul,
-        m * signMul,
-        sec * signMul,
-    ).getOrThrow()
+    return UtcOffset
+        .fromHms(
+            h * signMul,
+            m * signMul,
+            sec * signMul,
+        ).getOrThrow()
 }
 
 /**
@@ -283,4 +296,3 @@ fun utcDatetime(
     nanosecond: Int = 0,
 ): UtcDateTime =
     UtcDateTime.new(date(year, month, day), time(hour, minute, second, nanosecond))
-

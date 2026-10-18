@@ -17,7 +17,9 @@ internal enum class ComponentKind {
 
 /** A token emitted by the lexer. */
 internal sealed class Token {
-    class Literal(val value: Spanned<ByteArray>) : Token()
+    class Literal(
+        val value: Spanned<ByteArray>,
+    ) : Token()
 
     class Bracket(
         val kind: BracketKind,

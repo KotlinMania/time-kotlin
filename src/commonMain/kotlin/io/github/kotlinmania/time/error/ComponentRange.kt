@@ -23,7 +23,8 @@ class ComponentRange internal constructor(
      * of other components were different.
      */
     private val conditional: Boolean,
-) : IllegalArgumentException("$componentName was not in range"), Expected {
+) : IllegalArgumentException("$componentName was not in range"),
+    Expected {
     override fun equals(other: Any?): Boolean =
         other is ComponentRange &&
             other.componentName == componentName &&
@@ -76,4 +77,3 @@ class ComponentRange internal constructor(
 
 internal fun Throwable.intoDeError(): SerdeError =
     if (this is ComponentRange) intoDeError() else SerdeError.custom(message ?: toString())
-

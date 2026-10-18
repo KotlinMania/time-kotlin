@@ -26,4 +26,3 @@ object InvalidVariant : IllegalArgumentException("value was not a valid variant"
             else -> Result.failure(DifferentVariant())
         }
 }
-

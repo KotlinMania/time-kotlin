@@ -105,4 +105,3 @@ sealed class Component {
         fun tryFrom(item: OwnedFormatItem): Result<Component> = item.tryIntoComponent()
     }
 }
-

@@ -243,7 +243,6 @@ internal object UtcOffsetComponentProvider : ComponentProvider<UtcOffset, Unit> 
     override fun offsetSecond(value: UtcOffset, state: Unit): Byte = value.secondsPastMinute().toByte()
 }
 
-
 internal fun computeTimestampMicrosSignAndAbs(sec: Long, nano: Int): Pair<Boolean, String> =
     if (sec >= 0L) {
         val microRem = nano / 1_000

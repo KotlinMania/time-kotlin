@@ -7,7 +7,6 @@ import io.github.kotlinmania.time.formatdescription.Component
 import io.github.kotlinmania.time.formatdescription.modifier.Day
 import io.github.kotlinmania.time.formatdescription.modifier.Hour
 import io.github.kotlinmania.time.formatdescription.modifier.Minute
-import io.github.kotlinmania.time.formatdescription.modifier.Month as MonthMod
 import io.github.kotlinmania.time.formatdescription.modifier.OffsetHour
 import io.github.kotlinmania.time.formatdescription.modifier.OffsetMinute
 import io.github.kotlinmania.time.formatdescription.modifier.OffsetSecond
@@ -17,13 +16,14 @@ import io.github.kotlinmania.time.formatdescription.modifier.Second
 import io.github.kotlinmania.time.formatdescription.modifier.Subsecond
 import io.github.kotlinmania.time.formatdescription.modifier.WeekNumber
 import io.github.kotlinmania.time.formatdescription.modifier.WeekNumberRepr
-import io.github.kotlinmania.time.formatdescription.modifier.Weekday as WeekdayMod
 import io.github.kotlinmania.time.formatdescription.modifier.Year
 import io.github.kotlinmania.time.parsing.Parsed
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import io.github.kotlinmania.time.formatdescription.modifier.Month as MonthMod
+import io.github.kotlinmania.time.formatdescription.modifier.Weekday as WeekdayMod
 
 class ParsedTest {
     @Test
@@ -133,7 +133,8 @@ class ParsedTest {
     @Test
     fun builderMethods() {
         val parsed =
-            Parsed.new()
+            Parsed
+                .new()
                 .withYear(5)
                 ?.withYearLastTwo(5u)
                 ?.withIsoYear(5)

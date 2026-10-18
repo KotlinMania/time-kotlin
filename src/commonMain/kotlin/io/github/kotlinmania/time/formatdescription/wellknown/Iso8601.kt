@@ -2,10 +2,10 @@
 package io.github.kotlinmania.time.formatdescription.wellknown
 
 import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.EncodedConfig
-import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.decode as decodeIso8601Config
-import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.encode as encodeIso8601Config
 import io.github.kotlinmania.time.formatting.Formattable
 import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.decode as decodeIso8601Config
+import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.encode as encodeIso8601Config
 
 /**
  * The format described in ISO 8601.
@@ -19,7 +19,8 @@ import io.github.kotlinmania.time.parsing.Parsable
  */
 data class Iso8601(
     val config: EncodedConfig = Config.DEFAULT.encode(),
-) : Formattable, Parsable {
+) : Formattable,
+    Parsable {
     constructor(config: Config) : this(config.encode())
 
     override fun toString(): String = "Iso8601(config = ${Config.decode(config)})"
@@ -182,7 +183,6 @@ enum class OffsetPrecision {
 /** Configuration for [Iso8601]. */
 @ConsistentCopyVisibility
 data class Config internal constructor(
-
     /** Which components, if any, will be formatted. */
     internal val formattedComponents: FormattedComponents,
     /** Whether the format contains separators (such as `-` or `:`). */

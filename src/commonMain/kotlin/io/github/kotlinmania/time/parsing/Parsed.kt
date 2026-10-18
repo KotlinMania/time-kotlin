@@ -139,13 +139,23 @@ class Parsed {
         item: BorrowedFormatItem,
     ): Result<ByteArray> =
         when (item) {
-            is BorrowedFormatItem.Literal -> parseLiteral(input, item.bytes)
-            is BorrowedFormatItem.Component -> parseComponent(input, item.component)
-            is BorrowedFormatItem.Compound -> parseItems(input, item.items)
+            is BorrowedFormatItem.Literal -> {
+                parseLiteral(input, item.bytes)
+            }
+
+            is BorrowedFormatItem.Component -> {
+                parseComponent(input, item.component)
+            }
+
+            is BorrowedFormatItem.Compound -> {
+                parseItems(input, item.items)
+            }
+
             is BorrowedFormatItem.Optional -> {
                 val res = parseItem(input, item.item)
                 if (res.isSuccess) res else Result.success(input)
             }
+
             is BorrowedFormatItem.First -> {
                 var firstErr: Throwable? = null
                 var matched: ByteArray? = null
@@ -174,13 +184,23 @@ class Parsed {
         item: OwnedFormatItem,
     ): Result<ByteArray> =
         when (item) {
-            is OwnedFormatItem.Literal -> parseLiteral(input, item.bytes)
-            is OwnedFormatItem.Component -> parseComponent(input, item.component)
-            is OwnedFormatItem.Compound -> parseOwnedItems(input, item.items)
+            is OwnedFormatItem.Literal -> {
+                parseLiteral(input, item.bytes)
+            }
+
+            is OwnedFormatItem.Component -> {
+                parseComponent(input, item.component)
+            }
+
+            is OwnedFormatItem.Compound -> {
+                parseOwnedItems(input, item.items)
+            }
+
             is OwnedFormatItem.Optional -> {
                 val res = parseItem(input, item.item)
                 if (res.isSuccess) res else Result.success(input)
             }
+
             is OwnedFormatItem.First -> {
                 var firstErr: Throwable? = null
                 var matched: ByteArray? = null
@@ -238,141 +258,177 @@ class Parsed {
     ): Result<ByteArray> =
         when (component) {
             is Component.Day -> {
-                val remaining = parseDay(input, component.modifier)
-                    ?.consumeValue { setDay(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("day"))
+                val remaining =
+                    parseDay(input, component.modifier)
+                        ?.consumeValue { setDay(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("day"))
                 Result.success(remaining)
             }
+
             is Component.Month -> {
-                val remaining = parseMonth(input, component.modifier)
-                    ?.consumeValue { setMonth(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("month"))
+                val remaining =
+                    parseMonth(input, component.modifier)
+                        ?.consumeValue { setMonth(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("month"))
                 Result.success(remaining)
             }
+
             is Component.Ordinal -> {
-                val remaining = parseOrdinal(input, component.modifier)
-                    ?.consumeValue { setOrdinal(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("ordinal"))
+                val remaining =
+                    parseOrdinal(input, component.modifier)
+                        ?.consumeValue { setOrdinal(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("ordinal"))
                 Result.success(remaining)
             }
+
             is Component.Weekday -> {
-                val remaining = parseWeekday(input, component.modifier)
-                    ?.consumeValue { setWeekday(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("weekday"))
+                val remaining =
+                    parseWeekday(input, component.modifier)
+                        ?.consumeValue { setWeekday(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("weekday"))
                 Result.success(remaining)
             }
+
             is Component.WeekNumber -> {
-                val item = parseWeekNumber(input, component.modifier)
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("week number"))
-                val setOk = when (component.modifier.repr) {
-                    WeekNumberRepr.Iso -> if (item.value > 0u) setIsoWeekNumber(item.value) else null
-                    WeekNumberRepr.Sunday -> setSundayWeekNumber(item.value)
-                    WeekNumberRepr.Monday -> setMondayWeekNumber(item.value)
-                }
+                val item =
+                    parseWeekNumber(input, component.modifier)
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("week number"))
+                val setOk =
+                    when (component.modifier.repr) {
+                        WeekNumberRepr.Iso -> if (item.value > 0u) setIsoWeekNumber(item.value) else null
+                        WeekNumberRepr.Sunday -> setSundayWeekNumber(item.value)
+                        WeekNumberRepr.Monday -> setMondayWeekNumber(item.value)
+                    }
                 if (setOk == null) {
                     Result.failure(ParseFromDescription.InvalidComponent("week number"))
                 } else {
                     Result.success(item.remaining)
                 }
             }
+
             is Component.Year -> {
-                val item = parseYear(input, component.modifier)
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("year"))
+                val item =
+                    parseYear(input, component.modifier)
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("year"))
                 val (value, isNegative) = item.value
-                val setOk = if (!component.modifier.isoWeekBased) {
-                    when (component.modifier.repr) {
-                        YearRepr.Full -> setYear(value)
-                        YearRepr.Century -> setYearCentury(value.toShort(), isNegative)
-                        YearRepr.LastTwo -> setYearLastTwo(value.toUInt().toUByte())
+                val setOk =
+                    if (!component.modifier.isoWeekBased) {
+                        when (component.modifier.repr) {
+                            YearRepr.Full -> setYear(value)
+                            YearRepr.Century -> setYearCentury(value.toShort(), isNegative)
+                            YearRepr.LastTwo -> setYearLastTwo(value.toUInt().toUByte())
+                        }
+                    } else {
+                        when (component.modifier.repr) {
+                            YearRepr.Full -> setIsoYear(value)
+                            YearRepr.Century -> setIsoYearCentury(value.toShort(), isNegative)
+                            YearRepr.LastTwo -> setIsoYearLastTwo(value.toUInt().toUByte())
+                        }
                     }
-                } else {
-                    when (component.modifier.repr) {
-                        YearRepr.Full -> setIsoYear(value)
-                        YearRepr.Century -> setIsoYearCentury(value.toShort(), isNegative)
-                        YearRepr.LastTwo -> setIsoYearLastTwo(value.toUInt().toUByte())
-                    }
-                }
                 if (setOk == null) {
                     Result.failure(ParseFromDescription.InvalidComponent("year"))
                 } else {
                     Result.success(item.remaining)
                 }
             }
+
             is Component.Hour -> {
-                val item = parseHour(input, component.modifier)
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("hour"))
-                val setOk = if (component.modifier.is12HourClock) {
-                    if (item.value > 0u) setHour12(item.value) else null
-                } else {
-                    setHour24(item.value)
-                }
+                val item =
+                    parseHour(input, component.modifier)
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("hour"))
+                val setOk =
+                    if (component.modifier.is12HourClock) {
+                        if (item.value > 0u) setHour12(item.value) else null
+                    } else {
+                        setHour24(item.value)
+                    }
                 if (setOk == null) {
                     Result.failure(ParseFromDescription.InvalidComponent("hour"))
                 } else {
                     Result.success(item.remaining)
                 }
             }
+
             is Component.Minute -> {
-                val remaining = parseMinute(input, component.modifier)
-                    ?.consumeValue { setMinute(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("minute"))
+                val remaining =
+                    parseMinute(input, component.modifier)
+                        ?.consumeValue { setMinute(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("minute"))
                 Result.success(remaining)
             }
+
             is Component.Period -> {
-                val remaining = parsePeriod(input, component.modifier)
-                    ?.consumeValue { setHour12IsPm(it == PeriodCase.Pm) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("period"))
+                val remaining =
+                    parsePeriod(input, component.modifier)
+                        ?.consumeValue { setHour12IsPm(it == PeriodCase.Pm) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("period"))
                 Result.success(remaining)
             }
+
             is Component.Second -> {
-                val remaining = parseSecond(input, component.modifier)
-                    ?.consumeValue { setSecond(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("second"))
+                val remaining =
+                    parseSecond(input, component.modifier)
+                        ?.consumeValue { setSecond(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("second"))
                 Result.success(remaining)
             }
+
             is Component.Subsecond -> {
-                val remaining = parseSubsecond(input, component.modifier)
-                    ?.consumeValue { setSubsecond(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("subsecond"))
+                val remaining =
+                    parseSubsecond(input, component.modifier)
+                        ?.consumeValue { setSubsecond(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("subsecond"))
                 Result.success(remaining)
             }
+
             is Component.OffsetHour -> {
-                val remaining = parseOffsetHour(input, component.modifier)
-                    ?.consumeValue { (value, isNegative) ->
-                        setOffsetHour(value) ?: return@consumeValue null
-                        this.offsetIsNegative = isNegative
-                        Unit
-                    }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("offset hour"))
+                val remaining =
+                    parseOffsetHour(input, component.modifier)
+                        ?.consumeValue { (value, isNegative) ->
+                            setOffsetHour(value) ?: return@consumeValue null
+                            this.offsetIsNegative = isNegative
+                            Unit
+                        }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("offset hour"))
                 Result.success(remaining)
             }
+
             is Component.OffsetMinute -> {
-                val remaining = parseOffsetMinute(input, component.modifier)
-                    ?.consumeValue { setOffsetMinuteSigned(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("offset minute"))
+                val remaining =
+                    parseOffsetMinute(input, component.modifier)
+                        ?.consumeValue { setOffsetMinuteSigned(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("offset minute"))
                 Result.success(remaining)
             }
+
             is Component.OffsetSecond -> {
-                val remaining = parseOffsetSecond(input, component.modifier)
-                    ?.consumeValue { setOffsetSecondSigned(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("offset second"))
+                val remaining =
+                    parseOffsetSecond(input, component.modifier)
+                        ?.consumeValue { setOffsetSecondSigned(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("offset second"))
                 Result.success(remaining)
             }
+
             is Component.Ignore -> {
-                val item = parseIgnore(input, component.modifier)
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("ignore"))
+                val item =
+                    parseIgnore(input, component.modifier)
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("ignore"))
                 Result.success(item.intoInner())
             }
+
             is Component.UnixTimestamp -> {
-                val remaining = parseUnixTimestamp(input, component.modifier)
-                    ?.consumeValue { setUnixTimestampNanosString(it) }
-                    ?: return Result.failure(ParseFromDescription.InvalidComponent("unix_timestamp"))
+                val remaining =
+                    parseUnixTimestamp(input, component.modifier)
+                        ?.consumeValue { setUnixTimestampNanosString(it) }
+                        ?: return Result.failure(ParseFromDescription.InvalidComponent("unix_timestamp"))
                 Result.success(remaining)
             }
+
             is Component.End -> {
-                val item = parseEnd(input, component.modifier)
-                    ?.consumeValue { Unit }
-                    ?: return Result.failure(ParseFromDescription.UnexpectedTrailingCharacters)
+                val item =
+                    parseEnd(input, component.modifier)
+                        ?.consumeValue { Unit }
+                        ?: return Result.failure(ParseFromDescription.UnexpectedTrailingCharacters)
                 Result.success(item)
             }
         }
@@ -731,11 +787,12 @@ class Parsed {
             val isNegative = parsed.yearCenturyIsNegative()
             val lastTwo = parsed.yearLastTwo()
             if (century != null && isNegative != null && lastTwo != null) {
-                val y = if (isNegative) {
-                    100 * century.toInt() - lastTwo.toInt()
-                } else {
-                    100 * century.toInt() + lastTwo.toInt()
-                }
+                val y =
+                    if (isNegative) {
+                        100 * century.toInt() - lastTwo.toInt()
+                    } else {
+                        100 * century.toInt() + lastTwo.toInt()
+                    }
                 if (y in Date.MIN_YEAR..Date.MAX_YEAR) {
                     parsed.yearVal = y
                 }
@@ -747,11 +804,12 @@ class Parsed {
             val isNegative = parsed.isoYearCenturyIsNegative()
             val lastTwo = parsed.isoYearLastTwo()
             if (century != null && isNegative != null && lastTwo != null) {
-                val y = if (isNegative) {
-                    100 * century.toInt() - lastTwo.toInt()
-                } else {
-                    100 * century.toInt() + lastTwo.toInt()
-                }
+                val y =
+                    if (isNegative) {
+                        100 * century.toInt() - lastTwo.toInt()
+                    } else {
+                        100 * century.toInt() + lastTwo.toInt()
+                    }
                 if (y in Date.MIN_YEAR..Date.MAX_YEAR) {
                     parsed.isoYearVal = y
                 }
@@ -788,8 +846,11 @@ class Parsed {
 
         val sunW = parsed.sundayWeekNumber()
         if (y != null && sunW != null && wd != null) {
-            val computedOrd = (sunW.toInt() * 7 + wd.numberDaysFromSunday() - adjustment(y) + 1)
-                .toShort().toUShort().toInt()
+            val computedOrd =
+                (sunW.toInt() * 7 + wd.numberDaysFromSunday() - adjustment(y) + 1)
+                    .toShort()
+                    .toUShort()
+                    .toInt()
             return Date.fromOrdinalDate(y, computedOrd).fold(
                 onSuccess = { Result.success(it) },
                 onFailure = { Result.failure(TryFromParsed.Range(it as ComponentRange)) },
@@ -798,8 +859,11 @@ class Parsed {
 
         val monW = parsed.mondayWeekNumber()
         if (y != null && monW != null && wd != null) {
-            val computedOrd = (monW.toInt() * 7 + wd.numberDaysFromMonday() - adjustment(y) + 1)
-                .toShort().toUShort().toInt()
+            val computedOrd =
+                (monW.toInt() * 7 + wd.numberDaysFromMonday() - adjustment(y) + 1)
+                    .toShort()
+                    .toUShort()
+                    .toInt()
             return Date.fromOrdinalDate(y, computedOrd).fold(
                 onSuccess = { Result.success(it) },
                 onFailure = { Result.failure(TryFromParsed.Range(it as ComponentRange)) },
@@ -813,14 +877,15 @@ class Parsed {
         val h24 = hour24()
         val h12 = hour12()
         val isPm = hour12IsPm()
-        val hour: Int = when {
-            h24 != null -> h24.toInt()
-            h12 != null && isPm == false && h12.toInt() == 12 -> 0
-            h12 != null && isPm == true && h12.toInt() == 12 -> 12
-            h12 != null && isPm == false -> h12.toInt()
-            h12 != null && isPm == true -> h12.toInt() + 12
-            else -> return Result.failure(TryFromParsed.InsufficientInformation)
-        }
+        val hour: Int =
+            when {
+                h24 != null -> h24.toInt()
+                h12 != null && isPm == false && h12.toInt() == 12 -> 0
+                h12 != null && isPm == true && h12.toInt() == 12 -> 12
+                h12 != null && isPm == false -> h12.toInt()
+                h12 != null && isPm == true -> h12.toInt() + 12
+                else -> return Result.failure(TryFromParsed.InsufficientInformation)
+            }
 
         val min = minute()
         val sec = second()
@@ -834,15 +899,25 @@ class Parsed {
         }
 
         return when {
-            min == null && sec == null && sub == null ->
+            min == null && sec == null && sub == null -> {
                 Time.fromHmsNano(hour, 0, 0, 0)
-            min != null && sec == null && sub == null ->
+            }
+
+            min != null && sec == null && sub == null -> {
                 Time.fromHmsNano(hour, min.toInt(), 0, 0)
-            min != null && sec != null && sub == null ->
+            }
+
+            min != null && sec != null && sub == null -> {
                 Time.fromHmsNano(hour, min.toInt(), sec.toInt(), 0)
-            min != null && sec != null && sub != null ->
+            }
+
+            min != null && sec != null && sub != null -> {
                 Time.fromHmsNano(hour, min.toInt(), sec.toInt(), sub.toInt())
-            else -> return Result.failure(TryFromParsed.InsufficientInformation)
+            }
+
+            else -> {
+                return Result.failure(TryFromParsed.InsufficientInformation)
+            }
         }.fold(
             onSuccess = { Result.success(it) },
             onFailure = { Result.failure(TryFromParsed.Range(it as ComponentRange)) },
@@ -879,23 +954,26 @@ class Parsed {
         val ts = parsed.unixTimestampSecAndNano()
         if (ts != null) {
             val (sec, nano) = ts
-            val base = UtcDateTime.fromUnixTimestamp(sec).getOrElse {
-                return Result.failure(TryFromParsed.Range(it as ComponentRange))
-            }
+            val base =
+                UtcDateTime.fromUnixTimestamp(sec).getOrElse {
+                    return Result.failure(TryFromParsed.Range(it as ComponentRange))
+                }
             val finalNano = parsed.subsecond()?.toInt() ?: nano
-            val value = base.replaceNanosecond(finalNano).getOrElse {
-                return Result.failure(TryFromParsed.Range(it as ComponentRange))
-            }
+            val value =
+                base.replaceNanosecond(finalNano).getOrElse {
+                    return Result.failure(TryFromParsed.Range(it as ComponentRange))
+                }
             return Result.success(value)
         }
 
-        val leapSecondInput = if (parsed.leapSecondAllowed && parsed.second() == 60.toUByte()) {
-            parsed.setSecond(59u)
-            parsed.setSubsecond(999_999_999u)
-            true
-        } else {
-            false
-        }
+        val leapSecondInput =
+            if (parsed.leapSecondAllowed && parsed.second() == 60.toUByte()) {
+                parsed.setSecond(59u)
+                parsed.setSubsecond(999_999_999u)
+                true
+            } else {
+                false
+            }
 
         val d = parsed.toDate().getOrElse { return Result.failure(it) }
         val t = parsed.toTime().getOrElse { return Result.failure(it) }
@@ -913,23 +991,26 @@ class Parsed {
         val ts = parsed.unixTimestampSecAndNano()
         if (ts != null) {
             val (sec, nano) = ts
-            val base = OffsetDateTime.fromUnixTimestamp(sec).getOrElse {
-                return Result.failure(TryFromParsed.Range(it as ComponentRange))
-            }
+            val base =
+                OffsetDateTime.fromUnixTimestamp(sec).getOrElse {
+                    return Result.failure(TryFromParsed.Range(it as ComponentRange))
+                }
             val finalNano = parsed.subsecond()?.toInt() ?: nano
-            val value = base.replaceNanosecond(finalNano).getOrElse {
-                return Result.failure(TryFromParsed.Range(it as ComponentRange))
-            }
+            val value =
+                base.replaceNanosecond(finalNano).getOrElse {
+                    return Result.failure(TryFromParsed.Range(it as ComponentRange))
+                }
             return Result.success(value)
         }
 
-        val leapSecondInput = if (parsed.leapSecondAllowed && parsed.second() == 60.toUByte()) {
-            parsed.setSecond(59u)
-            parsed.setSubsecond(999_999_999u)
-            true
-        } else {
-            false
-        }
+        val leapSecondInput =
+            if (parsed.leapSecondAllowed && parsed.second() == 60.toUByte()) {
+                parsed.setSecond(59u)
+                parsed.setSubsecond(999_999_999u)
+                true
+            } else {
+                false
+            }
 
         val d = parsed.toDate().getOrElse { return Result.failure(it) }
         val t = parsed.toTime().getOrElse { return Result.failure(it) }

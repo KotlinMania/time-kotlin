@@ -196,24 +196,41 @@ internal fun <V, State> formatComponent(
 ): Result<Int> =
     when (component) {
         is Component.Day -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else fmtDay(output, provider.day(value, state), component.modifier)
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtDay(output, provider.day(value, state), component.modifier)
+            }
         }
+
         is Component.Month -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else fmtMonth(output, provider.month(value, state), component.modifier)
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtMonth(output, provider.month(value, state), component.modifier)
+            }
         }
+
         is Component.Ordinal -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else fmtOrdinal(output, provider.ordinal(value, state), component.modifier)
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtOrdinal(output, provider.ordinal(value, state), component.modifier)
+            }
         }
+
         is Component.Weekday -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else fmtWeekday(output, provider.weekday(value, state), component.modifier)
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtWeekday(output, provider.weekday(value, state), component.modifier)
+            }
         }
+
         is Component.WeekNumber -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else {
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
                 val weekNum =
                     when (component.modifier.repr) {
                         WeekNumberRepr.Iso -> provider.isoWeekNumber(value, state)
@@ -223,9 +240,11 @@ internal fun <V, State> formatComponent(
                 fmtWeekNumber(output, weekNum, component.modifier)
             }
         }
+
         is Component.Year -> {
-            if (!provider.suppliesDate) Result.failure(Format.InsufficientTypeInformation())
-            else {
+            if (!provider.suppliesDate) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
                 val yr =
                     if (component.modifier.isoWeekBased) {
                         provider.isoYear(value, state)
@@ -235,76 +254,123 @@ internal fun <V, State> formatComponent(
                 fmtYear(output, yr, component.modifier)
             }
         }
+
         is Component.Hour -> {
-            if (!provider.suppliesTime) Result.failure(Format.InsufficientTypeInformation())
-            else fmtHour(output, provider.hour(value, state), component.modifier)
+            if (!provider.suppliesTime) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtHour(output, provider.hour(value, state), component.modifier)
+            }
         }
+
         is Component.Minute -> {
-            if (!provider.suppliesTime) Result.failure(Format.InsufficientTypeInformation())
-            else fmtMinute(output, provider.minute(value, state), component.modifier)
+            if (!provider.suppliesTime) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtMinute(output, provider.minute(value, state), component.modifier)
+            }
         }
+
         is Component.Period -> {
-            if (!provider.suppliesTime) Result.failure(Format.InsufficientTypeInformation())
-            else fmtPeriod(output, provider.period(value, state), component.modifier)
+            if (!provider.suppliesTime) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtPeriod(output, provider.period(value, state), component.modifier)
+            }
         }
+
         is Component.Second -> {
-            if (!provider.suppliesTime) Result.failure(Format.InsufficientTypeInformation())
-            else fmtSecond(output, provider.second(value, state), component.modifier)
+            if (!provider.suppliesTime) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtSecond(output, provider.second(value, state), component.modifier)
+            }
         }
+
         is Component.Subsecond -> {
-            if (!provider.suppliesTime) Result.failure(Format.InsufficientTypeInformation())
-            else fmtSubsecond(output, provider.nanosecond(value, state), component.modifier)
+            if (!provider.suppliesTime) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtSubsecond(output, provider.nanosecond(value, state), component.modifier)
+            }
         }
+
         is Component.OffsetHour -> {
-            if (!provider.suppliesOffset) Result.failure(Format.InsufficientTypeInformation())
-            else
+            if (!provider.suppliesOffset) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
                 fmtOffsetHour(
                     output,
                     provider.offsetIsNegative(value, state),
                     provider.offsetHour(value, state),
                     component.modifier,
                 )
+            }
         }
+
         is Component.OffsetMinute -> {
-            if (!provider.suppliesOffset) Result.failure(Format.InsufficientTypeInformation())
-            else fmtOffsetMinute(output, provider.offsetMinute(value, state), component.modifier)
+            if (!provider.suppliesOffset) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtOffsetMinute(output, provider.offsetMinute(value, state), component.modifier)
+            }
         }
+
         is Component.OffsetSecond -> {
-            if (!provider.suppliesOffset) Result.failure(Format.InsufficientTypeInformation())
-            else fmtOffsetSecond(output, provider.offsetSecond(value, state), component.modifier)
+            if (!provider.suppliesOffset) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
+                fmtOffsetSecond(output, provider.offsetSecond(value, state), component.modifier)
+            }
         }
-        is Component.Ignore -> Result.success(0)
+
+        is Component.Ignore -> {
+            Result.success(0)
+        }
+
         is Component.UnixTimestamp -> {
-            if (!provider.suppliesTimestamp) Result.failure(Format.InsufficientTypeInformation())
-            else
+            if (!provider.suppliesTimestamp) {
+                Result.failure(Format.InsufficientTypeInformation())
+            } else {
                 when (component.modifier.precision) {
-                    UnixTimestampPrecision.Second ->
+                    UnixTimestampPrecision.Second -> {
                         fmtUnixTimestampSeconds(
                             output,
                             provider.unixTimestampSeconds(value, state),
                             component.modifier,
                         )
-                    UnixTimestampPrecision.Millisecond ->
+                    }
+
+                    UnixTimestampPrecision.Millisecond -> {
                         fmtUnixTimestampMilliseconds(
                             output,
                             provider.unixTimestampMilliseconds(value, state),
                             component.modifier,
                         )
-                    UnixTimestampPrecision.Microsecond ->
+                    }
+
+                    UnixTimestampPrecision.Microsecond -> {
                         fmtUnixTimestampMicroseconds(
                             output,
                             provider.unixTimestampMicroseconds(value, state),
                             component.modifier,
                         )
-                    UnixTimestampPrecision.Nanosecond ->
+                    }
+
+                    UnixTimestampPrecision.Nanosecond -> {
                         fmtUnixTimestampNanoseconds(
                             output,
                             provider.unixTimestampNanoseconds(value, state),
                             component.modifier,
                         )
+                    }
                 }
+            }
         }
-        is Component.End -> Result.success(0)
+
+        is Component.End -> {
+            Result.success(0)
+        }
     }
 
 internal fun fmtDay(output: Appendable, day: UByte, modifier: Day): Result<Int> =
@@ -330,24 +396,31 @@ internal fun fmtWeekday(
     modifier: io.github.kotlinmania.time.formatdescription.modifier.Weekday,
 ): Result<Int> =
     when (modifier.repr) {
-        WeekdayRepr.Short ->
+        WeekdayRepr.Short -> {
             write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday()].substring(0, 3))
-        WeekdayRepr.Long ->
+        }
+
+        WeekdayRepr.Long -> {
             write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday()])
-        WeekdayRepr.Sunday ->
+        }
+
+        WeekdayRepr.Sunday -> {
             formatNumber(
                 1,
                 output,
                 (weekday.numberDaysFromSunday() + if (modifier.oneIndexed) 1 else 0).toUInt(),
                 Padding.None,
             )
-        WeekdayRepr.Monday ->
+        }
+
+        WeekdayRepr.Monday -> {
             formatNumber(
                 1,
                 output,
                 (weekday.numberDaysFromMonday() + if (modifier.oneIndexed) 1 else 0).toUInt(),
                 Padding.None,
             )
+        }
     }
 
 internal fun fmtWeekNumber(
@@ -370,19 +443,25 @@ internal fun fmtYear(
     val width =
         if (modifier.range == YearRange.Extended) {
             when (modifier.repr) {
-                YearRepr.Full ->
+                YearRepr.Full -> {
                     when {
                         abs(value) >= 100_000 -> 6
                         abs(value) >= 10_000 -> 5
                         else -> 4
                     }
-                YearRepr.Century ->
+                }
+
+                YearRepr.Century -> {
                     when {
                         abs(value) >= 1_000 -> 4
                         abs(value) >= 100 -> 3
                         else -> 2
                     }
-                YearRepr.LastTwo -> 2
+                }
+
+                YearRepr.LastTwo -> {
+                    2
+                }
             }
         } else {
             if ((modifier.repr == YearRepr.Full || modifier.repr == YearRepr.Century) &&

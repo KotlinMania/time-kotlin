@@ -34,12 +34,17 @@ fun parseStrftimeBorrowed(s: String): Result<List<BorrowedFormatItem>> {
     val items = mutableListOf<BorrowedFormatItem>()
     for (tokenRes in tokens) {
         val token = tokenRes.getOrElse { return Result.failure(it) }
-        val item = when (token) {
-            is StrftimeToken.Literal -> BorrowedFormatItem.Literal(token.value.value)
-            is StrftimeToken.ComponentToken ->
-                parseStrftimeComponent(token.padding, token.component)
-                    .getOrElse { return Result.failure(it) }
-        }
+        val item =
+            when (token) {
+                is StrftimeToken.Literal -> {
+                    BorrowedFormatItem.Literal(token.value.value)
+                }
+
+                is StrftimeToken.ComponentToken -> {
+                    parseStrftimeComponent(token.padding, token.component)
+                        .getOrElse { return Result.failure(it) }
+                }
+            }
         items.add(item)
     }
     return Result.success(items)
@@ -59,7 +64,9 @@ private enum class StrftimePadding {
 }
 
 private sealed class StrftimeToken {
-    class Literal(val value: Spanned<ByteArray>) : StrftimeToken()
+    class Literal(
+        val value: Spanned<ByteArray>,
+    ) : StrftimeToken()
 
     class ComponentToken(
         val padding: Spanned<StrftimePadding>,
@@ -96,11 +103,12 @@ private fun lexStrftime(input: ByteArray): List<Result<StrftimeToken>> {
                 next == '-'.code.toByte() ||
                 next == '0'.code.toByte()
             ) {
-                val pad = when (next) {
-                    '_'.code.toByte() -> StrftimePadding.Spaces
-                    '-'.code.toByte() -> StrftimePadding.None
-                    else -> StrftimePadding.Zeroes
-                }
+                val pad =
+                    when (next) {
+                        '_'.code.toByte() -> StrftimePadding.Spaces
+                        '-'.code.toByte() -> StrftimePadding.None
+                        else -> StrftimePadding.Zeroes
+                    }
                 if (pos >= input.size) {
                     break
                 }
@@ -155,47 +163,18 @@ private fun parseStrftimeComponent(
 
     fun lit(s: String): BorrowedFormatItem = BorrowedFormatItem.Literal(s.encodeToByteArray())
 
-    val ch = component.value.toUByte().toInt().toChar()
-    val item: BorrowedFormatItem = when (ch) {
-        '%' -> lit("%")
-        'a' -> BorrowedFormatItem.Component(
-            Component.Weekday(
-                Weekday(
-                    repr = WeekdayRepr.Short,
-                    oneIndexed = true,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'A' -> BorrowedFormatItem.Component(
-            Component.Weekday(
-                Weekday(
-                    repr = WeekdayRepr.Long,
-                    oneIndexed = true,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'b', 'h' -> BorrowedFormatItem.Component(
-            Component.Month(
-                Month(
-                    repr = MonthRepr.Short,
-                    padding = Padding.Zero,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'B' -> BorrowedFormatItem.Component(
-            Component.Month(
-                Month(
-                    repr = MonthRepr.Long,
-                    padding = Padding.Zero,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'c' -> BorrowedFormatItem.Compound(
-            listOf(
+    val ch =
+        component.value
+            .toUByte()
+            .toInt()
+            .toChar()
+    val item: BorrowedFormatItem =
+        when (ch) {
+            '%' -> {
+                lit("%")
+            }
+
+            'a' -> {
                 BorrowedFormatItem.Component(
                     Component.Weekday(
                         Weekday(
@@ -204,8 +183,22 @@ private fun parseStrftimeComponent(
                             caseSensitive = true,
                         ),
                     ),
-                ),
-                lit(" "),
+                )
+            }
+
+            'A' -> {
+                BorrowedFormatItem.Component(
+                    Component.Weekday(
+                        Weekday(
+                            repr = WeekdayRepr.Long,
+                            oneIndexed = true,
+                            caseSensitive = true,
+                        ),
+                    ),
+                )
+            }
+
+            'b', 'h' -> {
                 BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
@@ -214,363 +207,508 @@ private fun parseStrftimeComponent(
                             caseSensitive = true,
                         ),
                     ),
-                ),
-                lit(" "),
-                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Space))),
-                lit(" "),
+                )
+            }
+
+            'B' -> {
                 BorrowedFormatItem.Component(
-                    Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
-                ),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
-                lit(" "),
+                    Component.Month(
+                        Month(
+                            repr = MonthRepr.Long,
+                            padding = Padding.Zero,
+                            caseSensitive = true,
+                        ),
+                    ),
+                )
+            }
+
+            'c' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Weekday(
+                                Weekday(
+                                    repr = WeekdayRepr.Short,
+                                    oneIndexed = true,
+                                    caseSensitive = true,
+                                ),
+                            ),
+                        ),
+                        lit(" "),
+                        BorrowedFormatItem.Component(
+                            Component.Month(
+                                Month(
+                                    repr = MonthRepr.Short,
+                                    padding = Padding.Zero,
+                                    caseSensitive = true,
+                                ),
+                            ),
+                        ),
+                        lit(" "),
+                        BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Space))),
+                        lit(" "),
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
+                        ),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
+                        lit(" "),
+                        BorrowedFormatItem.Component(
+                            Component.Year(
+                                Year(
+                                    padding = Padding.Zero,
+                                    repr = YearRepr.Full,
+                                    range = YearRange.Extended,
+                                    isoWeekBased = false,
+                                    signIsMandatory = false,
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            'C' -> {
                 BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
-                            padding = Padding.Zero,
-                            repr = YearRepr.Full,
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            repr = YearRepr.Century,
                             range = YearRange.Extended,
                             isoWeekBased = false,
                             signIsMandatory = false,
                         ),
                     ),
-                ),
-            ),
-        )
-        'C' -> BorrowedFormatItem.Component(
-            Component.Year(
-                Year(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = YearRepr.Century,
-                    range = YearRange.Extended,
-                    isoWeekBased = false,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'd' -> BorrowedFormatItem.Component(
-            Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Zero))),
-        )
-        'D' -> BorrowedFormatItem.Compound(
-            listOf(
+                )
+            }
+
+            'd' -> {
                 BorrowedFormatItem.Component(
-                    Component.Month(
-                        Month(
-                            repr = MonthRepr.Numerical,
-                            padding = Padding.Zero,
-                            caseSensitive = true,
+                    Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Zero))),
+                )
+            }
+
+            'D' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Month(
+                                Month(
+                                    repr = MonthRepr.Numerical,
+                                    padding = Padding.Zero,
+                                    caseSensitive = true,
+                                ),
+                            ),
+                        ),
+                        lit("/"),
+                        BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
+                        lit("/"),
+                        BorrowedFormatItem.Component(
+                            Component.Year(
+                                Year(
+                                    padding = Padding.Zero,
+                                    repr = YearRepr.LastTwo,
+                                    range = YearRange.Extended,
+                                    isoWeekBased = false,
+                                    signIsMandatory = false,
+                                ),
+                            ),
                         ),
                     ),
-                ),
-                lit("/"),
-                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
-                lit("/"),
+                )
+            }
+
+            'e' -> {
+                BorrowedFormatItem.Component(
+                    Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Space))),
+                )
+            }
+
+            'F' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Year(
+                                Year(
+                                    padding = Padding.Zero,
+                                    repr = YearRepr.Full,
+                                    range = YearRange.Extended,
+                                    isoWeekBased = false,
+                                    signIsMandatory = false,
+                                ),
+                            ),
+                        ),
+                        lit("-"),
+                        BorrowedFormatItem.Component(
+                            Component.Month(
+                                Month(
+                                    padding = Padding.Zero,
+                                    repr = MonthRepr.Numerical,
+                                    caseSensitive = true,
+                                ),
+                            ),
+                        ),
+                        lit("-"),
+                        BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
+                    ),
+                )
+            }
+
+            'g' -> {
                 BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
-                            padding = Padding.Zero,
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
                             repr = YearRepr.LastTwo,
                             range = YearRange.Extended,
-                            isoWeekBased = false,
+                            isoWeekBased = true,
                             signIsMandatory = false,
                         ),
                     ),
-                ),
-            ),
-        )
-        'e' -> BorrowedFormatItem.Component(
-            Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Space))),
-        )
-        'F' -> BorrowedFormatItem.Compound(
-            listOf(
+                )
+            }
+
+            'G' -> {
                 BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
                             padding = Padding.Zero,
                             repr = YearRepr.Full,
                             range = YearRange.Extended,
-                            isoWeekBased = false,
+                            isoWeekBased = true,
                             signIsMandatory = false,
                         ),
                     ),
-                ),
-                lit("-"),
+                )
+            }
+
+            'H' -> {
+                BorrowedFormatItem.Component(
+                    Component.Hour(
+                        Hour(
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            is12HourClock = false,
+                        ),
+                    ),
+                )
+            }
+
+            'I' -> {
+                BorrowedFormatItem.Component(
+                    Component.Hour(
+                        Hour(
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            is12HourClock = true,
+                        ),
+                    ),
+                )
+            }
+
+            'j' -> {
+                BorrowedFormatItem.Component(
+                    Component.Ordinal(Ordinal(padding = paddingOrDefault(padding.value, Padding.Zero))),
+                )
+            }
+
+            'k' -> {
+                BorrowedFormatItem.Component(
+                    Component.Hour(
+                        Hour(
+                            padding = paddingOrDefault(padding.value, Padding.Space),
+                            is12HourClock = false,
+                        ),
+                    ),
+                )
+            }
+
+            'l' -> {
+                BorrowedFormatItem.Component(
+                    Component.Hour(
+                        Hour(
+                            padding = paddingOrDefault(padding.value, Padding.Space),
+                            is12HourClock = true,
+                        ),
+                    ),
+                )
+            }
+
+            'm' -> {
                 BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
-                            padding = Padding.Zero,
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
                             repr = MonthRepr.Numerical,
                             caseSensitive = true,
                         ),
                     ),
-                ),
-                lit("-"),
-                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
-            ),
-        )
-        'g' -> BorrowedFormatItem.Component(
-            Component.Year(
-                Year(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = YearRepr.LastTwo,
-                    range = YearRange.Extended,
-                    isoWeekBased = true,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'G' -> BorrowedFormatItem.Component(
-            Component.Year(
-                Year(
-                    padding = Padding.Zero,
-                    repr = YearRepr.Full,
-                    range = YearRange.Extended,
-                    isoWeekBased = true,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'H' -> BorrowedFormatItem.Component(
-            Component.Hour(
-                Hour(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    is12HourClock = false,
-                ),
-            ),
-        )
-        'I' -> BorrowedFormatItem.Component(
-            Component.Hour(
-                Hour(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    is12HourClock = true,
-                ),
-            ),
-        )
-        'j' -> BorrowedFormatItem.Component(
-            Component.Ordinal(Ordinal(padding = paddingOrDefault(padding.value, Padding.Zero))),
-        )
-        'k' -> BorrowedFormatItem.Component(
-            Component.Hour(
-                Hour(
-                    padding = paddingOrDefault(padding.value, Padding.Space),
-                    is12HourClock = false,
-                ),
-            ),
-        )
-        'l' -> BorrowedFormatItem.Component(
-            Component.Hour(
-                Hour(
-                    padding = paddingOrDefault(padding.value, Padding.Space),
-                    is12HourClock = true,
-                ),
-            ),
-        )
-        'm' -> BorrowedFormatItem.Component(
-            Component.Month(
-                Month(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = MonthRepr.Numerical,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'M' -> BorrowedFormatItem.Component(
-            Component.Minute(Minute(padding = paddingOrDefault(padding.value, Padding.Zero))),
-        )
-        'n' -> lit("\n")
-        'O' -> return Result.failure(
-            InvalidFormatDescription.NotSupported(
-                what = "modifier",
-                context = "",
-                index = component.span.start.byte,
-            ),
-        )
-        'p' -> BorrowedFormatItem.Component(
-            Component.Period(Period(isUppercase = true, caseSensitive = true)),
-        )
-        'P' -> BorrowedFormatItem.Component(
-            Component.Period(Period(isUppercase = false, caseSensitive = true)),
-        )
-        'r' -> BorrowedFormatItem.Compound(
-            listOf(
+                )
+            }
+
+            'M' -> {
                 BorrowedFormatItem.Component(
-                    Component.Hour(Hour(padding = Padding.Zero, is12HourClock = true)),
-                ),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
-                lit(" "),
+                    Component.Minute(Minute(padding = paddingOrDefault(padding.value, Padding.Zero))),
+                )
+            }
+
+            'n' -> {
+                lit("\n")
+            }
+
+            'O' -> {
+                return Result.failure(
+                    InvalidFormatDescription.NotSupported(
+                        what = "modifier",
+                        context = "",
+                        index = component.span.start.byte,
+                    ),
+                )
+            }
+
+            'p' -> {
                 BorrowedFormatItem.Component(
                     Component.Period(Period(isUppercase = true, caseSensitive = true)),
-                ),
-            ),
-        )
-        'R' -> BorrowedFormatItem.Compound(
-            listOf(
+                )
+            }
+
+            'P' -> {
                 BorrowedFormatItem.Component(
-                    Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
-                ),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
-            ),
-        )
-        's' -> BorrowedFormatItem.Component(
-            Component.UnixTimestamp(
-                UnixTimestamp(
-                    precision = UnixTimestampPrecision.Second,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'S' -> BorrowedFormatItem.Component(
-            Component.Second(Second(padding = paddingOrDefault(padding.value, Padding.Zero))),
-        )
-        't' -> lit("\t")
-        'T' -> BorrowedFormatItem.Compound(
-            listOf(
+                    Component.Period(Period(isUppercase = false, caseSensitive = true)),
+                )
+            }
+
+            'r' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour(padding = Padding.Zero, is12HourClock = true)),
+                        ),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
+                        lit(" "),
+                        BorrowedFormatItem.Component(
+                            Component.Period(Period(isUppercase = true, caseSensitive = true)),
+                        ),
+                    ),
+                )
+            }
+
+            'R' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
+                        ),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
+                    ),
+                )
+            }
+
+            's' -> {
                 BorrowedFormatItem.Component(
-                    Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
-                ),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
-            ),
-        )
-        'u' -> BorrowedFormatItem.Component(
-            Component.Weekday(
-                Weekday(
-                    repr = WeekdayRepr.Monday,
-                    oneIndexed = true,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'U' -> BorrowedFormatItem.Component(
-            Component.WeekNumber(
-                WeekNumber(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = WeekNumberRepr.Sunday,
-                ),
-            ),
-        )
-        'V' -> BorrowedFormatItem.Component(
-            Component.WeekNumber(
-                WeekNumber(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = WeekNumberRepr.Iso,
-                ),
-            ),
-        )
-        'w' -> BorrowedFormatItem.Component(
-            Component.Weekday(
-                Weekday(
-                    repr = WeekdayRepr.Sunday,
-                    oneIndexed = true,
-                    caseSensitive = true,
-                ),
-            ),
-        )
-        'W' -> BorrowedFormatItem.Component(
-            Component.WeekNumber(
-                WeekNumber(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = WeekNumberRepr.Monday,
-                ),
-            ),
-        )
-        'x' -> BorrowedFormatItem.Compound(
-            listOf(
+                    Component.UnixTimestamp(
+                        UnixTimestamp(
+                            precision = UnixTimestampPrecision.Second,
+                            signIsMandatory = false,
+                        ),
+                    ),
+                )
+            }
+
+            'S' -> {
                 BorrowedFormatItem.Component(
-                    Component.Month(
-                        Month(
-                            repr = MonthRepr.Numerical,
-                            padding = Padding.Zero,
+                    Component.Second(Second(padding = paddingOrDefault(padding.value, Padding.Zero))),
+                )
+            }
+
+            't' -> {
+                lit("\t")
+            }
+
+            'T' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
+                        ),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
+                    ),
+                )
+            }
+
+            'u' -> {
+                BorrowedFormatItem.Component(
+                    Component.Weekday(
+                        Weekday(
+                            repr = WeekdayRepr.Monday,
+                            oneIndexed = true,
                             caseSensitive = true,
                         ),
                     ),
-                ),
-                lit("/"),
-                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
-                lit("/"),
+                )
+            }
+
+            'U' -> {
+                BorrowedFormatItem.Component(
+                    Component.WeekNumber(
+                        WeekNumber(
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            repr = WeekNumberRepr.Sunday,
+                        ),
+                    ),
+                )
+            }
+
+            'V' -> {
+                BorrowedFormatItem.Component(
+                    Component.WeekNumber(
+                        WeekNumber(
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            repr = WeekNumberRepr.Iso,
+                        ),
+                    ),
+                )
+            }
+
+            'w' -> {
+                BorrowedFormatItem.Component(
+                    Component.Weekday(
+                        Weekday(
+                            repr = WeekdayRepr.Sunday,
+                            oneIndexed = true,
+                            caseSensitive = true,
+                        ),
+                    ),
+                )
+            }
+
+            'W' -> {
+                BorrowedFormatItem.Component(
+                    Component.WeekNumber(
+                        WeekNumber(
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
+                            repr = WeekNumberRepr.Monday,
+                        ),
+                    ),
+                )
+            }
+
+            'x' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Month(
+                                Month(
+                                    repr = MonthRepr.Numerical,
+                                    padding = Padding.Zero,
+                                    caseSensitive = true,
+                                ),
+                            ),
+                        ),
+                        lit("/"),
+                        BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
+                        lit("/"),
+                        BorrowedFormatItem.Component(
+                            Component.Year(
+                                Year(
+                                    padding = Padding.Zero,
+                                    repr = YearRepr.LastTwo,
+                                    range = YearRange.Extended,
+                                    isoWeekBased = false,
+                                    signIsMandatory = false,
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            'X' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
+                        ),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
+                        lit(":"),
+                        BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
+                    ),
+                )
+            }
+
+            'y' -> {
                 BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
-                            padding = Padding.Zero,
+                            padding = paddingOrDefault(padding.value, Padding.Zero),
                             repr = YearRepr.LastTwo,
                             range = YearRange.Extended,
                             isoWeekBased = false,
                             signIsMandatory = false,
                         ),
                     ),
-                ),
-            ),
-        )
-        'X' -> BorrowedFormatItem.Compound(
-            listOf(
+                )
+            }
+
+            'Y' -> {
                 BorrowedFormatItem.Component(
-                    Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
-                ),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
-                lit(":"),
-                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
-            ),
-        )
-        'y' -> BorrowedFormatItem.Component(
-            Component.Year(
-                Year(
-                    padding = paddingOrDefault(padding.value, Padding.Zero),
-                    repr = YearRepr.LastTwo,
-                    range = YearRange.Extended,
-                    isoWeekBased = false,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'Y' -> BorrowedFormatItem.Component(
-            Component.Year(
-                Year(
-                    padding = Padding.Zero,
-                    repr = YearRepr.Full,
-                    range = YearRange.Extended,
-                    isoWeekBased = false,
-                    signIsMandatory = false,
-                ),
-            ),
-        )
-        'z' -> BorrowedFormatItem.Compound(
-            listOf(
-                BorrowedFormatItem.Component(
-                    Component.OffsetHour(
-                        OffsetHour(
-                            signIsMandatory = true,
+                    Component.Year(
+                        Year(
                             padding = Padding.Zero,
+                            repr = YearRepr.Full,
+                            range = YearRange.Extended,
+                            isoWeekBased = false,
+                            signIsMandatory = false,
                         ),
                     ),
-                ),
-                BorrowedFormatItem.Component(
-                    Component.OffsetMinute(OffsetMinute(padding = Padding.Zero)),
-                ),
-            ),
-        )
-        'Z' -> return Result.failure(
-            InvalidFormatDescription.NotSupported(
-                what = "component",
-                context = "",
-                index = component.span.start.byte,
-            ),
-        )
-        else -> return Result.failure(
-            InvalidFormatDescription.InvalidComponentName(
-                name = byteArrayOf(component.value).decodeToString(),
-                index = component.span.start.byte,
-            ),
-        )
-    }
+                )
+            }
+
+            'z' -> {
+                BorrowedFormatItem.Compound(
+                    listOf(
+                        BorrowedFormatItem.Component(
+                            Component.OffsetHour(
+                                OffsetHour(
+                                    signIsMandatory = true,
+                                    padding = Padding.Zero,
+                                ),
+                            ),
+                        ),
+                        BorrowedFormatItem.Component(
+                            Component.OffsetMinute(OffsetMinute(padding = Padding.Zero)),
+                        ),
+                    ),
+                )
+            }
+
+            'Z' -> {
+                return Result.failure(
+                    InvalidFormatDescription.NotSupported(
+                        what = "component",
+                        context = "",
+                        index = component.span.start.byte,
+                    ),
+                )
+            }
+
+            else -> {
+                return Result.failure(
+                    InvalidFormatDescription.InvalidComponentName(
+                        name = byteArrayOf(component.value).decodeToString(),
+                        index = component.span.start.byte,
+                    ),
+                )
+            }
+        }
 
     return Result.success(item)
 }

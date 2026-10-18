@@ -21,7 +21,6 @@ fun SystemTime.compareTo(other: UtcDateTime): Int =
     UtcDateTime.from(this).compareTo(other)
 
 object UtcDateTimeSystemTimeInterop {
-
     fun sub(lhs: UtcDateTime, rhs: SystemTime): Duration = lhs - UtcDateTime.from(rhs)
 
     fun sub(lhs: SystemTime, rhs: UtcDateTime): Duration = UtcDateTime.from(lhs) - rhs

@@ -26,12 +26,16 @@ object MillisecondsI64Serde : Deserialize<OffsetDateTime> {
     /** Deserialize an [OffsetDateTime] from its 64-bit Unix timestamp with milliseconds. */
     override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<OffsetDateTime> =
         when (val res = I64Deserialize.deserialize(deserializer)) {
-            is SerdeResult.Success ->
+            is SerdeResult.Success -> {
                 OffsetDateTime.fromUnixTimestampNanos(millisI64ToNanosString(res.value)).fold(
                     onSuccess = { SerdeResult.success(it) },
                     onFailure = { SerdeResult.failure(it.intoDeError()) },
                 )
-            is SerdeResult.Failure -> res
+            }
+
+            is SerdeResult.Failure -> {
+                res
+            }
         }
 
     /**
@@ -58,7 +62,10 @@ object MillisecondsI64Serde : Deserialize<OffsetDateTime> {
                         onFailure = { SerdeResult.failure(it.intoDeError()) },
                     )
                 }
-                is SerdeResult.Failure -> res
+
+                is SerdeResult.Failure -> {
+                    res
+                }
             }
     }
 }

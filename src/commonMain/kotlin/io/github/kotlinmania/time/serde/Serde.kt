@@ -395,4 +395,3 @@ fun <F> formatDescriptionOffsetDateTime(description: F): FormatDescriptionSerde<
         formatter = { it.format(description) },
         parser = { OffsetDateTime.parse(it, description) },
     )
-

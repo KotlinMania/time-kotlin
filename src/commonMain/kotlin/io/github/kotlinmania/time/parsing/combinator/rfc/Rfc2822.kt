@@ -137,17 +137,18 @@ internal fun zoneLiteral(input: ByteArray): ParsedItem<Byte>? {
     val rest = input.copyOfRange(3, input.size)
     val zoneStr = "$c1$c2$c3"
 
-    val zone: Byte = when (zoneStr) {
-        "est" -> -5
-        "edt" -> -4
-        "cst" -> -6
-        "cdt" -> -5
-        "mst" -> -7
-        "mdt" -> -6
-        "pst" -> -8
-        "pdt" -> -7
-        "gmt" -> 0
-        else -> return null
-    }
+    val zone: Byte =
+        when (zoneStr) {
+            "est" -> -5
+            "edt" -> -4
+            "cst" -> -6
+            "cdt" -> -5
+            "mst" -> -7
+            "mdt" -> -6
+            "pst" -> -8
+            "pdt" -> -7
+            "gmt" -> 0
+            else -> return null
+        }
     return ParsedItem(rest, zone)
 }

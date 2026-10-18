@@ -61,14 +61,17 @@ class SerdeRfc3339Test {
                                     access.nextKey(StringDeserialize).getOrElse { return SerdeResult.failure(it) }
                                         ?: break
                                 when (key) {
-                                    "dt" ->
+                                    "dt" -> {
                                         dtVal =
                                             access.nextValue(Rfc3339Serde).getOrElse { return SerdeResult.failure(it) }
-                                    "option_dt" ->
+                                    }
+
+                                    "option_dt" -> {
                                         optVal =
                                             access
                                                 .nextValue(Rfc3339Serde.Option)
                                                 .getOrElse { return SerdeResult.failure(it) }
+                                    }
                                 }
                             }
                             val finalDt = dtVal ?: return SerdeResult.failure(SerdeError.missingField("dt"))

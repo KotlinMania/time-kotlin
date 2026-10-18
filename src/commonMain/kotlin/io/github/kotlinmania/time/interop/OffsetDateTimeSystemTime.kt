@@ -21,7 +21,6 @@ fun SystemTime.compareTo(other: OffsetDateTime): Int =
     OffsetDateTime.from(this).compareTo(other)
 
 object OffsetDateTimeSystemTimeInterop {
-
     fun sub(lhs: OffsetDateTime, rhs: SystemTime): Duration = lhs - OffsetDateTime.from(rhs)
 
     fun sub(lhs: SystemTime, rhs: OffsetDateTime): Duration = OffsetDateTime.from(lhs) - rhs

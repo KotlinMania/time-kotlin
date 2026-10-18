@@ -63,14 +63,17 @@ class SerdeIso8601Test {
                                     access.nextKey(StringDeserialize).getOrElse { return SerdeResult.failure(it) }
                                         ?: break
                                 when (key) {
-                                    "dt" ->
+                                    "dt" -> {
                                         dtVal =
                                             access.nextValue(Iso8601Serde).getOrElse { return SerdeResult.failure(it) }
-                                    "option_dt" ->
+                                    }
+
+                                    "option_dt" -> {
                                         optVal =
                                             access
                                                 .nextValue(Iso8601Serde.Option)
                                                 .getOrElse { return SerdeResult.failure(it) }
+                                    }
                                 }
                             }
                             val finalDt = dtVal ?: return SerdeResult.failure(SerdeError.missingField("dt"))

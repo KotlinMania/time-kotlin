@@ -28,7 +28,8 @@ class UtcOffset private constructor(
     private val hours: Int,
     private val minutes: Int,
     private val seconds: Int,
-) : Comparable<UtcOffset>, Serialize {
+) : Comparable<UtcOffset>,
+    Serialize {
     fun hash(): UInt = asU32ForEquality()
 
     fun eq(other: UtcOffset): Boolean = asU32ForEquality() == other.asU32ForEquality()
@@ -238,7 +239,9 @@ class UtcOffset private constructor(
          * be determined, an error is returned.
          */
         fun localOffsetAt(datetime: OffsetDateTime): Result<UtcOffset> =
-            io.github.kotlinmania.time.sys.localoffsetat.unix.localOffsetAt(datetime)?.let { Result.success(it) }
+            io.github.kotlinmania.time.sys.localoffsetat.unix
+                .localOffsetAt(datetime)
+                ?.let { Result.success(it) }
                 ?: Result.failure(io.github.kotlinmania.time.error.IndeterminateOffset)
 
         /**

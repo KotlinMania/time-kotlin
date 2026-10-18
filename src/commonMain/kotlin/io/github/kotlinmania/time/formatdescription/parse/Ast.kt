@@ -5,7 +5,9 @@ import io.github.kotlinmania.time.error.InvalidFormatDescription
 
 /** One part of a complete format description AST. */
 internal sealed class AstItem {
-    class Literal(val value: Spanned<ByteArray>) : AstItem()
+    class Literal(
+        val value: Spanned<ByteArray>,
+    ) : AstItem()
 
     class EscapedBracket(
         val first: Unused<Location>,
@@ -74,41 +76,47 @@ private fun parseInner(
             break
         }
         val nextRes = tokens.next() ?: break
-        val next = nextRes.getOrElse {
-            items.add(Result.failure(it))
-            break
-        }
-        val itemResult: Result<AstItem> = when (next) {
-            is Token.Literal -> Result.success(AstItem.Literal(next.value))
-            is Token.Bracket -> {
-                if (next.kind == BracketKind.Opening) {
-                    if (version <= 1) {
-                        val secondLocation = tokens.nextIfOpeningBracket()
-                        if (secondLocation != null) {
-                            Result.success(
-                                AstItem.EscapedBracket(
-                                    first = unused(next.location),
-                                    second = unused(secondLocation),
-                                ),
-                            )
+        val next =
+            nextRes.getOrElse {
+                items.add(Result.failure(it))
+                break
+            }
+        val itemResult: Result<AstItem> =
+            when (next) {
+                is Token.Literal -> {
+                    Result.success(AstItem.Literal(next.value))
+                }
+
+                is Token.Bracket -> {
+                    if (next.kind == BracketKind.Opening) {
+                        if (version <= 1) {
+                            val secondLocation = tokens.nextIfOpeningBracket()
+                            if (secondLocation != null) {
+                                Result.success(
+                                    AstItem.EscapedBracket(
+                                        first = unused(next.location),
+                                        second = unused(secondLocation),
+                                    ),
+                                )
+                            } else {
+                                parseComponent(version, next.location, tokens)
+                            }
                         } else {
                             parseComponent(version, next.location, tokens)
                         }
                     } else {
-                        parseComponent(version, next.location, tokens)
+                        error("closing bracket should have been consumed")
                     }
-                } else {
-                    error("closing bracket should have been consumed")
+                }
+
+                is Token.ComponentPart -> {
+                    if (nested) {
+                        Result.success(AstItem.Literal(next.value))
+                    } else {
+                        error("component part should have been consumed by parseComponent")
+                    }
                 }
             }
-            is Token.ComponentPart -> {
-                if (nested) {
-                    Result.success(AstItem.Literal(next.value))
-                } else {
-                    error("component part should have been consumed by parseComponent")
-                }
-            }
-        }
         items.add(itemResult)
         if (itemResult.isFailure) break
     }
@@ -134,25 +142,29 @@ private fun parseComponent(
 
     val nameStr = name.value.decodeToString()
     if (nameStr == "optional") {
-        val whitespace = tokens.nextIfWhitespace()
-            ?: return Result.failure(
-                ParseError(
-                    inner = unused(name.span.error("expected whitespace after `optional`")),
-                    publicError = InvalidFormatDescription.Expected(
-                        what = "whitespace after `optional`",
-                        index = name.span.end.byte,
-                    ),
-                ).toInvalidFormatDescription(),
-            )
-        val nested = parseNested(version, whitespace.span.end, tokens)
-            .getOrElse { return Result.failure(it) }
-        val closingBracket = tokens.nextIfClosingBracket()
-            ?: return Result.failure(
-                ParseError(
-                    inner = unused(openingBracket.error("unclosed bracket")),
-                    publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
-                ).toInvalidFormatDescription(),
-            )
+        val whitespace =
+            tokens.nextIfWhitespace()
+                ?: return Result.failure(
+                    ParseError(
+                        inner = unused(name.span.error("expected whitespace after `optional`")),
+                        publicError =
+                            InvalidFormatDescription.Expected(
+                                what = "whitespace after `optional`",
+                                index = name.span.end.byte,
+                            ),
+                    ).toInvalidFormatDescription(),
+                )
+        val nested =
+            parseNested(version, whitespace.span.end, tokens)
+                .getOrElse { return Result.failure(it) }
+        val closingBracket =
+            tokens.nextIfClosingBracket()
+                ?: return Result.failure(
+                    ParseError(
+                        inner = unused(openingBracket.error("unclosed bracket")),
+                        publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
+                    ).toInvalidFormatDescription(),
+                )
         return Result.success(
             AstItem.Optional(
                 openingBracket = openingBracket,
@@ -166,28 +178,31 @@ private fun parseComponent(
     }
 
     if (nameStr == "first") {
-        val whitespace = tokens.nextIfWhitespace()
-            ?: return Result.failure(
-                ParseError(
-                    inner = unused(name.span.error("expected whitespace after `first`")),
-                    publicError = InvalidFormatDescription.Expected(
-                        what = "whitespace after `first`",
-                        index = name.span.end.byte,
-                    ),
-                ).toInvalidFormatDescription(),
-            )
+        val whitespace =
+            tokens.nextIfWhitespace()
+                ?: return Result.failure(
+                    ParseError(
+                        inner = unused(name.span.error("expected whitespace after `first`")),
+                        publicError =
+                            InvalidFormatDescription.Expected(
+                                what = "whitespace after `first`",
+                                index = name.span.end.byte,
+                            ),
+                    ).toInvalidFormatDescription(),
+                )
         val nestedFormatDescriptions = mutableListOf<NestedFormatDescription>()
         while (true) {
             val desc = parseNested(version, whitespace.span.end, tokens).getOrNull() ?: break
             nestedFormatDescriptions.add(desc)
         }
-        val closingBracket = tokens.nextIfClosingBracket()
-            ?: return Result.failure(
-                ParseError(
-                    inner = unused(openingBracket.error("unclosed bracket")),
-                    publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
-                ).toInvalidFormatDescription(),
-            )
+        val closingBracket =
+            tokens.nextIfClosingBracket()
+                ?: return Result.failure(
+                    ParseError(
+                        inner = unused(openingBracket.error("unclosed bracket")),
+                        publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
+                    ).toInvalidFormatDescription(),
+                )
         return Result.success(
             AstItem.First(
                 openingBracket = openingBracket,
@@ -209,10 +224,11 @@ private fun parseComponent(
             return Result.failure(
                 ParseError(
                     inner = unused(nestedOpening.toSelf().error("modifier must be of the form `key:value`")),
-                    publicError = InvalidFormatDescription.InvalidModifier(
-                        value = "[",
-                        index = nestedOpening.byte,
-                    ),
+                    publicError =
+                        InvalidFormatDescription.InvalidModifier(
+                            value = "[",
+                            index = nestedOpening.byte,
+                        ),
                 ).toInvalidFormatDescription(),
             )
         }
@@ -228,10 +244,11 @@ private fun parseComponent(
             return Result.failure(
                 ParseError(
                     inner = unused(span.error("modifier must be of the form `key:value`")),
-                    publicError = InvalidFormatDescription.InvalidModifier(
-                        value = valueBytes.decodeToString(),
-                        index = span.start.byte,
-                    ),
+                    publicError =
+                        InvalidFormatDescription.InvalidModifier(
+                            value = valueBytes.decodeToString(),
+                            index = span.start.byte,
+                        ),
                 ).toInvalidFormatDescription(),
             )
         }
@@ -241,10 +258,11 @@ private fun parseComponent(
             return Result.failure(
                 ParseError(
                     inner = unused(span.shrinkToStart().error("expected modifier key")),
-                    publicError = InvalidFormatDescription.InvalidModifier(
-                        value = "",
-                        index = span.start.byte,
-                    ),
+                    publicError =
+                        InvalidFormatDescription.InvalidModifier(
+                            value = "",
+                            index = span.start.byte,
+                        ),
                 ).toInvalidFormatDescription(),
             )
         }
@@ -252,10 +270,11 @@ private fun parseComponent(
             return Result.failure(
                 ParseError(
                     inner = unused(span.shrinkToEnd().error("expected modifier value")),
-                    publicError = InvalidFormatDescription.InvalidModifier(
-                        value = "",
-                        index = span.shrinkToEnd().start.byte,
-                    ),
+                    publicError =
+                        InvalidFormatDescription.InvalidModifier(
+                            value = "",
+                            index = span.shrinkToEnd().start.byte,
+                        ),
                 ).toInvalidFormatDescription(),
             )
         }
@@ -269,13 +288,14 @@ private fun parseComponent(
         )
     }
 
-    val closingBracket = tokens.nextIfClosingBracket()
-        ?: return Result.failure(
-            ParseError(
-                inner = unused(openingBracket.error("unclosed bracket")),
-                publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
-            ).toInvalidFormatDescription(),
-        )
+    val closingBracket =
+        tokens.nextIfClosingBracket()
+            ?: return Result.failure(
+                ParseError(
+                    inner = unused(openingBracket.error("unclosed bracket")),
+                    publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
+                ).toInvalidFormatDescription(),
+            )
 
     return Result.success(
         AstItem.Component(
@@ -294,29 +314,32 @@ private fun parseNested(
     lastLocation: Location,
     tokens: Lexed,
 ): Result<NestedFormatDescription> {
-    val openingBracket = tokens.nextIfOpeningBracket()
-        ?: return Result.failure(
-            ParseError(
-                inner = unused(lastLocation.error("expected opening bracket")),
-                publicError = InvalidFormatDescription.Expected(
-                    what = "opening bracket",
-                    index = lastLocation.byte,
-                ),
-            ).toInvalidFormatDescription(),
-        )
+    val openingBracket =
+        tokens.nextIfOpeningBracket()
+            ?: return Result.failure(
+                ParseError(
+                    inner = unused(lastLocation.error("expected opening bracket")),
+                    publicError =
+                        InvalidFormatDescription.Expected(
+                            what = "opening bracket",
+                            index = lastLocation.byte,
+                        ),
+                ).toInvalidFormatDescription(),
+            )
     val rawItems = parseInner(version, nested = true, tokens)
     val items = mutableListOf<AstItem>()
     for (res in rawItems) {
         val item = res.getOrElse { return Result.failure(it) }
         items.add(item)
     }
-    val closingBracket = tokens.nextIfClosingBracket()
-        ?: return Result.failure(
-            ParseError(
-                inner = unused(openingBracket.error("unclosed bracket")),
-                publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
-            ).toInvalidFormatDescription(),
-        )
+    val closingBracket =
+        tokens.nextIfClosingBracket()
+            ?: return Result.failure(
+                ParseError(
+                    inner = unused(openingBracket.error("unclosed bracket")),
+                    publicError = InvalidFormatDescription.UnclosedOpeningBracket(index = openingBracket.byte),
+                ).toInvalidFormatDescription(),
+            )
     val trailingWhitespace = tokens.nextIfWhitespace()
     return Result.success(
         NestedFormatDescription(
@@ -327,4 +350,3 @@ private fun parseNested(
         ),
     )
 }
-

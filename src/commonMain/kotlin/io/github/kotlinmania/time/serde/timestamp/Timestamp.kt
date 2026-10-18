@@ -21,12 +21,16 @@ object TimestampSerde : Deserialize<OffsetDateTime> {
     /** Deserialize an [OffsetDateTime] from its Unix timestamp. */
     override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<OffsetDateTime> =
         when (val res = I64Deserialize.deserialize(deserializer)) {
-            is SerdeResult.Success ->
+            is SerdeResult.Success -> {
                 OffsetDateTime.fromUnixTimestamp(res.value).fold(
                     onSuccess = { SerdeResult.success(it) },
                     onFailure = { SerdeResult.failure(it.intoDeError()) },
                 )
-            is SerdeResult.Failure -> res
+            }
+
+            is SerdeResult.Failure -> {
+                res
+            }
         }
 
     /**
@@ -51,7 +55,10 @@ object TimestampSerde : Deserialize<OffsetDateTime> {
                         onFailure = { SerdeResult.failure(it.intoDeError()) },
                     )
                 }
-                is SerdeResult.Failure -> res
+
+                is SerdeResult.Failure -> {
+                    res
+                }
             }
     }
 }

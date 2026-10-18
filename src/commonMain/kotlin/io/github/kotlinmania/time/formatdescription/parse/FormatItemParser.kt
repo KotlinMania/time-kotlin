@@ -34,9 +34,13 @@ import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
 
 /** A description of how to format and parse one part of a type. */
 internal sealed class ParsedFormatItem {
-    class Literal(val value: ByteArray) : ParsedFormatItem()
+    class Literal(
+        val value: ByteArray,
+    ) : ParsedFormatItem()
 
-    class Component(val value: io.github.kotlinmania.time.formatdescription.Component) : ParsedFormatItem()
+    class Component(
+        val value: io.github.kotlinmania.time.formatdescription.Component,
+    ) : ParsedFormatItem()
 
     class Optional(
         val value: List<ParsedFormatItem>,
@@ -50,22 +54,33 @@ internal sealed class ParsedFormatItem {
 
     fun toBorrowedFormatItem(): Result<BorrowedFormatItem> =
         when (this) {
-            is Literal -> Result.success(BorrowedFormatItem.Literal(value))
-            is Component -> Result.success(BorrowedFormatItem.Component(value))
-            is Optional -> Result.failure(
-                InvalidFormatDescription.NotSupported(
-                    what = "optional item",
-                    context = "runtime-parsed format descriptions",
-                    index = span.start.byte,
-                ),
-            )
-            is First -> Result.failure(
-                InvalidFormatDescription.NotSupported(
-                    what = "'first' item",
-                    context = "runtime-parsed format descriptions",
-                    index = span.start.byte,
-                ),
-            )
+            is Literal -> {
+                Result.success(BorrowedFormatItem.Literal(value))
+            }
+
+            is Component -> {
+                Result.success(BorrowedFormatItem.Component(value))
+            }
+
+            is Optional -> {
+                Result.failure(
+                    InvalidFormatDescription.NotSupported(
+                        what = "optional item",
+                        context = "runtime-parsed format descriptions",
+                        index = span.start.byte,
+                    ),
+                )
+            }
+
+            is First -> {
+                Result.failure(
+                    InvalidFormatDescription.NotSupported(
+                        what = "'first' item",
+                        context = "runtime-parsed format descriptions",
+                        index = span.start.byte,
+                    ),
+                )
+            }
         }
 
     fun toOwnedFormatItem(): OwnedFormatItem =
@@ -87,13 +102,19 @@ internal sealed class ParsedFormatItem {
     companion object {
         fun fromAst(astItem: AstItem): Result<ParsedFormatItem> =
             when (astItem) {
-                is AstItem.Component ->
+                is AstItem.Component -> {
                     componentFromAst(astItem.name, astItem.modifiers)
                         .map { Component(it) }
-                is AstItem.Literal ->
+                }
+
+                is AstItem.Literal -> {
                     Result.success(Literal(astItem.value.value))
-                is AstItem.EscapedBracket ->
+                }
+
+                is AstItem.EscapedBracket -> {
                     Result.success(Literal(byteArrayOf('['.code.toByte())))
+                }
+
                 is AstItem.Optional -> {
                     val items = mutableListOf<ParsedFormatItem>()
                     for (sub in astItem.nestedFormatDescription.items) {
@@ -107,6 +128,7 @@ internal sealed class ParsedFormatItem {
                         ),
                     )
                 }
+
                 is AstItem.First -> {
                     val outer = mutableListOf<List<ParsedFormatItem>>()
                     for (nested in astItem.nestedFormatDescriptions) {
@@ -301,29 +323,47 @@ private fun componentFromAst(
         "day" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.Day(Day(padding = padding ?: Padding.default())))
         }
+
         "end" -> {
             var trailingInput: TrailingInput? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
-                    "trailing_input" ->
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
+                    "trailing_input" -> {
                         trailingInput = parseTrailingInput(mod.value).getOrElse { return Result.failure(it) }
-                    else -> return invalidModifierKey(mod)
+                    }
+
+                    else -> {
+                        return invalidModifierKey(mod)
+                    }
                 }
             }
             Result.success(Component.End(End(trailingInput = trailingInput ?: TrailingInput.default())))
         }
+
         "hour" -> {
             var padding: Padding? = null
             var is12HourClock: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     "repr" -> is12HourClock = parseHourBase(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
@@ -338,10 +378,15 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "ignore" -> {
             var count: UShort? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "count" -> count = parseNonZeroU16(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
@@ -356,27 +401,47 @@ private fun componentFromAst(
             }
             Result.success(Component.Ignore(Ignore(count = count)))
         }
+
         "minute" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.Minute(Minute(padding = padding ?: Padding.default())))
         }
+
         "month" -> {
             var padding: Padding? = null
             var repr: MonthRepr? = null
             var caseSensitive: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
-                    "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
-                    "repr" -> repr = parseMonthRepr(mod.value).getOrElse { return Result.failure(it) }
-                    "case_sensitive" ->
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
+                    "padding" -> {
+                        padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
+                    }
+
+                    "repr" -> {
+                        repr = parseMonthRepr(mod.value).getOrElse { return Result.failure(it) }
+                    }
+
+                    "case_sensitive" -> {
                         caseSensitive = parseBooleanModifier(mod.value).getOrElse { return Result.failure(it) }
-                    else -> return invalidModifierKey(mod)
+                    }
+
+                    else -> {
+                        return invalidModifierKey(mod)
+                    }
                 }
             }
             Result.success(
@@ -389,11 +454,16 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "offset_hour" -> {
             var signIsMandatory: Boolean? = null
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "sign" -> signIsMandatory = parseSignBehavior(mod.value).getOrElse { return Result.failure(it) }
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
@@ -408,45 +478,72 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "offset_minute" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.OffsetMinute(OffsetMinute(padding = padding ?: Padding.default())))
         }
+
         "offset_second" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.OffsetSecond(OffsetSecond(padding = padding ?: Padding.default())))
         }
+
         "ordinal" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.Ordinal(Ordinal(padding = padding ?: Padding.default())))
         }
+
         "period" -> {
             var isUppercase: Boolean? = null
             var caseSensitive: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
-                    "case" -> isUppercase = parsePeriodCase(mod.value).getOrElse { return Result.failure(it) }
-                    "case_sensitive" ->
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
+                    "case" -> {
+                        isUppercase = parsePeriodCase(mod.value).getOrElse { return Result.failure(it) }
+                    }
+
+                    "case_sensitive" -> {
                         caseSensitive = parseBooleanModifier(mod.value).getOrElse { return Result.failure(it) }
-                    else -> return invalidModifierKey(mod)
+                    }
+
+                    else -> {
+                        return invalidModifierKey(mod)
+                    }
                 }
             }
             Result.success(
@@ -458,36 +555,57 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "second" -> {
             var padding: Padding? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.Second(Second(padding = padding ?: Padding.default())))
         }
+
         "subsecond" -> {
             var digits: SubsecondDigits? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "digits" -> digits = parseSubsecondDigits(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
                 }
             }
             Result.success(Component.Subsecond(Subsecond(digits = digits ?: SubsecondDigits.default())))
         }
+
         "unix_timestamp" -> {
             var precision: UnixTimestampPrecision? = null
             var signIsMandatory: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
-                    "precision" ->
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
+                    "precision" -> {
                         precision = parseUnixTimestampPrecision(mod.value).getOrElse { return Result.failure(it) }
-                    "sign" ->
+                    }
+
+                    "sign" -> {
                         signIsMandatory = parseSignBehavior(mod.value).getOrElse { return Result.failure(it) }
-                    else -> return invalidModifierKey(mod)
+                    }
+
+                    else -> {
+                        return invalidModifierKey(mod)
+                    }
                 }
             }
             Result.success(
@@ -499,18 +617,32 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "weekday" -> {
             var repr: WeekdayRepr? = null
             var oneIndexed: Boolean? = null
             var caseSensitive: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
-                    "repr" -> repr = parseWeekdayRepr(mod.value).getOrElse { return Result.failure(it) }
-                    "one_indexed" ->
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
+                    "repr" -> {
+                        repr = parseWeekdayRepr(mod.value).getOrElse { return Result.failure(it) }
+                    }
+
+                    "one_indexed" -> {
                         oneIndexed = parseBooleanModifier(mod.value).getOrElse { return Result.failure(it) }
-                    "case_sensitive" ->
+                    }
+
+                    "case_sensitive" -> {
                         caseSensitive = parseBooleanModifier(mod.value).getOrElse { return Result.failure(it) }
-                    else -> return invalidModifierKey(mod)
+                    }
+
+                    else -> {
+                        return invalidModifierKey(mod)
+                    }
                 }
             }
             Result.success(
@@ -523,11 +655,16 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "week_number" -> {
             var padding: Padding? = null
             var repr: WeekNumberRepr? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     "repr" -> repr = parseWeekNumberRepr(mod.value).getOrElse { return Result.failure(it) }
                     else -> return invalidModifierKey(mod)
@@ -542,6 +679,7 @@ private fun componentFromAst(
                 ),
             )
         }
+
         "year" -> {
             var padding: Padding? = null
             var repr: YearRepr? = null
@@ -549,7 +687,11 @@ private fun componentFromAst(
             var isoWeekBased: Boolean? = null
             var signIsMandatory: Boolean? = null
             for (mod in modifiers) {
-                when (mod.key.value.decodeToString().lowercase()) {
+                when (
+                    mod.key.value
+                        .decodeToString()
+                        .lowercase()
+                ) {
                     "padding" -> padding = parsePadding(mod.value).getOrElse { return Result.failure(it) }
                     "repr" -> repr = parseYearRepr(mod.value).getOrElse { return Result.failure(it) }
                     "range" -> range = parseYearRange(mod.value).getOrElse { return Result.failure(it) }
@@ -570,11 +712,14 @@ private fun componentFromAst(
                 ),
             )
         }
-        else -> Result.failure(
-            InvalidFormatDescription.InvalidComponentName(
-                name = nameStr,
-                index = name.span.start.byte,
-            ),
-        )
+
+        else -> {
+            Result.failure(
+                InvalidFormatDescription.InvalidComponentName(
+                    name = nameStr,
+                    index = name.span.start.byte,
+                ),
+            )
+        }
     }
 }

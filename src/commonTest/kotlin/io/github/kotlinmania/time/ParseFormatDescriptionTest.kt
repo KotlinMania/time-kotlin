@@ -37,7 +37,6 @@ import io.github.kotlinmania.time.formatdescription.parse.parseOwned
 import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeBorrowed
 import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeOwned
 import io.github.kotlinmania.time.macros.formatDescription
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -229,7 +228,11 @@ class ParseFormatDescriptionTest {
                         listOf(
                             BorrowedFormatItem.Component(
                                 Component.Month(
-                                    Month.default().withPadding(pad).withRepr(mRepr).withCaseSensitive(cs),
+                                    Month
+                                        .default()
+                                        .withPadding(pad)
+                                        .withRepr(mRepr)
+                                        .withCaseSensitive(cs),
                                 ),
                             ),
                         ),
@@ -265,7 +268,8 @@ class ParseFormatDescriptionTest {
                                 listOf(
                                     BorrowedFormatItem.Component(
                                         Component.Year(
-                                            Year.default()
+                                            Year
+                                                .default()
                                                 .withPadding(pad)
                                                 .withRepr(yRepr)
                                                 .withRange(yRange)
@@ -299,7 +303,8 @@ class ParseFormatDescriptionTest {
                         listOf(
                             BorrowedFormatItem.Component(
                                 Component.Weekday(
-                                    Weekday.default()
+                                    Weekday
+                                        .default()
                                         .withRepr(wdRepr)
                                         .withOneIndexed(oneIdx)
                                         .withCaseSensitive(cs),
@@ -634,7 +639,8 @@ class ParseFormatDescriptionTest {
             listOf(
                 BorrowedFormatItem.Component(
                     Component.Year(
-                        Year.default()
+                        Year
+                            .default()
                             .withPadding(Padding.Zero)
                             .withRepr(YearRepr.Full)
                             .withIsoWeekBased(false)

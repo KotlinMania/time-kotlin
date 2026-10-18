@@ -31,28 +31,44 @@ internal enum class ExtendedKind {
     fun isExtended(): Boolean = this == Extended
 }
 
-internal class ExtendedKindHolder(var value: ExtendedKind = ExtendedKind.Unknown) {
+internal class ExtendedKindHolder(
+    var value: ExtendedKind = ExtendedKind.Unknown,
+) {
     fun maybeExtended(): Boolean = value.maybeExtended()
 
     fun isExtended(): Boolean = value.isExtended()
 
-    fun coerceBasic(): Unit? = when (value) {
-        ExtendedKind.Basic -> Unit
-        ExtendedKind.Extended -> null
-        ExtendedKind.Unknown -> {
-            value = ExtendedKind.Basic
-            Unit
-        }
-    }
+    fun coerceBasic(): Unit? =
+        when (value) {
+            ExtendedKind.Basic -> {
+                Unit
+            }
 
-    fun coerceExtended(): Unit? = when (value) {
-        ExtendedKind.Basic -> null
-        ExtendedKind.Extended -> Unit
-        ExtendedKind.Unknown -> {
-            value = ExtendedKind.Extended
-            Unit
+            ExtendedKind.Extended -> {
+                null
+            }
+
+            ExtendedKind.Unknown -> {
+                value = ExtendedKind.Basic
+                Unit
+            }
         }
-    }
+
+    fun coerceExtended(): Unit? =
+        when (value) {
+            ExtendedKind.Basic -> {
+                null
+            }
+
+            ExtendedKind.Extended -> {
+                Unit
+            }
+
+            ExtendedKind.Unknown -> {
+                value = ExtendedKind.Extended
+                Unit
+            }
+        }
 }
 
 /** Parse a possibly expanded year. */
@@ -77,21 +93,22 @@ internal fun month(input: ByteArray): ParsedItem<Month>? {
     val rest = input.copyOfRange(2, input.size)
     val c0 = input[0].toInt().toChar()
     val c1 = input[1].toInt().toChar()
-    val m = when ("$c0$c1") {
-        "01" -> Month.January
-        "02" -> Month.February
-        "03" -> Month.March
-        "04" -> Month.April
-        "05" -> Month.May
-        "06" -> Month.June
-        "07" -> Month.July
-        "08" -> Month.August
-        "09" -> Month.September
-        "10" -> Month.October
-        "11" -> Month.November
-        "12" -> Month.December
-        else -> return null
-    }
+    val m =
+        when ("$c0$c1") {
+            "01" -> Month.January
+            "02" -> Month.February
+            "03" -> Month.March
+            "04" -> Month.April
+            "05" -> Month.May
+            "06" -> Month.June
+            "07" -> Month.July
+            "08" -> Month.August
+            "09" -> Month.September
+            "10" -> Month.October
+            "11" -> Month.November
+            "12" -> Month.December
+            else -> return null
+        }
     return ParsedItem(rest, m)
 }
 
@@ -107,16 +124,17 @@ internal fun day(input: ByteArray): ParsedItem<UByte>? =
 internal fun dayk(input: ByteArray): ParsedItem<Weekday>? {
     if (input.isEmpty()) return null
     val rest = input.copyOfRange(1, input.size)
-    val w = when (input[0].toInt().toChar()) {
-        '1' -> Weekday.Monday
-        '2' -> Weekday.Tuesday
-        '3' -> Weekday.Wednesday
-        '4' -> Weekday.Thursday
-        '5' -> Weekday.Friday
-        '6' -> Weekday.Saturday
-        '7' -> Weekday.Sunday
-        else -> return null
-    }
+    val w =
+        when (input[0].toInt().toChar()) {
+            '1' -> Weekday.Monday
+            '2' -> Weekday.Tuesday
+            '3' -> Weekday.Wednesday
+            '4' -> Weekday.Thursday
+            '5' -> Weekday.Friday
+            '6' -> Weekday.Saturday
+            '7' -> Weekday.Sunday
+            else -> return null
+        }
     return ParsedItem(rest, w)
 }
 

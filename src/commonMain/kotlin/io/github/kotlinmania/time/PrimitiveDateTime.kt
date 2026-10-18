@@ -16,9 +16,9 @@ import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.serde.I32Serialize
 import io.github.kotlinmania.time.serde.PRIMITIVE_DATE_TIME_FORMAT
 import io.github.kotlinmania.time.serde.PrimitiveDateTimeVisitor
-import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U16Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
 
 /**
  * Combined date and time.
@@ -26,7 +26,8 @@ import io.github.kotlinmania.time.serde.U32Serialize
 class PrimitiveDateTime internal constructor(
     private val date: Date,
     private val time: Time,
-) : Comparable<PrimitiveDateTime>, Serialize {
+) : Comparable<PrimitiveDateTime>,
+    Serialize {
     companion object : Deserialize<PrimitiveDateTime> {
         override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<PrimitiveDateTime> =
             if (deserializer.isHumanReadable()) {

@@ -1,10 +1,10 @@
 // port-lint: source instant.rs
 package io.github.kotlinmania.time
 
+import kotlin.time.TimeSource
 import kotlin.time.ComparableTimeMark as StdInstant
 import kotlin.time.Duration as StdDuration
 import kotlin.time.Duration.Companion.nanoseconds as stdNanoseconds
-import kotlin.time.TimeSource
 
 /**
  * A measurement of a monotonically non-decreasing clock. Opaque and useful only with [Duration].
@@ -77,15 +77,21 @@ class Instant(
 
     operator fun minus(other: Instant): Duration =
         when {
-            inner == other.inner -> Duration.ZERO
-            inner > other.inner ->
+            inner == other.inner -> {
+                Duration.ZERO
+            }
+
+            inner > other.inner -> {
                 Duration.tryFrom(inner - other.inner).getOrElse {
                     error("overflow converting `std::time::Duration` to `time::Duration`")
                 }
-            else ->
+            }
+
+            else -> {
                 -Duration.tryFrom(other.inner - inner).getOrElse {
                     error("overflow converting `std::time::Duration` to `time::Duration`")
                 }
+            }
         }
 
     operator fun minus(other: StdInstant): Duration = this - Instant(other)

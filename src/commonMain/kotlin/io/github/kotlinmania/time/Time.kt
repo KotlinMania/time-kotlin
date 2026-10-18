@@ -16,8 +16,8 @@ import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.serde.TIME_FORMAT
 import io.github.kotlinmania.time.serde.TimeVisitor
-import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
 
 /**
  * The clock time within a given date. Nanosecond precision.
@@ -33,7 +33,8 @@ class Time internal constructor(
     private val second: Int,
     private val nanosecond: Int,
     internal val padding: Padding = Padding.Optimize,
-) : Comparable<Time>, Serialize {
+) : Comparable<Time>,
+    Serialize {
     init {
         require(hour in 0..23) { "hour must be in range 0..=23, got $hour" }
         require(minute in 0..59) { "minute must be in range 0..=59, got $minute" }

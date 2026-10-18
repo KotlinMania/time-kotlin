@@ -33,7 +33,8 @@ internal const val MAX_YEAR: Int = 999_999
  */
 class Date internal constructor(
     private val value: Int,
-) : Comparable<Date>, Serialize {
+) : Comparable<Date>,
+    Serialize {
     init {
         require(value != 0) { "date value cannot be 0" }
     }

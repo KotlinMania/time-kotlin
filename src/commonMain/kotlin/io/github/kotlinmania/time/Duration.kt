@@ -39,7 +39,8 @@ class Duration internal constructor(
     /** Number of nanoseconds within the second. The sign always matches the `seconds` field. */
     val nanoseconds: Int,
     internal val padding: Padding = Padding.Optimize,
-) : Comparable<Duration>, Serialize {
+) : Comparable<Duration>,
+    Serialize {
     init {
         require(nanoseconds in -999_999_999..999_999_999) {
             "nanoseconds must be in range -999_999_999..=999_999_999, got $nanoseconds"
@@ -538,7 +539,6 @@ class Duration internal constructor(
 
         fun tryFrom(std: kotlin.time.Duration): Result<Duration> =
             runCatching { fromStdDuration(std) }
-
 
         private fun addWithOverflow(x: Long, y: Long): Pair<Long, Boolean> {
             val r = x + y

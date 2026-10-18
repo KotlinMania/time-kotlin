@@ -18,7 +18,6 @@ import io.github.kotlinmania.time.macros.formatDescription
 import io.github.kotlinmania.time.macros.offset
 import io.github.kotlinmania.time.macros.time
 import io.github.kotlinmania.time.macros.utcDatetime
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -124,21 +123,34 @@ class FormattingTest {
 
         assertEquals(
             "-123456-01-02T03:04:05.000000000Z",
-            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0).format(
-                Iso8601(Config.DEFAULT.setYearIsSixDigits(true).encode()),
-            ).getOrThrow(),
+            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0)
+                .format(
+                    Iso8601(Config.DEFAULT.setYearIsSixDigits(true).encode()),
+                ).getOrThrow(),
         )
         assertEquals(
             "-123456-002T03:04:05.000000000Z",
-            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0).format(
-                Iso8601(Config.DEFAULT.setDateKind(DateKind.Ordinal).setYearIsSixDigits(true).encode()),
-            ).getOrThrow(),
+            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0)
+                .format(
+                    Iso8601(
+                        Config.DEFAULT
+                            .setDateKind(DateKind.Ordinal)
+                            .setYearIsSixDigits(true)
+                            .encode(),
+                    ),
+                ).getOrThrow(),
         )
         assertEquals(
             "-123456-W01-4T03:04:05.000000000Z",
-            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0).format(
-                Iso8601(Config.DEFAULT.setDateKind(DateKind.Week).setYearIsSixDigits(true).encode()),
-            ).getOrThrow(),
+            datetime(-123_456, Month.January, 2, 3, 4, 5, 0, 0)
+                .format(
+                    Iso8601(
+                        Config.DEFAULT
+                            .setDateKind(DateKind.Week)
+                            .setYearIsSixDigits(true)
+                            .encode(),
+                    ),
+                ).getOrThrow(),
         )
         assertEquals(
             "2021-01-02T03:04:05.000000000+01:00",
@@ -146,9 +158,10 @@ class FormattingTest {
         )
         assertEquals(
             "2021-01-02T03:04:05.000000000+01",
-            datetime(2021, Month.January, 2, 3, 4, 5, 0, 1).format(
-                Iso8601(Config.DEFAULT.setOffsetPrecision(OffsetPrecision.Hour).encode()),
-            ).getOrThrow(),
+            datetime(2021, Month.January, 2, 3, 4, 5, 0, 1)
+                .format(
+                    Iso8601(Config.DEFAULT.setOffsetPrecision(OffsetPrecision.Hour).encode()),
+                ).getOrThrow(),
         )
         assertEquals(
             "2021-01-02T03:04:05.000000000Z",
@@ -439,9 +452,10 @@ class FormattingTest {
     fun insufficientTypeInformation() {
         assertTrue(Time.MIDNIGHT.format(formatDescription("[year]")).exceptionOrNull() is Format.InsufficientTypeInformation)
         assertTrue(
-            Time.MIDNIGHT.format(
-                BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[year]")))),
-            ).exceptionOrNull() is Format.InsufficientTypeInformation,
+            Time.MIDNIGHT
+                .format(
+                    BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[year]")))),
+                ).exceptionOrNull() is Format.InsufficientTypeInformation,
         )
     }
 
@@ -450,18 +464,20 @@ class FormattingTest {
         assertEquals("", Time.MIDNIGHT.format(BorrowedFormatItem.First(emptyList())).getOrThrow())
         assertEquals(
             "00",
-            Time.MIDNIGHT.format(
-                BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[hour]")))),
-            ).getOrThrow(),
+            Time.MIDNIGHT
+                .format(
+                    BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[hour]")))),
+                ).getOrThrow(),
         )
         assertEquals("", Time.MIDNIGHT.format(OwnedFormatItem.First(emptyList())).getOrThrow())
         assertEquals(
             "00",
-            Time.MIDNIGHT.format(
-                OwnedFormatItem.from(
-                    BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[hour]")))),
-                ),
-            ).getOrThrow(),
+            Time.MIDNIGHT
+                .format(
+                    OwnedFormatItem.from(
+                        BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(formatDescription("[hour]")))),
+                    ),
+                ).getOrThrow(),
         )
     }
 

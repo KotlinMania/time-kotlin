@@ -390,36 +390,47 @@ class SerdeMacrosTest {
                                         access.nextKey(StringDeserialize).getOrElse { return SerdeResult.failure(it) }
                                             ?: break
                                     when (key) {
-                                        "offset_dt" ->
+                                        "offset_dt" -> {
                                             offsetDtVal =
                                                 access
                                                     .nextValue(offsetDtFormat)
                                                     .getOrElse { return SerdeResult.failure(it) }
-                                        "primitive_dt" ->
+                                        }
+
+                                        "primitive_dt" -> {
                                             primitiveDtVal =
                                                 access
                                                     .nextValue(primitiveDtFormat.option)
                                                     .getOrElse { return SerdeResult.failure(it) }
-                                        "date" ->
+                                        }
+
+                                        "date" -> {
                                             dateVal =
                                                 access
                                                     .nextValue(dateFormat)
                                                     .getOrElse { return SerdeResult.failure(it) }
-                                        "time" ->
+                                        }
+
+                                        "time" -> {
                                             timeVal =
                                                 access
                                                     .nextValue(timeFormat.option)
                                                     .getOrElse { return SerdeResult.failure(it) }
-                                        "offset" ->
+                                        }
+
+                                        "offset" -> {
                                             offsetVal =
                                                 access
                                                     .nextValue(offsetFormat)
                                                     .getOrElse { return SerdeResult.failure(it) }
-                                        "time_alt" ->
+                                        }
+
+                                        "time_alt" -> {
                                             timeAltVal =
                                                 access
                                                     .nextValue(timeFormatAlt)
                                                     .getOrElse { return SerdeResult.failure(it) }
+                                        }
                                     }
                                 }
                                 return SerdeResult.success(

@@ -6,13 +6,13 @@ import io.github.kotlinmania.serde.SerdeResult
 import io.github.kotlinmania.serdecore.de.Deserialize
 import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.de.Expected
-import io.github.kotlinmania.serdecore.de.I8Deserialize
 import io.github.kotlinmania.serdecore.de.I32Deserialize
 import io.github.kotlinmania.serdecore.de.I64Deserialize
+import io.github.kotlinmania.serdecore.de.I8Deserialize
 import io.github.kotlinmania.serdecore.de.SeqAccess
-import io.github.kotlinmania.serdecore.de.U8Deserialize
 import io.github.kotlinmania.serdecore.de.U16Deserialize
 import io.github.kotlinmania.serdecore.de.U32Deserialize
+import io.github.kotlinmania.serdecore.de.U8Deserialize
 import io.github.kotlinmania.serdecore.de.Unexpected
 import io.github.kotlinmania.serdecore.de.Visitor
 import io.github.kotlinmania.time.Date
@@ -43,7 +43,10 @@ private fun <T> nextItem(
                 SerdeResult.failure(SerdeError.custom("expected $name"))
             }
         }
-        is SerdeResult.Failure -> res
+
+        is SerdeResult.Failure -> {
+            res
+        }
     }
 
 internal object DateVisitor : Visitor<Date> {
@@ -334,7 +337,6 @@ internal object UtcOffsetVisitor : Visitor<UtcOffset> {
             }
         }
 
-
         return UtcOffset.fromHms(hours.toInt(), minutes.toInt(), seconds.toInt()).fold(
             onSuccess = { SerdeResult.success(it) },
             onFailure = { SerdeResult.failure(it.intoDeError()) },
@@ -347,38 +349,82 @@ internal object WeekdayVisitor : Visitor<Weekday> {
 
     override fun visitStr(v: String): SerdeResult<Weekday> =
         when (v) {
-            "Monday" -> SerdeResult.success(Weekday.Monday)
-            "Tuesday" -> SerdeResult.success(Weekday.Tuesday)
-            "Wednesday" -> SerdeResult.success(Weekday.Wednesday)
-            "Thursday" -> SerdeResult.success(Weekday.Thursday)
-            "Friday" -> SerdeResult.success(Weekday.Friday)
-            "Saturday" -> SerdeResult.success(Weekday.Saturday)
-            "Sunday" -> SerdeResult.success(Weekday.Sunday)
-            else ->
+            "Monday" -> {
+                SerdeResult.success(Weekday.Monday)
+            }
+
+            "Tuesday" -> {
+                SerdeResult.success(Weekday.Tuesday)
+            }
+
+            "Wednesday" -> {
+                SerdeResult.success(Weekday.Wednesday)
+            }
+
+            "Thursday" -> {
+                SerdeResult.success(Weekday.Thursday)
+            }
+
+            "Friday" -> {
+                SerdeResult.success(Weekday.Friday)
+            }
+
+            "Saturday" -> {
+                SerdeResult.success(Weekday.Saturday)
+            }
+
+            "Sunday" -> {
+                SerdeResult.success(Weekday.Sunday)
+            }
+
+            else -> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Str(v),
                         this,
                     ),
                 )
+            }
         }
 
     override fun visitU64(v: ULong): SerdeResult<Weekday> =
         when (v) {
-            1uL -> SerdeResult.success(Weekday.Monday)
-            2uL -> SerdeResult.success(Weekday.Tuesday)
-            3uL -> SerdeResult.success(Weekday.Wednesday)
-            4uL -> SerdeResult.success(Weekday.Thursday)
-            5uL -> SerdeResult.success(Weekday.Friday)
-            6uL -> SerdeResult.success(Weekday.Saturday)
-            7uL -> SerdeResult.success(Weekday.Sunday)
-            else ->
+            1uL -> {
+                SerdeResult.success(Weekday.Monday)
+            }
+
+            2uL -> {
+                SerdeResult.success(Weekday.Tuesday)
+            }
+
+            3uL -> {
+                SerdeResult.success(Weekday.Wednesday)
+            }
+
+            4uL -> {
+                SerdeResult.success(Weekday.Thursday)
+            }
+
+            5uL -> {
+                SerdeResult.success(Weekday.Friday)
+            }
+
+            6uL -> {
+                SerdeResult.success(Weekday.Saturday)
+            }
+
+            7uL -> {
+                SerdeResult.success(Weekday.Sunday)
+            }
+
+            else -> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Unsigned(v),
                         Expected { "a value in the range 1..=7" },
                     ),
                 )
+            }
         }
 
     override fun visitI64(v: Long): SerdeResult<Weekday> =
@@ -399,48 +445,122 @@ internal object MonthVisitor : Visitor<Month> {
 
     override fun visitStr(v: String): SerdeResult<Month> =
         when (v) {
-            "January" -> SerdeResult.success(Month.January)
-            "February" -> SerdeResult.success(Month.February)
-            "March" -> SerdeResult.success(Month.March)
-            "April" -> SerdeResult.success(Month.April)
-            "May" -> SerdeResult.success(Month.May)
-            "June" -> SerdeResult.success(Month.June)
-            "July" -> SerdeResult.success(Month.July)
-            "August" -> SerdeResult.success(Month.August)
-            "September" -> SerdeResult.success(Month.September)
-            "October" -> SerdeResult.success(Month.October)
-            "November" -> SerdeResult.success(Month.November)
-            "December" -> SerdeResult.success(Month.December)
-            else ->
+            "January" -> {
+                SerdeResult.success(Month.January)
+            }
+
+            "February" -> {
+                SerdeResult.success(Month.February)
+            }
+
+            "March" -> {
+                SerdeResult.success(Month.March)
+            }
+
+            "April" -> {
+                SerdeResult.success(Month.April)
+            }
+
+            "May" -> {
+                SerdeResult.success(Month.May)
+            }
+
+            "June" -> {
+                SerdeResult.success(Month.June)
+            }
+
+            "July" -> {
+                SerdeResult.success(Month.July)
+            }
+
+            "August" -> {
+                SerdeResult.success(Month.August)
+            }
+
+            "September" -> {
+                SerdeResult.success(Month.September)
+            }
+
+            "October" -> {
+                SerdeResult.success(Month.October)
+            }
+
+            "November" -> {
+                SerdeResult.success(Month.November)
+            }
+
+            "December" -> {
+                SerdeResult.success(Month.December)
+            }
+
+            else -> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Str(v),
                         this,
                     ),
                 )
+            }
         }
 
     override fun visitU64(v: ULong): SerdeResult<Month> =
         when (v) {
-            1uL -> SerdeResult.success(Month.January)
-            2uL -> SerdeResult.success(Month.February)
-            3uL -> SerdeResult.success(Month.March)
-            4uL -> SerdeResult.success(Month.April)
-            5uL -> SerdeResult.success(Month.May)
-            6uL -> SerdeResult.success(Month.June)
-            7uL -> SerdeResult.success(Month.July)
-            8uL -> SerdeResult.success(Month.August)
-            9uL -> SerdeResult.success(Month.September)
-            10uL -> SerdeResult.success(Month.October)
-            11uL -> SerdeResult.success(Month.November)
-            12uL -> SerdeResult.success(Month.December)
-            else ->
+            1uL -> {
+                SerdeResult.success(Month.January)
+            }
+
+            2uL -> {
+                SerdeResult.success(Month.February)
+            }
+
+            3uL -> {
+                SerdeResult.success(Month.March)
+            }
+
+            4uL -> {
+                SerdeResult.success(Month.April)
+            }
+
+            5uL -> {
+                SerdeResult.success(Month.May)
+            }
+
+            6uL -> {
+                SerdeResult.success(Month.June)
+            }
+
+            7uL -> {
+                SerdeResult.success(Month.July)
+            }
+
+            8uL -> {
+                SerdeResult.success(Month.August)
+            }
+
+            9uL -> {
+                SerdeResult.success(Month.September)
+            }
+
+            10uL -> {
+                SerdeResult.success(Month.October)
+            }
+
+            11uL -> {
+                SerdeResult.success(Month.November)
+            }
+
+            12uL -> {
+                SerdeResult.success(Month.December)
+            }
+
+            else -> {
                 SerdeResult.failure(
                     SerdeError.invalidValue(
                         Unexpected.Unsigned(v),
                         Expected { "a value in the range 1..=12" },
                     ),
                 )
+            }
         }
 
     override fun visitI64(v: Long): SerdeResult<Month> =

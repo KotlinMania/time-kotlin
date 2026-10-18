@@ -32,12 +32,13 @@ internal fun systemtimeToFiletime(systime: SystemTime): FileTime? {
     val month = Month.tryFrom(systime.wMonth.toInt()).getOrNull() ?: return null
     val date = Date.fromCalendarDate(systime.wYear.toInt(), month, systime.wDay.toInt()).getOrNull() ?: return null
     val dt =
-        date.withHmsMilli(
-            systime.wHour.toInt(),
-            systime.wMinute.toInt(),
-            systime.wSecond.toInt(),
-            systime.wMilliseconds.toInt(),
-        ).getOrNull() ?: return null
+        date
+            .withHmsMilli(
+                systime.wHour.toInt(),
+                systime.wMinute.toInt(),
+                systime.wSecond.toInt(),
+                systime.wMilliseconds.toInt(),
+            ).getOrNull() ?: return null
     val winSecs = dt.assumeUtc().unixTimestamp() + WINDOWS_EPOCH_OFFSET_SECS
     if (winSecs < 0L) return null
     val intervals = winSecs.toULong() * FT_TO_SECS + systime.wMilliseconds.toULong() * 10_000uL

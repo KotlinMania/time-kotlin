@@ -26,4 +26,3 @@ object ConversionRange : IllegalArgumentException("Source value is out of range 
             else -> Result.failure(DifferentVariant())
         }
 }
-

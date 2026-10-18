@@ -8,7 +8,9 @@ import io.github.kotlinmania.time.parsing.Parsable
 /**
  * A complete description of how to format and parse a type.
  */
-sealed class OwnedFormatItem : Formattable, Parsable {
+sealed class OwnedFormatItem :
+    Formattable,
+    Parsable {
     /**
      * Bytes that are formatted as-is.
      *
@@ -115,4 +117,3 @@ sealed class OwnedFormatItem : Formattable, Parsable {
             Compound(items)
     }
 }
-

@@ -21,12 +21,16 @@ object NanosecondsSerde : Deserialize<OffsetDateTime> {
     /** Deserialize an [OffsetDateTime] from its Unix timestamp with nanoseconds. */
     override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<OffsetDateTime> =
         when (val res = I128Deserialize.deserialize(deserializer)) {
-            is SerdeResult.Success ->
+            is SerdeResult.Success -> {
                 OffsetDateTime.fromUnixTimestampNanos(res.value).fold(
                     onSuccess = { SerdeResult.success(it) },
                     onFailure = { SerdeResult.failure(it.intoDeError()) },
                 )
-            is SerdeResult.Failure -> res
+            }
+
+            is SerdeResult.Failure -> {
+                res
+            }
         }
 
     /**
@@ -51,7 +55,10 @@ object NanosecondsSerde : Deserialize<OffsetDateTime> {
                         onFailure = { SerdeResult.failure(it.intoDeError()) },
                     )
                 }
-                is SerdeResult.Failure -> res
+
+                is SerdeResult.Failure -> {
+                    res
+                }
             }
     }
 }

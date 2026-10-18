@@ -41,7 +41,8 @@ internal fun tmToOffsetWithoutGmtoff(unixTimestamp: Long, tm: Tm): UtcOffset? {
     if (tm.tmYday < 0) return null
 
     val localTimestamp =
-        Date.fromOrdinalDate(1900 + tm.tmYear, tm.tmYday + 1)
+        Date
+            .fromOrdinalDate(1900 + tm.tmYear, tm.tmYday + 1)
             .getOrNull()
             ?.withHms(tm.tmHour, tm.tmMin, sec)
             ?.getOrNull()

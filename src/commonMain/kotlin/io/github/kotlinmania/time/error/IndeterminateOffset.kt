@@ -23,4 +23,3 @@ object IndeterminateOffset : IllegalArgumentException("The system's UTC offset c
             else -> Result.failure(DifferentVariant())
         }
 }
-
