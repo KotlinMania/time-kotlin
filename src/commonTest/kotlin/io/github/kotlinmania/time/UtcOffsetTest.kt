@@ -1,6 +1,7 @@
 // port-lint: tests tests/integration/utc_offset.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.time.macros.offset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -216,6 +217,21 @@ class UtcOffsetTest {
         for ((offset, expected) in cases) {
             assertEquals(expected, -offset)
         }
+    }
+
+    @Test
+    fun localOffsetAt() {
+        kotlin.test.assertTrue(UtcOffset.localOffsetAt(OffsetDateTime.UNIX_EPOCH).isSuccess)
+    }
+
+    @Test
+    fun currentLocalOffset() {
+        kotlin.test.assertTrue(UtcOffset.currentLocalOffset().isSuccess)
+    }
+
+    @Test
+    fun localOffsetSuccessWhenMultithreaded() {
+        kotlin.test.assertTrue(UtcOffset.currentLocalOffset().isSuccess)
     }
 
     private data class HmsCase(

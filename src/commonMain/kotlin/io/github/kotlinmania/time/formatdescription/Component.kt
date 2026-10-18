@@ -13,82 +13,82 @@ internal enum class PeriodCase {
 sealed class Component {
     /** Day of the month. */
     data class Day(
-        val modifier: io.github.kotlinmania.time.formatdescription.Day,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Day,
     ) : Component()
 
     /** Month of the year. */
     data class Month(
-        val modifier: io.github.kotlinmania.time.formatdescription.Month,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Month,
     ) : Component()
 
     /** Ordinal day of the year. */
     data class Ordinal(
-        val modifier: io.github.kotlinmania.time.formatdescription.Ordinal,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Ordinal,
     ) : Component()
 
     /** Day of the week. */
     data class Weekday(
-        val modifier: io.github.kotlinmania.time.formatdescription.Weekday,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Weekday,
     ) : Component()
 
     /** Week within the year. */
     data class WeekNumber(
-        val modifier: io.github.kotlinmania.time.formatdescription.WeekNumber,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.WeekNumber,
     ) : Component()
 
     /** Year of the date. */
     data class Year(
-        val modifier: io.github.kotlinmania.time.formatdescription.Year,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Year,
     ) : Component()
 
     /** Hour of the day. */
     data class Hour(
-        val modifier: io.github.kotlinmania.time.formatdescription.Hour,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Hour,
     ) : Component()
 
     /** Minute within the hour. */
     data class Minute(
-        val modifier: io.github.kotlinmania.time.formatdescription.Minute,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Minute,
     ) : Component()
 
     /** AM/PM part of the time. */
     data class Period(
-        val modifier: io.github.kotlinmania.time.formatdescription.Period,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Period,
     ) : Component()
 
     /** Second within the minute. */
     data class Second(
-        val modifier: io.github.kotlinmania.time.formatdescription.Second,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Second,
     ) : Component()
 
     /** Subsecond within the second. */
     data class Subsecond(
-        val modifier: io.github.kotlinmania.time.formatdescription.Subsecond,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Subsecond,
     ) : Component()
 
     /** Hour of the UTC offset. */
     data class OffsetHour(
-        val modifier: io.github.kotlinmania.time.formatdescription.OffsetHour,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.OffsetHour,
     ) : Component()
 
     /** Minute within the hour of the UTC offset. */
     data class OffsetMinute(
-        val modifier: io.github.kotlinmania.time.formatdescription.OffsetMinute,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.OffsetMinute,
     ) : Component()
 
     /** Second within the minute of the UTC offset. */
     data class OffsetSecond(
-        val modifier: io.github.kotlinmania.time.formatdescription.OffsetSecond,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.OffsetSecond,
     ) : Component()
 
     /** A number of bytes to ignore when parsing. This has no effect on formatting. */
     data class Ignore(
-        val modifier: io.github.kotlinmania.time.formatdescription.Ignore,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.Ignore,
     ) : Component()
 
     /** A Unix timestamp. */
     data class UnixTimestamp(
-        val modifier: io.github.kotlinmania.time.formatdescription.UnixTimestamp,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.UnixTimestamp,
     ) : Component()
 
     /**
@@ -96,6 +96,12 @@ sealed class Component {
      * component neither affects formatting nor consumes any input when parsing.
      */
     data class End(
-        val modifier: io.github.kotlinmania.time.formatdescription.End,
+        val modifier: io.github.kotlinmania.time.formatdescription.modifier.End,
     ) : Component()
+
+    companion object {
+        fun tryFrom(item: BorrowedFormatItem): Result<Component> = item.tryIntoComponent()
+
+        fun tryFrom(item: OwnedFormatItem): Result<Component> = item.tryIntoComponent()
+    }
 }

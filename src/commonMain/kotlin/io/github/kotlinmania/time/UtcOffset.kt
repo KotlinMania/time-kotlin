@@ -1,7 +1,22 @@
 // port-lint: source utc_offset.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.I8Serialize
+import io.github.kotlinmania.time.serde.UTC_OFFSET_FORMAT
+import io.github.kotlinmania.time.serde.UtcOffsetVisitor
 import kotlin.math.abs
 
 /**
@@ -13,7 +28,8 @@ class UtcOffset private constructor(
     private val hours: Int,
     private val minutes: Int,
     private val seconds: Int,
-) : Comparable<UtcOffset> {
+) : Comparable<UtcOffset>,
+    Serialize {
     fun hash(): UInt = asU32ForEquality()
 
     fun eq(other: UtcOffset): Boolean = asU32ForEquality() == other.asU32ForEquality()
@@ -149,6 +165,23 @@ class UtcOffset private constructor(
     /** Format the `UtcOffset` as a string. */
     fun format(): String = toString()
 
+    /** Format the [UtcOffset] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [UtcOffset] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
     fun fmt(): String = toString()
 
     /** Negate this `UtcOffset`. */
@@ -156,7 +189,31 @@ class UtcOffset private constructor(
 
     fun neg(): UtcOffset = fromHmsRanged(-hours, -minutes, -seconds)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(UTC_OFFSET_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `UtcOffset`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(3).getOrThrow()
+            tuple.serializeElement(I8Serialize(wholeHours().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(minutesPastHour().toByte())).getOrThrow()
+            tuple.serializeElement(I8Serialize(secondsPastMinute().toByte())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<UtcOffset> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<UtcOffset> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(UtcOffsetVisitor)
+            } else {
+                deserializer.deserializeTuple(3, UtcOffsetVisitor)
+            }
+
         private const val MINUTES_PER_HOUR = 60
         private const val SECONDS_PER_MINUTE = 60
         private const val SECONDS_PER_HOUR = 3_600
@@ -178,11 +235,21 @@ class UtcOffset private constructor(
         val UTC: UtcOffset = fromWholeSecondsRanged(0)
 
         /**
+         * Attempt to obtain the system's UTC offset at a known moment in time. If the offset cannot
+         * be determined, an error is returned.
+         */
+        fun localOffsetAt(datetime: OffsetDateTime): Result<UtcOffset> =
+            io.github.kotlinmania.time.sys.localoffsetat.unix
+                .localOffsetAt(datetime)
+                ?.let { Result.success(it) }
+                ?: Result.failure(io.github.kotlinmania.time.error.IndeterminateOffset)
+
+        /**
          * Attempt to obtain the system's current UTC offset. If the offset cannot be determined,
          * an error is returned.
          */
         fun currentLocalOffset(): Result<UtcOffset> =
-            Result.success(UTC)
+            localOffsetAt(OffsetDateTime.nowUtc())
 
         /**
          * Parse a `UtcOffset` from string input.
@@ -203,6 +270,13 @@ class UtcOffset private constructor(
             }
             return Result.failure(ComponentRange.unconditional("offset"))
         }
+
+        /** Parse a [UtcOffset] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<UtcOffset> =
+            description.parseUtcOffset(input.encodeToByteArray())
+
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<UtcOffset> =
+            BorrowedFormatItemSliceParsable(description).parseUtcOffset(input.encodeToByteArray())
 
         /**
          * Create a `UtcOffset` representing an offset of the hours, minutes,

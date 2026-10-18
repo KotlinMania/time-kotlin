@@ -1,4 +1,4 @@
-package io.github.kotlinmania.time
+package io.github.kotlinmania.time.error
 
 /**
  * Various error types returned by methods in the time crate.
@@ -24,6 +24,8 @@ sealed class StdError {
             is DifferentVariant -> err.fmt()
             is InvalidVariant -> err.fmt()
         }
+
+    override fun toString(): String = fmt()
 
     open fun source(): Throwable? =
         when (this) {
@@ -78,4 +80,31 @@ sealed class StdError {
     class InvalidVariant(
         val err: io.github.kotlinmania.time.error.InvalidVariant,
     ) : StdError()
+
+    companion object {
+        fun from(err: io.github.kotlinmania.time.error.ConversionRange): StdError = ConversionRange(err)
+
+        fun from(err: io.github.kotlinmania.time.error.ComponentRange): StdError = ComponentRange(err)
+
+        fun from(err: io.github.kotlinmania.time.error.IndeterminateOffset): StdError = IndeterminateOffset(err)
+
+        fun from(err: io.github.kotlinmania.time.error.Format): StdError = Format(err)
+
+        fun from(err: io.github.kotlinmania.time.error.ParseFromDescription): StdError = ParseFromDescription(err)
+
+        fun from(err: io.github.kotlinmania.time.error.TryFromParsed): StdError = TryFromParsed(err)
+
+        fun from(err: io.github.kotlinmania.time.error.InvalidFormatDescription): StdError = InvalidFormatDescription(err)
+
+        fun from(err: io.github.kotlinmania.time.error.DifferentVariant): StdError = DifferentVariant(err)
+
+        fun from(err: io.github.kotlinmania.time.error.InvalidVariant): StdError = InvalidVariant(err)
+
+        fun from(err: io.github.kotlinmania.time.error.Parse): StdError =
+            when (err) {
+                is io.github.kotlinmania.time.error.Parse.TryFromParsed -> TryFromParsed(err.error)
+                is io.github.kotlinmania.time.error.Parse.ParseFromDescription -> ParseFromDescription(err.error)
+                is io.github.kotlinmania.time.error.Parse.UnexpectedTrailingCharacters -> err.never
+            }
+    }
 }

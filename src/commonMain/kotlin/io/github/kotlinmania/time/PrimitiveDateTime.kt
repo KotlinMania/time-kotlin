@@ -1,14 +1,41 @@
 // port-lint: source primitive_date_time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.PRIMITIVE_DATE_TIME_FORMAT
+import io.github.kotlinmania.time.serde.PrimitiveDateTimeVisitor
+import io.github.kotlinmania.time.serde.U16Serialize
+import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
+
 /**
  * Combined date and time.
  */
 class PrimitiveDateTime internal constructor(
     private val date: Date,
     private val time: Time,
-) : Comparable<PrimitiveDateTime> {
-    companion object {
+) : Comparable<PrimitiveDateTime>,
+    Serialize {
+    companion object : Deserialize<PrimitiveDateTime> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<PrimitiveDateTime> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(PrimitiveDateTimeVisitor)
+            } else {
+                deserializer.deserializeTuple(6, PrimitiveDateTimeVisitor)
+            }
+
         /** The smallest value that can be represented by [PrimitiveDateTime]. */
         val MIN: PrimitiveDateTime = PrimitiveDateTime(Date.MIN, Time.MIDNIGHT)
 
@@ -17,6 +44,13 @@ class PrimitiveDateTime internal constructor(
 
         /** Create a new [PrimitiveDateTime] from a [Date] and [Time]. */
         fun new(date: Date, time: Time): PrimitiveDateTime = PrimitiveDateTime(date, time)
+
+        /** Parse a [PrimitiveDateTime] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<PrimitiveDateTime> =
+            description.parseDateTime(input.encodeToByteArray())
+
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<PrimitiveDateTime> =
+            BorrowedFormatItemSliceParsable(description).parseDateTime(input.encodeToByteArray())
     }
 
     /** Get the date component. */
@@ -61,6 +95,9 @@ class PrimitiveDateTime internal constructor(
     /** Get the weekday. */
     fun weekday(): Weekday = date.weekday()
 
+    /** Get the Julian day for the date. The time is not taken into account for this calculation. */
+    fun toJulianDay(): Int = date.toJulianDay()
+
     /** Get the clock hour. */
     fun hour(): Int = time.hour()
 
@@ -97,35 +134,34 @@ class PrimitiveDateTime internal constructor(
     /** Assume the datetime is in the provided offset, creating an [OffsetDateTime]. */
     fun assumeOffset(offset: UtcOffset): OffsetDateTime = OffsetDateTime.newInOffset(date, time, offset)
 
+    /** Assume the datetime represents a moment in UTC, returning a [UtcDateTime]. */
+    fun asUtc(): UtcDateTime = UtcDateTime.fromPrimitive(this)
+
     /** Computes self + duration, returning null if overflow occurred. */
     fun checkedAdd(duration: Duration): PrimitiveDateTime? {
-        val seconds = duration.seconds
-        val nanoseconds = duration.nanoseconds.toLong()
-        val totalNanos =
-            time.nanosecond().toLong() +
-                (time.second().toLong() * 1_000_000_000L) +
-                (time.minute().toLong() * 60_000_000_000L) +
-                (time.hour().toLong() * 3_600_000_000_000L) +
-                (seconds * 1_000_000_000L) +
-                nanoseconds
-
-        val nanosInDay = 86_400_000_000_000L
-        val dayAdjustment = floorDiv(totalNanos, nanosInDay)
-        val newNanosOfDay = floorMod(totalNanos, nanosInDay)
-
-        val newDate = date.checkedAdd(Duration.days(dayAdjustment)) ?: return null
-        val newHour = (newNanosOfDay / 3_600_000_000_000L).toInt()
-        val remHour = newNanosOfDay % 3_600_000_000_000L
-        val newMinute = (remHour / 60_000_000_000L).toInt()
-        val remMin = remHour % 60_000_000_000L
-        val newSecond = (remMin / 1_000_000_000L).toInt()
-        val newNano = (remMin % 1_000_000_000L).toInt()
-        val newTime = Time.fromHmsNanosUnchecked(newHour, newMinute, newSecond, newNano)
+        val (dateAdjustment, newTime) = time.adjustingAdd(duration)
+        val baseDate = date.checkedAdd(duration) ?: return null
+        val newDate =
+            when (dateAdjustment) {
+                DateAdjustment.Previous -> baseDate.previousDay() ?: return null
+                DateAdjustment.Next -> baseDate.nextDay() ?: return null
+                DateAdjustment.None -> baseDate
+            }
         return PrimitiveDateTime(newDate, newTime)
     }
 
     /** Computes self - duration, returning null if overflow occurred. */
-    fun checkedSub(duration: Duration): PrimitiveDateTime? = checkedAdd(-duration)
+    fun checkedSub(duration: Duration): PrimitiveDateTime? {
+        val (dateAdjustment, newTime) = time.adjustingSub(duration)
+        val baseDate = date.checkedSub(duration) ?: return null
+        val newDate =
+            when (dateAdjustment) {
+                DateAdjustment.Previous -> baseDate.previousDay() ?: return null
+                DateAdjustment.Next -> baseDate.nextDay() ?: return null
+                DateAdjustment.None -> baseDate
+            }
+        return PrimitiveDateTime(newDate, newTime)
+    }
 
     /** Computes self + duration, saturating on overflow. */
     fun saturatingAdd(duration: Duration): PrimitiveDateTime =
@@ -136,10 +172,22 @@ class PrimitiveDateTime internal constructor(
         checkedSub(duration) ?: if (duration.isNegative()) MAX else MIN
 
     operator fun plus(duration: Duration): PrimitiveDateTime =
-        checkedAdd(duration) ?: throw ArithmeticException("overflow adding duration to datetime")
+        checkedAdd(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun plus(duration: kotlin.time.Duration): PrimitiveDateTime =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedAdd(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("resulting value is out of range")
+        }
 
     operator fun minus(duration: Duration): PrimitiveDateTime =
-        checkedSub(duration) ?: throw ArithmeticException("overflow subtracting duration from datetime")
+        checkedSub(duration) ?: throw ArithmeticException("resulting value is out of range")
+
+    operator fun minus(duration: kotlin.time.Duration): PrimitiveDateTime =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedSub(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("resulting value is out of range")
+        }
 
     operator fun minus(other: PrimitiveDateTime): Duration =
         (date - other.date) + (time - other.time)
@@ -160,20 +208,32 @@ class PrimitiveDateTime internal constructor(
 
     fun replaceTime(newTime: Time): PrimitiveDateTime = PrimitiveDateTime(date, newTime)
 
+    fun truncateToDay(): PrimitiveDateTime = replaceTime(Time.MIDNIGHT)
+
     fun replaceHour(hour: Int): Result<PrimitiveDateTime> =
         time.replaceHour(hour).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToHour(): PrimitiveDateTime = replaceTime(time.truncateToHour())
 
     fun replaceMinute(minute: Int): Result<PrimitiveDateTime> =
         time.replaceMinute(minute).map { PrimitiveDateTime(date, it) }
 
+    fun truncateToMinute(): PrimitiveDateTime = replaceTime(time.truncateToMinute())
+
     fun replaceSecond(second: Int): Result<PrimitiveDateTime> =
         time.replaceSecond(second).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToSecond(): PrimitiveDateTime = replaceTime(time.truncateToSecond())
 
     fun replaceMillisecond(millisecond: Int): Result<PrimitiveDateTime> =
         time.replaceMillisecond(millisecond).map { PrimitiveDateTime(date, it) }
 
+    fun truncateToMillisecond(): PrimitiveDateTime = replaceTime(time.truncateToMillisecond())
+
     fun replaceMicrosecond(microsecond: Int): Result<PrimitiveDateTime> =
         time.replaceMicrosecond(microsecond).map { PrimitiveDateTime(date, it) }
+
+    fun truncateToMicrosecond(): PrimitiveDateTime = replaceTime(time.truncateToMicrosecond())
 
     fun replaceNanosecond(nanosecond: Int): Result<PrimitiveDateTime> =
         time.replaceNanosecond(nanosecond).map { PrimitiveDateTime(date, it) }
@@ -189,4 +249,41 @@ class PrimitiveDateTime internal constructor(
     override fun hashCode(): Int = 31 * date.hashCode() + time.hashCode()
 
     override fun toString(): String = "$date $time"
+
+    /** Format the [PrimitiveDateTime] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [PrimitiveDateTime] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(PRIMITIVE_DATE_TIME_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `PrimitiveDateTime`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(6).getOrThrow()
+            tuple.serializeElement(I32Serialize(year())).getOrThrow()
+            tuple.serializeElement(U16Serialize(ordinal().toUShort())).getOrThrow()
+            tuple.serializeElement(U8Serialize(hour().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(minute().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(second().toUByte())).getOrThrow()
+            tuple.serializeElement(U32Serialize(nanosecond().toUInt())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
 }

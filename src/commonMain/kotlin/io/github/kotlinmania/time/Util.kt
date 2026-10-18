@@ -75,7 +75,8 @@ fun daysInYearMonth(year: Int, month: Month): Int = daysInMonth(month, year)
  * Update time zone information from the system.
  */
 fun refreshTzUnchecked() {
-    // Platform time zone refresh if applicable
+    io.github.kotlinmania.time.sys.refreshtz.unix
+        .refreshTzUnchecked()
 }
 
 /**
@@ -83,7 +84,9 @@ fun refreshTzUnchecked() {
  *
  * Returns null if the call is not known to be sound.
  */
-fun refreshTz(): Unit? = Unit
+fun refreshTz(): Unit? =
+    io.github.kotlinmania.time.sys.refreshtz.unix
+        .refreshTz()
 
 internal fun daysInMonth(month: Int, year: Int): Int {
     require(month in 1..12) { "month must be in the range 1..=12" }
@@ -101,16 +104,6 @@ internal fun daysInMonthLeap(month: Int, isLeapYear: Boolean): Int {
     } else {
         30 or (month xor (month shr 3))
     }
-}
-
-internal object RangeValidated {
-    fun isLeapYear(year: Int): Boolean =
-        io.github.kotlinmania.time
-            .isLeapYear(year)
-
-    fun daysInYear(year: Int): Int =
-        io.github.kotlinmania.time
-            .daysInYear(year)
 }
 
 object LocalOffset {

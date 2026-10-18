@@ -1,14 +1,30 @@
 // port-lint: source date.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.DATE_FORMAT
+import io.github.kotlinmania.time.serde.DateVisitor
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.U16Serialize
 import kotlin.math.abs
 
 /** The minimum valid year. */
-internal const val MIN_YEAR: Int = -9999
+internal const val MIN_YEAR: Int = -999_999
 
 /** The maximum valid year. */
-internal const val MAX_YEAR: Int = 9999
+internal const val MAX_YEAR: Int = 999_999
 
 /**
  * Date in the proleptic Gregorian calendar.
@@ -17,7 +33,8 @@ internal const val MAX_YEAR: Int = 9999
  */
 class Date internal constructor(
     private val value: Int,
-) : Comparable<Date> {
+) : Comparable<Date>,
+    Serialize {
     init {
         require(value != 0) { "date value cannot be 0" }
     }
@@ -262,7 +279,7 @@ class Date internal constructor(
     /** Replace the year. Month and day remain unchanged. */
     fun replaceYear(year: Int): Result<Date> {
         if (year !in MIN_YEAR..MAX_YEAR) {
-            return Result.failure(ComponentRange.conditional("year"))
+            return Result.failure(ComponentRange.unconditional("year"))
         }
 
         val newIsLeapYear = isLeapYear(year)
@@ -345,6 +362,9 @@ class Date internal constructor(
     fun withHms(hour: Int, minute: Int, second: Int): Result<PrimitiveDateTime> =
         Time.fromHms(hour, minute, second).map { PrimitiveDateTime.new(this, it) }
 
+    fun withHms(hour: UInt, minute: UInt, second: UInt): Result<PrimitiveDateTime> =
+        withHms(hour.toInt(), minute.toInt(), second.toInt())
+
     /** Attempt to create a [PrimitiveDateTime] using the existing date and the provided time. */
     fun withHmsMilli(hour: Int, minute: Int, second: Int, millisecond: Int): Result<PrimitiveDateTime> =
         Time.fromHmsMilli(hour, minute, second, millisecond).map { PrimitiveDateTime.new(this, it) }
@@ -357,11 +377,26 @@ class Date internal constructor(
     fun withHmsNano(hour: Int, minute: Int, second: Int, nanosecond: Int): Result<PrimitiveDateTime> =
         Time.fromHmsNano(hour, minute, second, nanosecond).map { PrimitiveDateTime.new(this, it) }
 
+    fun withHmsNano(hour: UInt, minute: UInt, second: UInt, nanosecond: UInt): Result<PrimitiveDateTime> =
+        withHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond.toInt())
+
     operator fun plus(duration: Duration): Date =
         checkedAdd(duration) ?: throw ArithmeticException("overflow adding duration to date")
 
+    operator fun plus(duration: kotlin.time.Duration): Date =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedAdd(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("overflow adding duration to date")
+        }
+
     operator fun minus(duration: Duration): Date =
         checkedSub(duration) ?: throw ArithmeticException("overflow subtracting duration from date")
+
+    operator fun minus(duration: kotlin.time.Duration): Date =
+        duration.toComponents { seconds, nanoseconds ->
+            checkedSub(Duration.new(seconds, nanoseconds))
+                ?: throw ArithmeticException("overflow subtracting duration from date")
+        }
 
     operator fun minus(other: Date): Duration =
         Duration.days((toJulianDay() - other.toJulianDay()).toLong())
@@ -386,7 +421,50 @@ class Date internal constructor(
         return "$yearStr-$monthStr-$dayStr"
     }
 
-    companion object {
+    /** Format the [Date] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [Date] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(DATE_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `Date`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(2).getOrThrow()
+            tuple.serializeElement(I32Serialize(year())).getOrThrow()
+            tuple.serializeElement(U16Serialize(ordinal().toUShort())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<Date> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Date> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(DateVisitor)
+            } else {
+                deserializer.deserializeTuple(2, DateVisitor)
+            }
+
+        internal const val MIN_YEAR: Int = io.github.kotlinmania.time.MIN_YEAR
+        internal const val MAX_YEAR: Int = io.github.kotlinmania.time.MAX_YEAR
+
         private val DAYS_CUMULATIVE_COMMON =
             intArrayOf(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
         private val DAYS_CUMULATIVE_LEAP =
@@ -410,7 +488,7 @@ class Date internal constructor(
         /** Attempt to create a Date from year, month, and day. */
         fun fromCalendarDate(year: Int, month: Month, day: Int): Result<Date> {
             if (year !in MIN_YEAR..MAX_YEAR) {
-                return Result.failure(ComponentRange.conditional("year"))
+                return Result.failure(ComponentRange.unconditional("year"))
             }
 
             val isLeap = isLeapYear(year)
@@ -426,7 +504,7 @@ class Date internal constructor(
         /** Attempt to create a Date from year and ordinal day number. */
         fun fromOrdinalDate(year: Int, ordinal: Int): Result<Date> {
             if (year !in MIN_YEAR..MAX_YEAR) {
-                return Result.failure(ComponentRange.conditional("year"))
+                return Result.failure(ComponentRange.unconditional("year"))
             }
 
             val isLeap = isLeapYear(year)
@@ -438,10 +516,13 @@ class Date internal constructor(
             return Result.success(fromParts(year, isLeap, ordinal))
         }
 
+        fun fromIsoWeekDate(year: Int, week: UInt, weekday: Weekday): Result<Date> =
+            fromIsoWeekDate(year, week.toInt(), weekday)
+
         /** Attempt to create a Date from ISO year, week, and weekday. */
         fun fromIsoWeekDate(year: Int, week: Int, weekday: Weekday): Result<Date> {
             if (year !in MIN_YEAR..MAX_YEAR) {
-                return Result.failure(ComponentRange.conditional("year"))
+                return Result.failure(ComponentRange.unconditional("year"))
             }
 
             if (week !in 1..weeksInYear(year)) {
@@ -479,7 +560,7 @@ class Date internal constructor(
         /** Create a Date from the Julian day. */
         fun fromJulianDay(julianDay: Int): Result<Date> {
             if (julianDay !in MIN.toJulianDay()..MAX.toJulianDay()) {
-                return Result.failure(ComponentRange.conditional("julian_day"))
+                return Result.failure(ComponentRange.unconditional("julian_day"))
             }
             return Result.success(fromJulianDayUnchecked(julianDay))
         }
@@ -509,5 +590,15 @@ class Date internal constructor(
 
             return fromParts(year, leap, ordinal)
         }
+
+        /** Parse a [Date] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<Date> =
+            description.parseDate(input.encodeToByteArray())
+
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<Date> =
+            BorrowedFormatItemSliceParsable(description).parseDate(input.encodeToByteArray())
+
+        fun tryFromParsed(parsed: io.github.kotlinmania.time.parsing.Parsed): Result<Date> =
+            parsed.toDate()
     }
 }

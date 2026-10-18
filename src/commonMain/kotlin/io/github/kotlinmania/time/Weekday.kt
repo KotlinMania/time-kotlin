@@ -1,7 +1,13 @@
 // port-lint: source weekday.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.InvalidVariant
+import io.github.kotlinmania.time.serde.WeekdayVisitor
 
 /**
  * Days of the week.
@@ -9,7 +15,7 @@ import io.github.kotlinmania.time.error.InvalidVariant
  * As order is dependent on context, Sunday could be either two days after or
  * five days before Friday, this type does not implement natural ordering.
  */
-enum class Weekday {
+enum class Weekday : Serialize {
     Monday,
     Tuesday,
     Wednesday,
@@ -143,7 +149,21 @@ enum class Weekday {
 
     fun fmt(): String = toString()
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+        if (serializer.isHumanReadable()) {
+            serializer.serializeStr(toString())
+        } else {
+            serializer.serializeU8(numberFromMonday().toUByte())
+        }
+
+    companion object : Deserialize<Weekday> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Weekday> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(WeekdayVisitor)
+            } else {
+                deserializer.deserializeU8(WeekdayVisitor)
+            }
+
         /** Parse a weekday name. */
         fun fromStr(value: String): Result<Weekday> = parse(value)
 

@@ -1,7 +1,8 @@
 // port-lint: source error/component_range.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.StdError
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serdecore.de.Expected
 
 /**
  * Component range error.
@@ -22,7 +23,8 @@ class ComponentRange internal constructor(
      * of other components were different.
      */
     private val conditional: Boolean,
-) : IllegalArgumentException("$componentName was not in range") {
+) : IllegalArgumentException("$componentName was not in range"),
+    Expected {
     override fun equals(other: Any?): Boolean =
         other is ComponentRange &&
             other.componentName == componentName &&
@@ -42,6 +44,11 @@ class ComponentRange internal constructor(
 
     fun fmt(): String = message ?: "$componentName was not in range"
 
+    override fun expecting(): String = "an in-range value"
+
+    internal fun intoDeError(): SerdeError =
+        SerdeError.custom("invalid $componentName, expected an in-range value")
+
     companion object {
         /** Create a new `ComponentRange` error that is not conditional. */
         fun unconditional(name: String): ComponentRange = ComponentRange(name, false)
@@ -50,6 +57,12 @@ class ComponentRange internal constructor(
         fun conditional(name: String): ComponentRange = ComponentRange(name, true)
 
         fun from(original: ComponentRange): StdError = StdError.ComponentRange(original)
+
+        fun tryFrom(error: TryFromParsed): Result<ComponentRange> =
+            TryFromParsed.tryFrom(error)
+
+        fun tryFrom(error: Format): Result<ComponentRange> =
+            Format.tryFrom(error)
 
         fun tryFrom(error: StdError): Result<ComponentRange> =
             when (error) {
@@ -61,3 +74,6 @@ class ComponentRange internal constructor(
             "invalid ${error.name()}, expected an in-range value"
     }
 }
+
+internal fun Throwable.intoDeError(): SerdeError =
+    if (this is ComponentRange) intoDeError() else SerdeError.custom(message ?: toString())

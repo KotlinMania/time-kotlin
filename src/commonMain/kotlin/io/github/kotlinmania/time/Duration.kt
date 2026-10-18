@@ -1,6 +1,15 @@
 // port-lint: source duration.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
+import io.github.kotlinmania.time.serde.DurationVisitor
+import io.github.kotlinmania.time.serde.I32Serialize
+import io.github.kotlinmania.time.serde.I64Serialize
 import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.nanoseconds as stdNanoseconds
@@ -30,7 +39,8 @@ class Duration internal constructor(
     /** Number of nanoseconds within the second. The sign always matches the `seconds` field. */
     val nanoseconds: Int,
     internal val padding: Padding = Padding.Optimize,
-) : Comparable<Duration> {
+) : Comparable<Duration>,
+    Serialize {
     init {
         require(nanoseconds in -999_999_999..999_999_999) {
             "nanoseconds must be in range -999_999_999..=999_999_999, got $nanoseconds"
@@ -336,7 +346,34 @@ class Duration internal constructor(
     operator fun unaryMinus(): Duration =
         checkedNeg() ?: throw ArithmeticException("overflow when negating duration")
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val sign = if (isNegative()) "-" else ""
+            val secs =
+                if (wholeSeconds() == Long.MIN_VALUE) {
+                    9223372036854775808uL
+                } else {
+                    abs(wholeSeconds()).toULong()
+                }
+            val nanos = abs(subsecNanoseconds()).toString().padStart(9, '0')
+            return serializer.collectStr("$sign$secs.$nanos")
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(2).getOrThrow()
+            tuple.serializeElement(I64Serialize(wholeSeconds())).getOrThrow()
+            tuple.serializeElement(I32Serialize(subsecNanoseconds())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<Duration> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Duration> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(DurationVisitor)
+            } else {
+                deserializer.deserializeTuple(2, DurationVisitor)
+            }
+
         val ZERO: Duration = seconds(0)
         val NANOSECOND: Duration = nanoseconds(1)
         val MICROSECOND: Duration = microseconds(1)
@@ -499,6 +536,9 @@ class Duration internal constructor(
             val nanos = (std.inWholeNanoseconds % 1_000_000_000L).toInt()
             return new(totalSec, nanos)
         }
+
+        fun tryFrom(std: kotlin.time.Duration): Result<Duration> =
+            runCatching { fromStdDuration(std) }
 
         private fun addWithOverflow(x: Long, y: Long): Pair<Long, Boolean> {
             val r = x + y

@@ -1,7 +1,23 @@
 // port-lint: source time.rs
 package io.github.kotlinmania.time
 
+import io.github.kotlinmania.serde.SerdeError
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serde.serdeCatching
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
+import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
+import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
+import io.github.kotlinmania.time.formatting.Formattable
+import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
+import io.github.kotlinmania.time.parsing.Parsable
+import io.github.kotlinmania.time.serde.TIME_FORMAT
+import io.github.kotlinmania.time.serde.TimeVisitor
+import io.github.kotlinmania.time.serde.U32Serialize
+import io.github.kotlinmania.time.serde.U8Serialize
 
 /**
  * The clock time within a given date. Nanosecond precision.
@@ -17,7 +33,8 @@ class Time internal constructor(
     private val second: Int,
     private val nanosecond: Int,
     internal val padding: Padding = Padding.Optimize,
-) : Comparable<Time> {
+) : Comparable<Time>,
+    Serialize {
     init {
         require(hour in 0..23) { "hour must be in range 0..=23, got $hour" }
         require(minute in 0..59) { "minute must be in range 0..=59, got $minute" }
@@ -175,7 +192,7 @@ class Time internal constructor(
 
     /** Replace the clock hour. */
     fun replaceHour(hour: Int): Result<Time> {
-        if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))
+        if (hour !in 0..23) return Result.failure(ComponentRange.unconditional("hour"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
     }
 
@@ -184,7 +201,7 @@ class Time internal constructor(
 
     /** Replace the minute within the hour. */
     fun replaceMinute(minute: Int): Result<Time> {
-        if (minute !in 0..59) return Result.failure(ComponentRange.conditional("minute"))
+        if (minute !in 0..59) return Result.failure(ComponentRange.unconditional("minute"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
     }
 
@@ -193,7 +210,7 @@ class Time internal constructor(
 
     /** Replace the second within the minute. */
     fun replaceSecond(second: Int): Result<Time> {
-        if (second !in 0..59) return Result.failure(ComponentRange.conditional("second"))
+        if (second !in 0..59) return Result.failure(ComponentRange.unconditional("second"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
     }
 
@@ -202,7 +219,7 @@ class Time internal constructor(
 
     /** Replace the milliseconds within the second. */
     fun replaceMillisecond(millisecond: Int): Result<Time> {
-        if (millisecond !in 0..999) return Result.failure(ComponentRange.conditional("millisecond"))
+        if (millisecond !in 0..999) return Result.failure(ComponentRange.unconditional("millisecond"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, millisecond * 1_000_000))
     }
 
@@ -212,7 +229,7 @@ class Time internal constructor(
 
     /** Replace the microseconds within the second. */
     fun replaceMicrosecond(microsecond: Int): Result<Time> {
-        if (microsecond !in 0..999_999) return Result.failure(ComponentRange.conditional("microsecond"))
+        if (microsecond !in 0..999_999) return Result.failure(ComponentRange.unconditional("microsecond"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, microsecond * 1_000))
     }
 
@@ -222,7 +239,7 @@ class Time internal constructor(
 
     /** Replace the nanoseconds within the second. */
     fun replaceNanosecond(nanosecond: Int): Result<Time> {
-        if (nanosecond !in 0..999_999_999) return Result.failure(ComponentRange.conditional("nanosecond"))
+        if (nanosecond !in 0..999_999_999) return Result.failure(ComponentRange.unconditional("nanosecond"))
         return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
     }
 
@@ -238,7 +255,17 @@ class Time internal constructor(
         }
     }
 
-    override fun toString(): String = fmt()
+    override fun toString(): String {
+        val m = minute.toString().padStart(2, '0')
+        val s = second.toString().padStart(2, '0')
+        val nanoStr =
+            if (nanosecond == 0) {
+                "0"
+            } else {
+                nanosecond.toString().padStart(9, '0').trimEnd('0')
+            }
+        return "$hour:$m:$s.$nanoStr"
+    }
 
     override fun compareTo(other: Time): Int {
         var cmp = hour.compareTo(other.hour)
@@ -270,8 +297,18 @@ class Time internal constructor(
     operator fun plus(duration: Duration): Time =
         adjustingAdd(duration).second
 
+    operator fun plus(duration: kotlin.time.Duration): Time =
+        duration.toComponents { seconds, nanoseconds ->
+            adjustingAdd(Duration.new(seconds, nanoseconds)).second
+        }
+
     operator fun minus(duration: Duration): Time =
         adjustingSub(duration).second
+
+    operator fun minus(duration: kotlin.time.Duration): Time =
+        duration.toComponents { seconds, nanoseconds ->
+            adjustingSub(Duration.new(seconds, nanoseconds)).second
+        }
 
     operator fun minus(other: Time): Duration {
         val hourDiff = this.hour - other.hour
@@ -293,7 +330,49 @@ class Time internal constructor(
         return Duration.new(seconds.toLong(), nanoseconds)
     }
 
-    companion object {
+    /** Format the [Time] using the provided [Formattable] into the given [output] buffer. */
+    fun formatInto(
+        output: StringBuilder,
+        description: Formattable,
+    ): Result<Int> = description.formatInto(output, this)
+
+    fun formatInto(
+        output: StringBuilder,
+        description: List<BorrowedFormatItem>,
+    ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
+
+    /** Format the [Time] using the provided [Formattable]. */
+    fun format(description: Formattable): Result<String> = description.format(this)
+
+    fun format(description: List<BorrowedFormatItem>): Result<String> =
+        BorrowedFormatItemSliceFormattable(description).format(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
+        if (serializer.isHumanReadable()) {
+            val s =
+                format(TIME_FORMAT).getOrElse {
+                    return SerdeResult.failure(SerdeError.custom("failed formatting `Time`"))
+                }
+            return serializer.serializeStr(s)
+        }
+        return serdeCatching {
+            val tuple = serializer.serializeTuple(4).getOrThrow()
+            tuple.serializeElement(U8Serialize(hour().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(minute().toUByte())).getOrThrow()
+            tuple.serializeElement(U8Serialize(second().toUByte())).getOrThrow()
+            tuple.serializeElement(U32Serialize(nanosecond().toUInt())).getOrThrow()
+            tuple.end().getOrThrow()
+        }
+    }
+
+    companion object : Deserialize<Time> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Time> =
+            if (deserializer.isHumanReadable()) {
+                deserializer.deserializeAny(TimeVisitor)
+            } else {
+                deserializer.deserializeTuple(4, TimeVisitor)
+            }
+
         val MIDNIGHT: Time = fromHmsNanosUnchecked(0, 0, 0, 0)
         val MAX: Time = fromHmsNanosUnchecked(23, 59, 59, 999_999_999)
 
@@ -318,34 +397,44 @@ class Time internal constructor(
         ): Time = fromHmsNanosUnchecked(hour, minute, second, 0)
 
         fun fromHms(hour: Int, minute: Int, second: Int): Result<Time> {
-            if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))
-            if (minute !in 0..59) return Result.failure(ComponentRange.conditional("minute"))
-            if (second !in 0..59) return Result.failure(ComponentRange.conditional("second"))
+            if (hour !in 0..23) return Result.failure(ComponentRange.unconditional("hour"))
+            if (minute !in 0..59) return Result.failure(ComponentRange.unconditional("minute"))
+            if (second !in 0..59) return Result.failure(ComponentRange.unconditional("second"))
             return Result.success(fromHmsNanosUnchecked(hour, minute, second, 0))
         }
 
         fun fromHmsMilli(hour: Int, minute: Int, second: Int, millisecond: Int): Result<Time> {
-            if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))
-            if (minute !in 0..59) return Result.failure(ComponentRange.conditional("minute"))
-            if (second !in 0..59) return Result.failure(ComponentRange.conditional("second"))
-            if (millisecond !in 0..999) return Result.failure(ComponentRange.conditional("millisecond"))
+            if (hour !in 0..23) return Result.failure(ComponentRange.unconditional("hour"))
+            if (minute !in 0..59) return Result.failure(ComponentRange.unconditional("minute"))
+            if (second !in 0..59) return Result.failure(ComponentRange.unconditional("second"))
+            if (millisecond !in 0..999) return Result.failure(ComponentRange.unconditional("millisecond"))
             return Result.success(fromHmsNanosUnchecked(hour, minute, second, millisecond * 1_000_000))
         }
 
         fun fromHmsMicro(hour: Int, minute: Int, second: Int, microsecond: Int): Result<Time> {
-            if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))
-            if (minute !in 0..59) return Result.failure(ComponentRange.conditional("minute"))
-            if (second !in 0..59) return Result.failure(ComponentRange.conditional("second"))
-            if (microsecond !in 0..999_999) return Result.failure(ComponentRange.conditional("microsecond"))
+            if (hour !in 0..23) return Result.failure(ComponentRange.unconditional("hour"))
+            if (minute !in 0..59) return Result.failure(ComponentRange.unconditional("minute"))
+            if (second !in 0..59) return Result.failure(ComponentRange.unconditional("second"))
+            if (microsecond !in 0..999_999) return Result.failure(ComponentRange.unconditional("microsecond"))
             return Result.success(fromHmsNanosUnchecked(hour, minute, second, microsecond * 1_000))
         }
 
         fun fromHmsNano(hour: Int, minute: Int, second: Int, nanosecond: Int): Result<Time> {
-            if (hour !in 0..23) return Result.failure(ComponentRange.conditional("hour"))
-            if (minute !in 0..59) return Result.failure(ComponentRange.conditional("minute"))
-            if (second !in 0..59) return Result.failure(ComponentRange.conditional("second"))
-            if (nanosecond !in 0..999_999_999) return Result.failure(ComponentRange.conditional("nanosecond"))
+            if (hour !in 0..23) return Result.failure(ComponentRange.unconditional("hour"))
+            if (minute !in 0..59) return Result.failure(ComponentRange.unconditional("minute"))
+            if (second !in 0..59) return Result.failure(ComponentRange.unconditional("second"))
+            if (nanosecond !in 0..999_999_999) return Result.failure(ComponentRange.unconditional("nanosecond"))
             return Result.success(fromHmsNanosUnchecked(hour, minute, second, nanosecond))
         }
+
+        /** Parse a [Time] from the input using the provided [Parsable] format description. */
+        fun parse(input: String, description: Parsable): Result<Time> =
+            description.parseTime(input.encodeToByteArray())
+
+        fun parse(input: String, description: List<BorrowedFormatItem>): Result<Time> =
+            BorrowedFormatItemSliceParsable(description).parseTime(input.encodeToByteArray())
+
+        fun tryFromParsed(parsed: io.github.kotlinmania.time.parsing.Parsed): Result<Time> =
+            parsed.toTime()
     }
 }
