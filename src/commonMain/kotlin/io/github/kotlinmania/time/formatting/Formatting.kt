@@ -157,7 +157,7 @@ internal fun formatNumberPadSpace(
     var bytes = 0
     val padCount = (width - value.numDigits().toInt()).coerceAtLeast(0)
     repeat(padCount) {
-        bytes += write(output, " ").getOrElse { return Result.failure(it) }
+        bytes += write(output, " ").getOrElse { err -> return Result.failure(err) }
     }
     bytes += write(output, value.toString()).getOrElse { return Result.failure(it) }
     return Result.success(bytes)
@@ -171,7 +171,7 @@ internal fun formatNumberPadZero(
     var bytes = 0
     val padCount = (width - value.numDigits().toInt()).coerceAtLeast(0)
     repeat(padCount) {
-        bytes += write(output, "0").getOrElse { return Result.failure(it) }
+        bytes += write(output, "0").getOrElse { err -> return Result.failure(err) }
     }
     bytes += write(output, value.toString()).getOrElse { return Result.failure(it) }
     return Result.success(bytes)
