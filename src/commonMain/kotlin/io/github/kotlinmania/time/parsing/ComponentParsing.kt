@@ -327,15 +327,16 @@ internal fun parseSubsecond(
         SubsecondDigits.OneOrMore -> {
             val first = anyDigit(input) ?: return null
             var rem = first.remaining
-            var value = (first.value - '0'.code.toUByte()).toUInt() * 100_000_000u
+            var value = (first.value - '0'.code.toUByte()) * 100_000_000u
             var multiplier = 10_000_000u
             while (true) {
                 val next = anyDigit(rem) ?: break
-                value += (next.value - '0'.code.toUByte()).toUInt() * multiplier
+                value += (next.value - '0'.code.toUByte()) * multiplier
                 rem = next.remaining
                 multiplier /= 10u
             }
             ParsedItem(rem, value)
+
         }
     }
 

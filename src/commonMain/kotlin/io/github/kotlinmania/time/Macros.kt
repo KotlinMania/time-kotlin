@@ -116,9 +116,9 @@ fun offset(s: String): UtcOffset {
     val sec = if (parts.size >= 3) parts[2].toInt() else 0
     val signMul = if (isNegative) -1 else 1
     return UtcOffset.fromHms(
-        (h * signMul).toByte(),
-        (m * signMul).toByte(),
-        (sec * signMul).toByte(),
+        h * signMul,
+        m * signMul,
+        sec * signMul,
     ).getOrThrow()
 }
 
@@ -181,3 +181,106 @@ fun formatDescription(s: String): List<BorrowedFormatItem> =
  */
 fun formatDescription(version: Int, s: String): List<BorrowedFormatItem> =
     parseStaticBorrowed(version, s).getOrThrow()
+
+fun date(year: Int, ordinal: Int): Date =
+    Date.fromOrdinalDate(year, ordinal).getOrThrow()
+
+fun date(year: Int, month: Month, day: Int): Date =
+    Date.fromCalendarDate(year, month, day).getOrThrow()
+
+fun date(year: Int, month: Int, day: Int): Date =
+    Date.fromCalendarDate(year, Month.fromNumber(month).getOrThrow(), day).getOrThrow()
+
+fun date(year: Int, week: UInt, weekday: Weekday): Date =
+    Date.fromIsoWeekDate(year, week.toInt(), weekday).getOrThrow()
+
+fun date(year: Int, week: Int, weekday: Weekday): Date =
+    Date.fromIsoWeekDate(year, week, weekday).getOrThrow()
+
+fun time(
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): Time = Time.fromHmsNano(hour, minute, second, nanosecond).getOrThrow()
+
+fun offset(
+    hours: Int,
+    minutes: Int = 0,
+    seconds: Int = 0,
+): UtcOffset = UtcOffset.fromHms(hours, minutes, seconds).getOrThrow()
+
+fun datetime(
+    year: Int,
+    month: Month,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): PrimitiveDateTime =
+    PrimitiveDateTime.new(date(year, month, day), time(hour, minute, second, nanosecond))
+
+fun datetime(
+    year: Int,
+    month: Int,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): PrimitiveDateTime =
+    PrimitiveDateTime.new(date(year, month, day), time(hour, minute, second, nanosecond))
+
+fun datetime(
+    year: Int,
+    month: Month,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int,
+    nanosecond: Int,
+    offsetHours: Int,
+    offsetMinutes: Int = 0,
+    offsetSeconds: Int = 0,
+): OffsetDateTime =
+    datetime(year, month, day, hour, minute, second, nanosecond)
+        .assumeOffset(offset(offsetHours, offsetMinutes, offsetSeconds))
+
+fun datetime(
+    year: Int,
+    month: Int,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int,
+    nanosecond: Int,
+    offsetHours: Int,
+    offsetMinutes: Int = 0,
+    offsetSeconds: Int = 0,
+): OffsetDateTime =
+    datetime(year, month, day, hour, minute, second, nanosecond)
+        .assumeOffset(offset(offsetHours, offsetMinutes, offsetSeconds))
+
+fun utcDatetime(
+    year: Int,
+    month: Month,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): UtcDateTime =
+    UtcDateTime.new(date(year, month, day), time(hour, minute, second, nanosecond))
+
+fun utcDatetime(
+    year: Int,
+    month: Int,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): UtcDateTime =
+    UtcDateTime.new(date(year, month, day), time(hour, minute, second, nanosecond))
+

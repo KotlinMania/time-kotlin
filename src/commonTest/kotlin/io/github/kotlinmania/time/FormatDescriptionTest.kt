@@ -17,7 +17,7 @@ class FormatDescriptionTest {
         assertTrue(item is BorrowedFormatItem.Component && item.component == component)
         assertEquals(component, Component.tryFrom(item).getOrThrow())
         assertTrue(Component.tryFrom(BorrowedFormatItem.Literal(ByteArray(0))).isFailure)
-        assertTrue(BorrowedFormatItem.tryIntoSlice(BorrowedFormatItem.Literal(ByteArray(0))).isFailure)
+        assertTrue(BorrowedFormatItem.Literal(ByteArray(0)).tryIntoCompound().isFailure)
     }
 
     @Test
@@ -25,7 +25,7 @@ class FormatDescriptionTest {
         val compound = listOf(BorrowedFormatItem.Literal(ByteArray(0)))
         val item = BorrowedFormatItem.from(compound)
         assertTrue(item is BorrowedFormatItem.Compound && item.items == compound)
-        assertEquals(compound, BorrowedFormatItem.tryIntoSlice(item).getOrThrow())
+        assertEquals(compound, item.tryIntoCompound().getOrThrow())
     }
 
     @Test
@@ -46,21 +46,21 @@ class FormatDescriptionTest {
         assertTrue(item is OwnedFormatItem.Component && item.component == component)
         assertEquals(component, Component.tryFrom(item).getOrThrow())
         assertTrue(Component.tryFrom(OwnedFormatItem.Literal(ByteArray(0))).isFailure)
-        assertTrue(OwnedFormatItem.tryIntoList(OwnedFormatItem.Literal(ByteArray(0))).isFailure)
+        assertTrue(OwnedFormatItem.Literal(ByteArray(0)).tryIntoCompound().isFailure)
     }
 
     @Test
     fun ownedFormatItemCompoundConversions() {
         val compound = listOf(OwnedFormatItem.Literal(ByteArray(0)))
-        val item = OwnedFormatItem.from(compound)
+        val item = OwnedFormatItem.fromOwnedItems(compound)
         assertTrue(item is OwnedFormatItem.Compound && item.items == compound)
-        assertEquals(compound, OwnedFormatItem.tryIntoList(item).getOrThrow())
+        assertEquals(compound, item.tryIntoCompound().getOrThrow())
     }
 
     @Test
     fun ownedFormatItemEquality() {
         val component = Component.Year(Year.default())
-        val compound = OwnedFormatItem.fromBorrowedSlice(listOf(BorrowedFormatItem.Literal(ByteArray(0))))
+        val compound = OwnedFormatItem.from(listOf(BorrowedFormatItem.Literal(ByteArray(0))))
         val componentItem = OwnedFormatItem.from(component)
 
         assertTrue(componentItem.equalsComponent(component))

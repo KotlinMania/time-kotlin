@@ -147,7 +147,7 @@ internal object ExactlyNDigits {
         if (a !in '0'.code.toUByte()..'9'.code.toUByte() || b !in '0'.code.toUByte()..'9'.code.toUByte()) {
             return null
         }
-        val value = ((a - '0'.code.toUByte()).toUInt() * 10u + (b - '0'.code.toUByte()).toUInt()).toUByte()
+        val value = ((a - '0'.code.toUByte()) * 10u + (b - '0'.code.toUByte())).toUByte()
         return ParsedItem(input.copyOfRange(2, input.size), value)
     }
 
@@ -164,9 +164,9 @@ internal object ExactlyNDigits {
             return null
         }
         val value = (
-            (a - '0'.code.toUByte()).toUInt() * 100u +
-                (b - '0'.code.toUByte()).toUInt() * 10u +
-                (c - '0'.code.toUByte()).toUInt()
+            (a - '0'.code.toUByte()) * 100u +
+                (b - '0'.code.toUByte()) * 10u +
+                (c - '0'.code.toUByte())
             ).toUShort()
         return ParsedItem(input.copyOfRange(3, input.size), value)
     }
@@ -177,7 +177,7 @@ internal object ExactlyNDigits {
         for (i in 0 until 4) {
             val d = input[i].toUByte()
             if (d !in '0'.code.toUByte()..'9'.code.toUByte()) return null
-            value = value * 10u + (d - '0'.code.toUByte()).toUInt()
+            value = value * 10u + (d - '0'.code.toUByte())
         }
         return ParsedItem(input.copyOfRange(4, input.size), value.toUShort())
     }
@@ -198,11 +198,12 @@ internal object ExactlyNDigits {
         for (i in 0 until count) {
             val d = input[i].toUByte()
             if (d !in '0'.code.toUByte()..'9'.code.toUByte()) return null
-            value = value * 10u + (d - '0'.code.toUByte()).toUInt()
+            value = value * 10u + (d - '0'.code.toUByte())
         }
         return ParsedItem(input.copyOfRange(count, input.size), value)
     }
 }
+
 
 /** Consume exactly `n` digits, returning the numerical value. */
 internal fun <T : Any> exactlyNDigitsPadded(

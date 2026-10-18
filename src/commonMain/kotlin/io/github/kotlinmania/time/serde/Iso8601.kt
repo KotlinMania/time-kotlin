@@ -7,9 +7,10 @@ import io.github.kotlinmania.serdecore.de.Deserialize
 import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.OffsetDateTime
+import io.github.kotlinmania.time.formatdescription.wellknown.Config
 import io.github.kotlinmania.time.formatdescription.wellknown.Iso8601
-import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.Config
 import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.EncodedConfig
+
 
 /** The configuration of ISO 8601 used for serde implementations. */
 internal val SERDE_CONFIG: EncodedConfig =

@@ -326,13 +326,20 @@ internal object UtcOffsetVisitor : Visitor<UtcOffset> {
         var seconds: Byte = 0
 
         val minRes = access.nextElement(I8Deserialize)
-        if (minRes is SerdeResult.Success && minRes.value != null) {
-            minutes = minRes.value
-            val secRes = access.nextElement(I8Deserialize)
-            if (secRes is SerdeResult.Success && secRes.value != null) {
-                seconds = secRes.value
+        if (minRes is SerdeResult.Success) {
+            val minVal = minRes.value
+            if (minVal != null) {
+                minutes = minVal
+                val secRes = access.nextElement(I8Deserialize)
+                if (secRes is SerdeResult.Success) {
+                    val secVal = secRes.value
+                    if (secVal != null) {
+                        seconds = secVal
+                    }
+                }
             }
         }
+
 
         return UtcOffset.fromHms(hours.toInt(), minutes.toInt(), seconds.toInt()).fold(
             onSuccess = { SerdeResult.success(it) },

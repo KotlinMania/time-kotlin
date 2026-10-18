@@ -41,7 +41,7 @@ internal fun <V, State> formatIso8601Date(
                 bytes += formatNumberPadZero(4, output, year.toUInt()).getOrElse { return Result.failure(it) }
             }
             bytes += writeIf(output, iso.useSeparators, "-").getOrElse { return Result.failure(it) }
-            bytes += formatNumberPadZero(2, output, provider.month(value, state).number().toUInt()).getOrElse { return Result.failure(it) }
+            bytes += formatNumberPadZero(2, output, provider.month(value, state).number.toUInt()).getOrElse { return Result.failure(it) }
             bytes += writeIf(output, iso.useSeparators, "-").getOrElse { return Result.failure(it) }
             bytes += formatNumberPadZero(2, output, provider.day(value, state).toUInt()).getOrElse { return Result.failure(it) }
         }

@@ -236,12 +236,13 @@ internal object UtcOffsetComponentProvider : ComponentProvider<UtcOffset, Unit> 
 
     override fun offsetIsUtc(value: UtcOffset, state: Unit): Boolean = value.isUtc()
 
-    override fun offsetHour(value: UtcOffset, state: Unit): Byte = value.wholeHours()
+    override fun offsetHour(value: UtcOffset, state: Unit): Byte = value.wholeHours().toByte()
 
-    override fun offsetMinute(value: UtcOffset, state: Unit): Byte = value.minutesPastHour()
+    override fun offsetMinute(value: UtcOffset, state: Unit): Byte = value.minutesPastHour().toByte()
 
-    override fun offsetSecond(value: UtcOffset, state: Unit): Byte = value.secondsPastMinute()
+    override fun offsetSecond(value: UtcOffset, state: Unit): Byte = value.secondsPastMinute().toByte()
 }
+
 
 internal fun computeTimestampMicrosSignAndAbs(sec: Long, nano: Int): Pair<Boolean, String> =
     if (sec >= 0L) {

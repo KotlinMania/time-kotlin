@@ -1,5 +1,5 @@
 // port-lint: source format_description/modifier.rs
-package io.github.kotlinmania.time.formatdescription
+package io.github.kotlinmania.time.formatdescription.modifier
 
 /** Various modifiers for components. */
 

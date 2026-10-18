@@ -36,7 +36,7 @@ import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
 internal sealed class ParsedFormatItem {
     class Literal(val value: ByteArray) : ParsedFormatItem()
 
-    class ComponentItem(val value: Component) : ParsedFormatItem()
+    class Component(val value: io.github.kotlinmania.time.formatdescription.Component) : ParsedFormatItem()
 
     class Optional(
         val value: List<ParsedFormatItem>,
@@ -51,7 +51,7 @@ internal sealed class ParsedFormatItem {
     fun toBorrowedFormatItem(): Result<BorrowedFormatItem> =
         when (this) {
             is Literal -> Result.success(BorrowedFormatItem.Literal(value))
-            is ComponentItem -> Result.success(BorrowedFormatItem.ComponentItem(value))
+            is Component -> Result.success(BorrowedFormatItem.Component(value))
             is Optional -> Result.failure(
                 InvalidFormatDescription.NotSupported(
                     what = "optional item",
@@ -71,7 +71,7 @@ internal sealed class ParsedFormatItem {
     fun toOwnedFormatItem(): OwnedFormatItem =
         when (this) {
             is Literal -> OwnedFormatItem.Literal(value.copyOf())
-            is ComponentItem -> OwnedFormatItem.ComponentItem(value)
+            is Component -> OwnedFormatItem.Component(value)
             is Optional -> OwnedFormatItem.Optional(value.toOwnedFormatItem())
             is First -> OwnedFormatItem.First(value.map { it.toOwnedFormatItem() })
         }
@@ -79,7 +79,7 @@ internal sealed class ParsedFormatItem {
     fun toStaticBorrowedFormatItem(): BorrowedFormatItem =
         when (this) {
             is Literal -> BorrowedFormatItem.Literal(value.copyOf())
-            is ComponentItem -> BorrowedFormatItem.ComponentItem(value)
+            is Component -> BorrowedFormatItem.Component(value)
             is Optional -> BorrowedFormatItem.Optional(value.toStaticBorrowedFormatItem())
             is First -> BorrowedFormatItem.First(value.map { it.toStaticBorrowedFormatItem() })
         }
@@ -89,7 +89,7 @@ internal sealed class ParsedFormatItem {
             when (astItem) {
                 is AstItem.Component ->
                     componentFromAst(astItem.name, astItem.modifiers)
-                        .map { ComponentItem(it) }
+                        .map { Component(it) }
                 is AstItem.Literal ->
                     Result.success(Literal(astItem.value.value))
                 is AstItem.EscapedBracket ->

@@ -9,24 +9,24 @@ package io.github.kotlinmania.time.ext
  */
 internal interface DigitCount {
     /** The number of digits in the stringified value. */
-    fun numDigits(): Int
+    fun numDigits(): UByte
 }
 
 /** The number of digits in the stringified value. */
-internal fun UByte.numDigits(): Int = digitCount(toUInt())
+internal fun UByte.numDigits(): UByte = digitCount(toUInt())
 
 /** The number of digits in the stringified value. */
-internal fun UShort.numDigits(): Int = digitCount(toUInt())
+internal fun UShort.numDigits(): UByte = digitCount(toUInt())
 
 /** The number of digits in the stringified value. */
-internal fun UInt.numDigits(): Int = digitCount(this)
+internal fun UInt.numDigits(): UByte = digitCount(this)
 
-private fun digitCount(input: UInt): Int {
+private fun digitCount(input: UInt): UByte {
     var value = input
-    var digits = 1
+    var digits: UByte = 1u
     while (value >= 10u) {
         value /= 10u
-        digits += 1
+        digits = (digits + 1u).toUByte()
     }
     return digits
 }

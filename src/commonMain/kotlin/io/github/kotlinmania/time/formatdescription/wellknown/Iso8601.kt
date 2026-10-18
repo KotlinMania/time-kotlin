@@ -2,8 +2,8 @@
 package io.github.kotlinmania.time.formatdescription.wellknown
 
 import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.EncodedConfig
-import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.decodeConfig
-import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.encodeConfig
+import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.decode as decodeIso8601Config
+import io.github.kotlinmania.time.formatdescription.wellknown.iso8601.encode as encodeIso8601Config
 import io.github.kotlinmania.time.formatting.Formattable
 import io.github.kotlinmania.time.parsing.Parsable
 
@@ -180,7 +180,9 @@ enum class OffsetPrecision {
 }
 
 /** Configuration for [Iso8601]. */
+@ConsistentCopyVisibility
 data class Config internal constructor(
+
     /** Which components, if any, will be formatted. */
     internal val formattedComponents: FormattedComponents,
     /** Whether the format contains separators (such as `-` or `:`). */
@@ -221,7 +223,7 @@ data class Config internal constructor(
     /**
      * Encode the configuration, permitting it to be used as a configuration parameter of [Iso8601].
      */
-    fun encode(): EncodedConfig = encodeConfig(this)
+    fun encode(): EncodedConfig = encodeIso8601Config(this)
 
     companion object {
         /**
@@ -255,6 +257,6 @@ data class Config internal constructor(
          * Decode the configuration. The configuration must have been generated from
          * [Config.encode].
          */
-        internal fun decode(encoded: EncodedConfig): Config = decodeConfig(encoded)
+        internal fun decode(encoded: EncodedConfig): Config = decodeIso8601Config(encoded)
     }
 }

@@ -93,6 +93,9 @@ interface Parsable {
         )
     }
 
+    /** Parse a [UtcOffset] from the format description. */
+    fun parseUtcOffset(input: ByteArray): Result<UtcOffset> = parseOffset(input)
+
     /** Parse a [PrimitiveDateTime] from the format description. */
     fun parsePrimitiveDateTime(input: ByteArray): Result<PrimitiveDateTime> {
         val parsed = parse(input).getOrElse { return Result.failure(it) }
@@ -101,6 +104,9 @@ interface Parsable {
             onFailure = { Result.failure(Parse.FromParsed(it as TryFromParsed)) },
         )
     }
+
+    /** Parse a [PrimitiveDateTime] from the format description. */
+    fun parseDateTime(input: ByteArray): Result<PrimitiveDateTime> = parsePrimitiveDateTime(input)
 
     /** Parse a [UtcDateTime] from the format description. */
     fun parseUtcDateTime(input: ByteArray): Result<UtcDateTime> {
@@ -390,7 +396,7 @@ private fun parseRfc2822OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
     val time = Time.fromHmsNano(hour.toInt(), minute.toInt(), second.toInt(), nanosecond).getOrElse {
         return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
     }
-    val offset = UtcOffset.fromHms(offsetHour, offsetMinute, 0).getOrElse {
+    val offset = UtcOffset.fromHms(offsetHour.toInt(), offsetMinute.toInt(), 0).getOrElse {
         return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
     }
     val dt = OffsetDateTime.newInOffset(date, time, offset)
@@ -447,11 +453,11 @@ private fun parseIntoRfc3339(initialInput: ByteArray, parsed: Parsed): Result<By
         val firstDigit = anyDigit(dot.remaining)
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
         var rem = firstDigit.remaining
-        var value = (firstDigit.value - '0'.code.toUByte()).toUInt() * 100_000_000u
+        var value = (firstDigit.value - '0'.code.toUByte()) * 100_000_000u
         var multiplier = 10_000_000u
         while (true) {
             val next = anyDigit(rem) ?: break
-            value += (next.value - '0'.code.toUByte()).toUInt() * multiplier
+            value += (next.value - '0'.code.toUByte()) * multiplier
             rem = next.remaining
             multiplier /= 10u
         }
@@ -547,14 +553,15 @@ private fun parseRfc3339OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         val firstDigit = anyDigit(dot.remaining)
             ?: return Result.failure(Parse.FromDescription(ParseFromDescription.InvalidComponent("subsecond")))
         var rem = firstDigit.remaining
-        var value = (firstDigit.value - '0'.code.toUByte()).toUInt() * 100_000_000u
+        var value = (firstDigit.value - '0'.code.toUByte()) * 100_000_000u
         var multiplier = 10_000_000u
         while (true) {
             val next = anyDigit(rem) ?: break
-            value += (next.value - '0'.code.toUByte()).toUInt() * multiplier
+            value += (next.value - '0'.code.toUByte()) * multiplier
             rem = next.remaining
             multiplier /= 10u
         }
+
         input = rem
         nanosecond = value
     } else {
@@ -582,8 +589,8 @@ private fun parseRfc3339OffsetDateTime(initialInput: ByteArray): Result<OffsetDa
         input = offMinItem.remaining
 
         offset = when (offsetSign) {
-            Sign.Negative -> UtcOffset.fromHms((-offHour.toInt()).toByte(), (-offMin.toInt()).toByte(), 0)
-            Sign.Positive -> UtcOffset.fromHms(offHour.toByte(), offMin.toByte(), 0)
+            Sign.Negative -> UtcOffset.fromHms(-offHour.toInt(), -offMin.toInt(), 0)
+            Sign.Positive -> UtcOffset.fromHms(offHour.toInt(), offMin.toInt(), 0)
         }.getOrElse {
             return Result.failure(Parse.FromParsed(TryFromParsed.Range(it as ComponentRange)))
         }

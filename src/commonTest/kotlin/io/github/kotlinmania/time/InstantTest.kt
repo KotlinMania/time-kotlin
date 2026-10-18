@@ -140,7 +140,7 @@ class InstantTest {
 
     @Test
     fun stdSubAssignDuration() {
-        var instant = TimeSource.Monotonic.markNow()
+        var instant: kotlin.time.ComparableTimeMark = TimeSource.Monotonic.markNow()
         instant -= 100.milliseconds()
         assertTrue(instant <= TimeSource.Monotonic.markNow())
     }
@@ -163,7 +163,7 @@ class InstantTest {
     fun stdEq() {
         val nowTime = Instant.now()
         val nowStd = Instant.toStdInstant(nowTime)
-        assertEquals<Any>(nowTime, nowStd)
+        assertTrue(nowTime.equals(nowStd))
     }
 
     @Test

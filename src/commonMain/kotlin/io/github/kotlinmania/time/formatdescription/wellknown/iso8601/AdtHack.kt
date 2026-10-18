@@ -12,9 +12,6 @@ import io.github.kotlinmania.time.formatdescription.wellknown.TimePrecision
  * Hackery to work around not being able to use ADTs in const generics on stable.
  */
 
-@PublishedApi
-internal typealias DoNotRelyOnWhatThisIs = EncodedConfig
-
 /**
  * An encoded [Config] that can be used as a configuration parameter to [Iso8601].
  *
@@ -114,7 +111,7 @@ internal val Iso8601.timePrecision: TimePrecision
 internal val Iso8601.offsetPrecision: OffsetPrecision
     get() = decodedConfig.offsetPrecision
 
-internal fun encodeConfig(config: Config): EncodedConfig {
+internal fun encode(config: Config): EncodedConfig {
     val bytes = ByteArray(EncodedConfig.BYTES_LEN)
 
     bytes[0] =
@@ -156,7 +153,7 @@ internal fun encodeConfig(config: Config): EncodedConfig {
     return EncodedConfig.fromBeBytes(bytes)
 }
 
-internal fun decodeConfig(encoded: EncodedConfig): Config {
+internal fun decode(encoded: EncodedConfig): Config {
     val bytes = encoded.toBeBytes()
 
     val formattedComponents =
@@ -222,7 +219,3 @@ internal fun decodeConfig(encoded: EncodedConfig): Config {
         offsetPrecision = offsetPrecision,
     )
 }
-
-internal fun encode(config: Config): EncodedConfig = encodeConfig(config)
-
-internal fun decode(encoded: EncodedConfig): Config = decodeConfig(encoded)

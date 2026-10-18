@@ -3,7 +3,6 @@ package io.github.kotlinmania.time.error
 
 import io.github.kotlinmania.serde.SerdeError
 import io.github.kotlinmania.serdecore.de.Expected
-import io.github.kotlinmania.time.StdError
 
 /**
  * Component range error.
@@ -57,6 +56,12 @@ class ComponentRange internal constructor(
         fun conditional(name: String): ComponentRange = ComponentRange(name, true)
 
         fun from(original: ComponentRange): StdError = StdError.ComponentRange(original)
+
+        fun tryFrom(error: TryFromParsed): Result<ComponentRange> =
+            TryFromParsed.tryFrom(error)
+
+        fun tryFrom(error: Format): Result<ComponentRange> =
+            Format.tryFrom(error)
 
         fun tryFrom(error: StdError): Result<ComponentRange> =
             when (error) {

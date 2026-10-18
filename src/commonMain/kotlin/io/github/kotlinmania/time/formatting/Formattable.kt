@@ -1,6 +1,12 @@
 // port-lint: source formatting/formattable.rs
 package io.github.kotlinmania.time.formatting
 
+import io.github.kotlinmania.time.Date
+import io.github.kotlinmania.time.OffsetDateTime
+import io.github.kotlinmania.time.PrimitiveDateTime
+import io.github.kotlinmania.time.Time
+import io.github.kotlinmania.time.UtcDateTime
+import io.github.kotlinmania.time.UtcOffset
 import io.github.kotlinmania.time.error.Format
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
@@ -17,7 +23,49 @@ import kotlin.math.abs
  *
  * Implementors of [Formattable] are format descriptions.
  */
-interface Formattable
+interface Formattable {
+    fun formatInto(output: Appendable, value: Date): Result<Int> =
+        formatInto(output, value, DateComponentProvider, DateComponentProvider.defaultState())
+
+    fun format(value: Date): Result<String> =
+        formatValue(value, DateComponentProvider, DateComponentProvider.defaultState())
+
+    fun formatInto(output: Appendable, value: Time): Result<Int> =
+        formatInto(output, value, TimeComponentProvider, TimeComponentProvider.defaultState())
+
+    fun format(value: Time): Result<String> =
+        formatValue(value, TimeComponentProvider, TimeComponentProvider.defaultState())
+
+    fun formatInto(output: Appendable, value: UtcOffset): Result<Int> =
+        formatInto(output, value, UtcOffsetComponentProvider, UtcOffsetComponentProvider.defaultState())
+
+    fun format(value: UtcOffset): Result<String> =
+        formatValue(value, UtcOffsetComponentProvider, UtcOffsetComponentProvider.defaultState())
+
+    fun formatInto(output: Appendable, value: PrimitiveDateTime): Result<Int> =
+        formatInto(output, value, PrimitiveDateTimeComponentProvider, PrimitiveDateTimeComponentProvider.defaultState())
+
+    fun format(value: PrimitiveDateTime): Result<String> =
+        formatValue(value, PrimitiveDateTimeComponentProvider, PrimitiveDateTimeComponentProvider.defaultState())
+
+    fun formatInto(output: Appendable, value: UtcDateTime): Result<Int> =
+        formatInto(output, value, UtcDateTimeComponentProvider, UtcDateTimeComponentProvider.defaultState())
+
+    fun format(value: UtcDateTime): Result<String> =
+        formatValue(value, UtcDateTimeComponentProvider, UtcDateTimeComponentProvider.defaultState())
+
+    fun formatInto(output: Appendable, value: OffsetDateTime): Result<Int> =
+        formatInto(output, value, OffsetDateTimeComponentProvider, OffsetDateTimeComponentProvider.defaultState())
+
+    fun format(value: OffsetDateTime): Result<String> =
+        formatValue(value, OffsetDateTimeComponentProvider, OffsetDateTimeComponentProvider.defaultState())
+}
+
+/** Adapter to treat a slice/list of [BorrowedFormatItem] as a [Formattable]. */
+class BorrowedFormatItemSliceFormattable(val items: List<BorrowedFormatItem>) : Formattable
+
+/** Adapter to treat a slice/list of [OwnedFormatItem] as a [Formattable]. */
+class OwnedFormatItemSliceFormattable(val items: List<OwnedFormatItem>) : Formattable
 
 /** Format the item into the provided output, returning the number of bytes written. */
 internal fun <V, State> Formattable.formatInto(
@@ -28,7 +76,9 @@ internal fun <V, State> Formattable.formatInto(
 ): Result<Int> =
     when (this) {
         is BorrowedFormatItem -> formatBorrowedInto(this, output, value, provider, state)
+        is BorrowedFormatItemSliceFormattable -> formatBorrowedListInto(this.items, output, value, provider, state)
         is OwnedFormatItem -> formatOwnedInto(this, output, value, provider, state)
+        is OwnedFormatItemSliceFormattable -> formatOwnedListInto(this.items, output, value, provider, state)
         is Rfc2822 -> formatRfc2822Into(output, value, provider, state)
         is Rfc3339 -> formatRfc3339Into(output, value, provider, state)
         is Iso8601 -> formatIso8601Into(this, output, value, provider, state)
@@ -136,15 +186,16 @@ private fun <V, State> formatRfc2822Into(
     bytes +=
         write(
             output,
-            WEEKDAY_NAMES[provider.weekday(value, state).numberDaysFromMonday().toInt()].substring(0, 3),
+            WEEKDAY_NAMES[provider.weekday(value, state).numberDaysFromMonday()].substring(0, 3),
         ).getOrElse { return Result.failure(it) }
+
     bytes += write(output, ", ").getOrElse { return Result.failure(it) }
     bytes += formatNumberPadZero(2, output, provider.day(value, state).toUInt()).getOrElse { return Result.failure(it) }
     bytes += write(output, " ").getOrElse { return Result.failure(it) }
     bytes +=
         write(
             output,
-            MONTH_NAMES[provider.month(value, state).number().toInt() - 1].substring(0, 3),
+            MONTH_NAMES[provider.month(value, state).number - 1].substring(0, 3),
         ).getOrElse { return Result.failure(it) }
     bytes += write(output, " ").getOrElse { return Result.failure(it) }
     bytes += formatNumberPadZero(4, output, provider.calendarYear(value, state).toUInt()).getOrElse { return Result.failure(it) }
@@ -187,7 +238,7 @@ private fun <V, State> formatRfc3339Into(
 
     bytes += formatNumberPadZero(4, output, provider.calendarYear(value, state).toUInt()).getOrElse { return Result.failure(it) }
     bytes += write(output, "-").getOrElse { return Result.failure(it) }
-    bytes += formatNumberPadZero(2, output, provider.month(value, state).number().toUInt()).getOrElse { return Result.failure(it) }
+    bytes += formatNumberPadZero(2, output, provider.month(value, state).number.toUInt()).getOrElse { return Result.failure(it) }
     bytes += write(output, "-").getOrElse { return Result.failure(it) }
     bytes += formatNumberPadZero(2, output, provider.day(value, state).toUInt()).getOrElse { return Result.failure(it) }
     bytes += write(output, "T").getOrElse { return Result.failure(it) }

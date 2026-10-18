@@ -1,5 +1,5 @@
 // port-lint: source sys/local_offset_at/windows.rs
-package io.github.kotlinmania.time.sys.localoffsetat
+package io.github.kotlinmania.time.sys.localoffsetat.windows
 
 import io.github.kotlinmania.time.Date
 import io.github.kotlinmania.time.Month
@@ -67,18 +67,14 @@ internal fun offsetToSystemtime(datetime: OffsetDateTime): SystemTime {
     )
 }
 
-internal object Windows {
-    /** Obtain the system's UTC offset. */
-    fun localOffsetAt(datetime: OffsetDateTime): UtcOffset? {
-        val systimeUtc = offsetToSystemtime(datetime.toOffset(UtcOffset.UTC))
-        val systimeLocal = systimeUtc
-        val ftSystem = systemtimeToFiletime(systimeUtc) ?: return null
-        val ftLocal = systemtimeToFiletime(systimeLocal) ?: return null
-        val diff = filetimeToSecs(ftLocal) - filetimeToSecs(ftSystem)
-        val diffSecs = diff.toInt()
-        if (diffSecs.toLong() != diff) return null
-        return UtcOffset.fromWholeSeconds(diffSecs).getOrNull()
-    }
+/** Obtain the system's UTC offset. */
+internal fun localOffsetAt(datetime: OffsetDateTime): UtcOffset? {
+    val systimeUtc = offsetToSystemtime(datetime.toOffset(UtcOffset.UTC))
+    val systimeLocal = systimeUtc
+    val ftSystem = systemtimeToFiletime(systimeUtc) ?: return null
+    val ftLocal = systemtimeToFiletime(systimeLocal) ?: return null
+    val diff = filetimeToSecs(ftLocal) - filetimeToSecs(ftSystem)
+    val diffSecs = diff.toInt()
+    if (diffSecs.toLong() != diff) return null
+    return UtcOffset.fromWholeSeconds(diffSecs).getOrNull()
 }
-
-internal fun windowsLocalOffsetAt(datetime: OffsetDateTime): UtcOffset? = Windows.localOffsetAt(datetime)

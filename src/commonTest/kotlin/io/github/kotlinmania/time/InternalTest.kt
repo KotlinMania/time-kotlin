@@ -2,7 +2,7 @@
 package io.github.kotlinmania.time
 
 import io.github.kotlinmania.time.ext.numDigits
-import io.github.kotlinmania.time.formatdescription.Period
+import io.github.kotlinmania.time.formatdescription.PeriodCase
 import io.github.kotlinmania.time.parsing.ParsedItem
 import io.github.kotlinmania.time.parsing.combinator.rfc.ExtendedKind
 import kotlin.test.Test
@@ -53,13 +53,13 @@ class InternalTest {
     fun debug() {
         val item = ParsedItem(ByteArray(0), 0)
         assertEquals(item.toString(), item.toString())
-        assertEquals(Period.Am.toString(), Period.Am.toString())
+        assertEquals(PeriodCase.Am.toString(), PeriodCase.Am.toString())
         assertEquals(ExtendedKind.Basic.toString(), ExtendedKind.Basic.toString())
     }
 
     @Test
     fun clone() {
-        assertEquals(Period.Am, Period.Am)
+        assertEquals(PeriodCase.Am, PeriodCase.Am)
         assertEquals(ExtendedKind.Basic, ExtendedKind.Basic)
     }
 

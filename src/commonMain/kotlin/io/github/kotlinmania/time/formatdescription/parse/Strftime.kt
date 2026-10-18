@@ -158,7 +158,7 @@ private fun parseStrftimeComponent(
     val ch = component.value.toUByte().toInt().toChar()
     val item: BorrowedFormatItem = when (ch) {
         '%' -> lit("%")
-        'a' -> BorrowedFormatItem.ComponentItem(
+        'a' -> BorrowedFormatItem.Component(
             Component.Weekday(
                 Weekday(
                     repr = WeekdayRepr.Short,
@@ -167,7 +167,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'A' -> BorrowedFormatItem.ComponentItem(
+        'A' -> BorrowedFormatItem.Component(
             Component.Weekday(
                 Weekday(
                     repr = WeekdayRepr.Long,
@@ -176,7 +176,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'b', 'h' -> BorrowedFormatItem.ComponentItem(
+        'b', 'h' -> BorrowedFormatItem.Component(
             Component.Month(
                 Month(
                     repr = MonthRepr.Short,
@@ -185,7 +185,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'B' -> BorrowedFormatItem.ComponentItem(
+        'B' -> BorrowedFormatItem.Component(
             Component.Month(
                 Month(
                     repr = MonthRepr.Long,
@@ -196,7 +196,7 @@ private fun parseStrftimeComponent(
         )
         'c' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Weekday(
                         Weekday(
                             repr = WeekdayRepr.Short,
@@ -206,7 +206,7 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit(" "),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
                             repr = MonthRepr.Short,
@@ -216,17 +216,17 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit(" "),
-                BorrowedFormatItem.ComponentItem(Component.Day(Day(padding = Padding.Space))),
+                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Space))),
                 lit(" "),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
                 ),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Minute(Minute(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Second(Second(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
                 lit(" "),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
                             padding = Padding.Zero,
@@ -239,7 +239,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'C' -> BorrowedFormatItem.ComponentItem(
+        'C' -> BorrowedFormatItem.Component(
             Component.Year(
                 Year(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -250,12 +250,12 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'd' -> BorrowedFormatItem.ComponentItem(
+        'd' -> BorrowedFormatItem.Component(
             Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Zero))),
         )
         'D' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
                             repr = MonthRepr.Numerical,
@@ -265,9 +265,9 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit("/"),
-                BorrowedFormatItem.ComponentItem(Component.Day(Day(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
                 lit("/"),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
                             padding = Padding.Zero,
@@ -280,12 +280,12 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'e' -> BorrowedFormatItem.ComponentItem(
+        'e' -> BorrowedFormatItem.Component(
             Component.Day(Day(padding = paddingOrDefault(padding.value, Padding.Space))),
         )
         'F' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
                             padding = Padding.Zero,
@@ -297,7 +297,7 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit("-"),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
                             padding = Padding.Zero,
@@ -307,10 +307,10 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit("-"),
-                BorrowedFormatItem.ComponentItem(Component.Day(Day(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
             ),
         )
-        'g' -> BorrowedFormatItem.ComponentItem(
+        'g' -> BorrowedFormatItem.Component(
             Component.Year(
                 Year(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -321,7 +321,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'G' -> BorrowedFormatItem.ComponentItem(
+        'G' -> BorrowedFormatItem.Component(
             Component.Year(
                 Year(
                     padding = Padding.Zero,
@@ -332,7 +332,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'H' -> BorrowedFormatItem.ComponentItem(
+        'H' -> BorrowedFormatItem.Component(
             Component.Hour(
                 Hour(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -340,7 +340,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'I' -> BorrowedFormatItem.ComponentItem(
+        'I' -> BorrowedFormatItem.Component(
             Component.Hour(
                 Hour(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -348,10 +348,10 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'j' -> BorrowedFormatItem.ComponentItem(
+        'j' -> BorrowedFormatItem.Component(
             Component.Ordinal(Ordinal(padding = paddingOrDefault(padding.value, Padding.Zero))),
         )
-        'k' -> BorrowedFormatItem.ComponentItem(
+        'k' -> BorrowedFormatItem.Component(
             Component.Hour(
                 Hour(
                     padding = paddingOrDefault(padding.value, Padding.Space),
@@ -359,7 +359,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'l' -> BorrowedFormatItem.ComponentItem(
+        'l' -> BorrowedFormatItem.Component(
             Component.Hour(
                 Hour(
                     padding = paddingOrDefault(padding.value, Padding.Space),
@@ -367,7 +367,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'm' -> BorrowedFormatItem.ComponentItem(
+        'm' -> BorrowedFormatItem.Component(
             Component.Month(
                 Month(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -376,7 +376,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'M' -> BorrowedFormatItem.ComponentItem(
+        'M' -> BorrowedFormatItem.Component(
             Component.Minute(Minute(padding = paddingOrDefault(padding.value, Padding.Zero))),
         )
         'n' -> lit("\n")
@@ -387,37 +387,37 @@ private fun parseStrftimeComponent(
                 index = component.span.start.byte,
             ),
         )
-        'p' -> BorrowedFormatItem.ComponentItem(
+        'p' -> BorrowedFormatItem.Component(
             Component.Period(Period(isUppercase = true, caseSensitive = true)),
         )
-        'P' -> BorrowedFormatItem.ComponentItem(
+        'P' -> BorrowedFormatItem.Component(
             Component.Period(Period(isUppercase = false, caseSensitive = true)),
         )
         'r' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Hour(Hour(padding = Padding.Zero, is12HourClock = true)),
                 ),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Minute(Minute(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Second(Second(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
                 lit(" "),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Period(Period(isUppercase = true, caseSensitive = true)),
                 ),
             ),
         )
         'R' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
                 ),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Minute(Minute(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
             ),
         )
-        's' -> BorrowedFormatItem.ComponentItem(
+        's' -> BorrowedFormatItem.Component(
             Component.UnixTimestamp(
                 UnixTimestamp(
                     precision = UnixTimestampPrecision.Second,
@@ -425,22 +425,22 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'S' -> BorrowedFormatItem.ComponentItem(
+        'S' -> BorrowedFormatItem.Component(
             Component.Second(Second(padding = paddingOrDefault(padding.value, Padding.Zero))),
         )
         't' -> lit("\t")
         'T' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
                 ),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Minute(Minute(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Second(Second(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
             ),
         )
-        'u' -> BorrowedFormatItem.ComponentItem(
+        'u' -> BorrowedFormatItem.Component(
             Component.Weekday(
                 Weekday(
                     repr = WeekdayRepr.Monday,
@@ -449,7 +449,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'U' -> BorrowedFormatItem.ComponentItem(
+        'U' -> BorrowedFormatItem.Component(
             Component.WeekNumber(
                 WeekNumber(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -457,7 +457,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'V' -> BorrowedFormatItem.ComponentItem(
+        'V' -> BorrowedFormatItem.Component(
             Component.WeekNumber(
                 WeekNumber(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -465,7 +465,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'w' -> BorrowedFormatItem.ComponentItem(
+        'w' -> BorrowedFormatItem.Component(
             Component.Weekday(
                 Weekday(
                     repr = WeekdayRepr.Sunday,
@@ -474,7 +474,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'W' -> BorrowedFormatItem.ComponentItem(
+        'W' -> BorrowedFormatItem.Component(
             Component.WeekNumber(
                 WeekNumber(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -484,7 +484,7 @@ private fun parseStrftimeComponent(
         )
         'x' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Month(
                         Month(
                             repr = MonthRepr.Numerical,
@@ -494,9 +494,9 @@ private fun parseStrftimeComponent(
                     ),
                 ),
                 lit("/"),
-                BorrowedFormatItem.ComponentItem(Component.Day(Day(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Day(Day(padding = Padding.Zero))),
                 lit("/"),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Year(
                         Year(
                             padding = Padding.Zero,
@@ -511,16 +511,16 @@ private fun parseStrftimeComponent(
         )
         'X' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.Hour(Hour(padding = Padding.Zero, is12HourClock = false)),
                 ),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Minute(Minute(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Minute(Minute(padding = Padding.Zero))),
                 lit(":"),
-                BorrowedFormatItem.ComponentItem(Component.Second(Second(padding = Padding.Zero))),
+                BorrowedFormatItem.Component(Component.Second(Second(padding = Padding.Zero))),
             ),
         )
-        'y' -> BorrowedFormatItem.ComponentItem(
+        'y' -> BorrowedFormatItem.Component(
             Component.Year(
                 Year(
                     padding = paddingOrDefault(padding.value, Padding.Zero),
@@ -531,7 +531,7 @@ private fun parseStrftimeComponent(
                 ),
             ),
         )
-        'Y' -> BorrowedFormatItem.ComponentItem(
+        'Y' -> BorrowedFormatItem.Component(
             Component.Year(
                 Year(
                     padding = Padding.Zero,
@@ -544,7 +544,7 @@ private fun parseStrftimeComponent(
         )
         'z' -> BorrowedFormatItem.Compound(
             listOf(
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.OffsetHour(
                         OffsetHour(
                             signIsMandatory = true,
@@ -552,7 +552,7 @@ private fun parseStrftimeComponent(
                         ),
                     ),
                 ),
-                BorrowedFormatItem.ComponentItem(
+                BorrowedFormatItem.Component(
                     Component.OffsetMinute(OffsetMinute(padding = Padding.Zero)),
                 ),
             ),

@@ -4,7 +4,7 @@ package io.github.kotlinmania.time
 import io.github.kotlinmania.time.error.Format
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
 import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
-import io.github.kotlinmania.time.formatdescription.parse
+import io.github.kotlinmania.time.formatdescription.parse.parse
 import io.github.kotlinmania.time.formatdescription.wellknown.Config
 import io.github.kotlinmania.time.formatdescription.wellknown.DateKind
 import io.github.kotlinmania.time.formatdescription.wellknown.Iso8601
@@ -12,6 +12,8 @@ import io.github.kotlinmania.time.formatdescription.wellknown.OffsetPrecision
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc2822
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc3339
 import io.github.kotlinmania.time.formatdescription.wellknown.TimePrecision
+import io.github.kotlinmania.time.macros.formatDescription
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -251,7 +253,7 @@ class FormattingTest {
             assertTrue(t.formatInto(sb1, fd).isSuccess)
             assertEquals(output, sb1.toString())
 
-            val owned = OwnedFormatItem.fromBorrowedSlice(fd)
+            val owned = OwnedFormatItem.from(fd)
             assertEquals(output, t.format(owned).getOrThrow())
             val sb2 = StringBuilder()
             assertTrue(t.formatInto(sb2, owned).isSuccess)
@@ -325,7 +327,7 @@ class FormattingTest {
             assertEquals(output, d.format(fd).getOrThrow())
             val sb1 = StringBuilder()
             assertTrue(d.formatInto(sb1, fd).isSuccess)
-            val owned = OwnedFormatItem.fromBorrowedSlice(fd)
+            val owned = OwnedFormatItem.from(fd)
             assertEquals(output, d.format(owned).getOrThrow())
             val sb2 = StringBuilder()
             assertTrue(d.formatInto(sb2, owned).isSuccess)
@@ -368,7 +370,7 @@ class FormattingTest {
 
         for ((value, fd, output) in valueFormatOutput) {
             assertEquals(output, value.format(fd).getOrThrow())
-            assertEquals(output, value.format(OwnedFormatItem.fromBorrowedSlice(fd)).getOrThrow())
+            assertEquals(output, value.format(OwnedFormatItem.from(fd)).getOrThrow())
         }
     }
 
@@ -390,7 +392,7 @@ class FormattingTest {
         val fd = formatDescription("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond]")
         val pdt = datetime(1970, Month.January, 1, 0, 0)
         assertEquals("1970-01-01 00:00:00.0", pdt.format(fd).getOrThrow())
-        assertEquals("1970-01-01 00:00:00.0", pdt.format(OwnedFormatItem.fromBorrowedSlice(fd)).getOrThrow())
+        assertEquals("1970-01-01 00:00:00.0", pdt.format(OwnedFormatItem.from(fd)).getOrThrow())
     }
 
     @Test
@@ -407,7 +409,7 @@ class FormattingTest {
             ).getOrThrow()
         val odt = datetime(1970, Month.January, 1, 0, 0, 0, 0, 0)
         assertEquals("1970-01-01 00:00:00.0 +00:00:00", odt.format(fd).getOrThrow())
-        assertEquals("1970-01-01 00:00:00.0 +00:00:00", odt.format(OwnedFormatItem.fromBorrowedSlice(fd)).getOrThrow())
+        assertEquals("1970-01-01 00:00:00.0 +00:00:00", odt.format(OwnedFormatItem.from(fd)).getOrThrow())
     }
 
     @Test
@@ -420,7 +422,7 @@ class FormattingTest {
         val fd = formatDescription("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond]")
         val udt = utcDatetime(1970, Month.January, 1, 0, 0)
         assertEquals("1970-01-01 00:00:00.0", udt.format(fd).getOrThrow())
-        assertEquals("1970-01-01 00:00:00.0", udt.format(OwnedFormatItem.fromBorrowedSlice(fd)).getOrThrow())
+        assertEquals("1970-01-01 00:00:00.0", udt.format(OwnedFormatItem.from(fd)).getOrThrow())
     }
 
     @Test

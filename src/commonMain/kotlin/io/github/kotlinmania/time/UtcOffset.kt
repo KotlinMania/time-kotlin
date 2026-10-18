@@ -10,17 +10,13 @@ import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
-import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
 import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
 import io.github.kotlinmania.time.formatting.Formattable
-import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
-import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.serde.I8Serialize
 import io.github.kotlinmania.time.serde.UTC_OFFSET_FORMAT
 import io.github.kotlinmania.time.serde.UtcOffsetVisitor
-import kotlin.jvm.JvmName
 import kotlin.math.abs
 
 /**
@@ -174,28 +170,16 @@ class UtcOffset private constructor(
         description: Formattable,
     ): Result<Int> = description.formatInto(output, this)
 
-    @JvmName("formatIntoBorrowedSlice")
     fun formatInto(
         output: StringBuilder,
         description: List<BorrowedFormatItem>,
     ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
 
-    @JvmName("formatIntoOwnedSlice")
-    fun formatInto(
-        output: StringBuilder,
-        description: List<OwnedFormatItem>,
-    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
-
     /** Format the [UtcOffset] using the provided [Formattable]. */
     fun format(description: Formattable): Result<String> = description.format(this)
 
-    @JvmName("formatBorrowedSlice")
     fun format(description: List<BorrowedFormatItem>): Result<String> =
         BorrowedFormatItemSliceFormattable(description).format(this)
-
-    @JvmName("formatOwnedSlice")
-    fun format(description: List<OwnedFormatItem>): Result<String> =
-        OwnedFormatItemSliceFormattable(description).format(this)
 
     fun fmt(): String = toString()
 
@@ -254,7 +238,7 @@ class UtcOffset private constructor(
          * be determined, an error is returned.
          */
         fun localOffsetAt(datetime: OffsetDateTime): Result<UtcOffset> =
-            io.github.kotlinmania.time.sys.localoffsetat.localOffsetAt(datetime)?.let { Result.success(it) }
+            io.github.kotlinmania.time.sys.localoffsetat.unix.localOffsetAt(datetime)?.let { Result.success(it) }
                 ?: Result.failure(io.github.kotlinmania.time.error.IndeterminateOffset)
 
         /**
@@ -288,24 +272,8 @@ class UtcOffset private constructor(
         fun parse(input: String, description: Parsable): Result<UtcOffset> =
             description.parseUtcOffset(input.encodeToByteArray())
 
-        fun parse(input: ByteArray, description: Parsable): Result<UtcOffset> =
-            description.parseUtcOffset(input)
-
-        @JvmName("parseBorrowedSlice")
         fun parse(input: String, description: List<BorrowedFormatItem>): Result<UtcOffset> =
             BorrowedFormatItemSliceParsable(description).parseUtcOffset(input.encodeToByteArray())
-
-        @JvmName("parseBytesBorrowedSlice")
-        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<UtcOffset> =
-            BorrowedFormatItemSliceParsable(description).parseUtcOffset(input)
-
-        @JvmName("parseOwnedSlice")
-        fun parse(input: String, description: List<OwnedFormatItem>): Result<UtcOffset> =
-            OwnedFormatItemSliceParsable(description).parseUtcOffset(input.encodeToByteArray())
-
-        @JvmName("parseBytesOwnedSlice")
-        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<UtcOffset> =
-            OwnedFormatItemSliceParsable(description).parseUtcOffset(input)
 
         /**
          * Create a `UtcOffset` representing an offset of the hours, minutes,

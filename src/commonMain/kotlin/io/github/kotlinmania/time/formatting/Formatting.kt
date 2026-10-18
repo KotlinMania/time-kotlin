@@ -6,28 +6,28 @@ import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.error.Format
 import io.github.kotlinmania.time.ext.numDigits
 import io.github.kotlinmania.time.formatdescription.Component
-import io.github.kotlinmania.time.formatdescription.Day
-import io.github.kotlinmania.time.formatdescription.Hour
-import io.github.kotlinmania.time.formatdescription.Minute
-import io.github.kotlinmania.time.formatdescription.MonthRepr
-import io.github.kotlinmania.time.formatdescription.OffsetHour
-import io.github.kotlinmania.time.formatdescription.OffsetMinute
-import io.github.kotlinmania.time.formatdescription.OffsetSecond
-import io.github.kotlinmania.time.formatdescription.Ordinal
-import io.github.kotlinmania.time.formatdescription.Padding
-import io.github.kotlinmania.time.formatdescription.Period
 import io.github.kotlinmania.time.formatdescription.PeriodCase
-import io.github.kotlinmania.time.formatdescription.Second
-import io.github.kotlinmania.time.formatdescription.Subsecond
-import io.github.kotlinmania.time.formatdescription.SubsecondDigits
-import io.github.kotlinmania.time.formatdescription.UnixTimestamp
-import io.github.kotlinmania.time.formatdescription.UnixTimestampPrecision
-import io.github.kotlinmania.time.formatdescription.WeekNumber
-import io.github.kotlinmania.time.formatdescription.WeekNumberRepr
-import io.github.kotlinmania.time.formatdescription.WeekdayRepr
-import io.github.kotlinmania.time.formatdescription.Year
-import io.github.kotlinmania.time.formatdescription.YearRange
-import io.github.kotlinmania.time.formatdescription.YearRepr
+import io.github.kotlinmania.time.formatdescription.modifier.Day
+import io.github.kotlinmania.time.formatdescription.modifier.Hour
+import io.github.kotlinmania.time.formatdescription.modifier.Minute
+import io.github.kotlinmania.time.formatdescription.modifier.MonthRepr
+import io.github.kotlinmania.time.formatdescription.modifier.OffsetHour
+import io.github.kotlinmania.time.formatdescription.modifier.OffsetMinute
+import io.github.kotlinmania.time.formatdescription.modifier.OffsetSecond
+import io.github.kotlinmania.time.formatdescription.modifier.Ordinal
+import io.github.kotlinmania.time.formatdescription.modifier.Padding
+import io.github.kotlinmania.time.formatdescription.modifier.Period
+import io.github.kotlinmania.time.formatdescription.modifier.Second
+import io.github.kotlinmania.time.formatdescription.modifier.Subsecond
+import io.github.kotlinmania.time.formatdescription.modifier.SubsecondDigits
+import io.github.kotlinmania.time.formatdescription.modifier.UnixTimestamp
+import io.github.kotlinmania.time.formatdescription.modifier.UnixTimestampPrecision
+import io.github.kotlinmania.time.formatdescription.modifier.WeekNumber
+import io.github.kotlinmania.time.formatdescription.modifier.WeekNumberRepr
+import io.github.kotlinmania.time.formatdescription.modifier.WeekdayRepr
+import io.github.kotlinmania.time.formatdescription.modifier.Year
+import io.github.kotlinmania.time.formatdescription.modifier.YearRange
+import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.truncate
@@ -155,7 +155,7 @@ internal fun formatNumberPadSpace(
     value: UInt,
 ): Result<Int> {
     var bytes = 0
-    val padCount = (width - value.numDigits()).coerceAtLeast(0)
+    val padCount = (width - value.numDigits().toInt()).coerceAtLeast(0)
     for (i in 0 until padCount) {
         bytes += write(output, " ").getOrElse { return Result.failure(it) }
     }
@@ -169,7 +169,7 @@ internal fun formatNumberPadZero(
     value: UInt,
 ): Result<Int> {
     var bytes = 0
-    val padCount = (width - value.numDigits()).coerceAtLeast(0)
+    val padCount = (width - value.numDigits().toInt()).coerceAtLeast(0)
     for (i in 0 until padCount) {
         bytes += write(output, "0").getOrElse { return Result.failure(it) }
     }
@@ -313,12 +313,12 @@ internal fun fmtDay(output: Appendable, day: UByte, modifier: Day): Result<Int> 
 internal fun fmtMonth(
     output: Appendable,
     month: Month,
-    modifier: io.github.kotlinmania.time.formatdescription.Month,
+    modifier: io.github.kotlinmania.time.formatdescription.modifier.Month,
 ): Result<Int> =
     when (modifier.repr) {
-        MonthRepr.Numerical -> formatNumber(2, output, month.number().toUInt(), modifier.padding)
-        MonthRepr.Long -> write(output, MONTH_NAMES[month.number().toInt() - 1])
-        MonthRepr.Short -> write(output, MONTH_NAMES[month.number().toInt() - 1].substring(0, 3))
+        MonthRepr.Numerical -> formatNumber(2, output, month.number.toUInt(), modifier.padding)
+        MonthRepr.Long -> write(output, MONTH_NAMES[month.number - 1])
+        MonthRepr.Short -> write(output, MONTH_NAMES[month.number - 1].substring(0, 3))
     }
 
 internal fun fmtOrdinal(output: Appendable, ordinal: UShort, modifier: Ordinal): Result<Int> =
@@ -327,25 +327,25 @@ internal fun fmtOrdinal(output: Appendable, ordinal: UShort, modifier: Ordinal):
 internal fun fmtWeekday(
     output: Appendable,
     weekday: Weekday,
-    modifier: io.github.kotlinmania.time.formatdescription.Weekday,
+    modifier: io.github.kotlinmania.time.formatdescription.modifier.Weekday,
 ): Result<Int> =
     when (modifier.repr) {
         WeekdayRepr.Short ->
-            write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday().toInt()].substring(0, 3))
+            write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday()].substring(0, 3))
         WeekdayRepr.Long ->
-            write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday().toInt()])
+            write(output, WEEKDAY_NAMES[weekday.numberDaysFromMonday()])
         WeekdayRepr.Sunday ->
             formatNumber(
                 1,
                 output,
-                (weekday.numberDaysFromSunday() + if (modifier.oneIndexed) 1u else 0u).toUInt(),
+                (weekday.numberDaysFromSunday() + if (modifier.oneIndexed) 1 else 0).toUInt(),
                 Padding.None,
             )
         WeekdayRepr.Monday ->
             formatNumber(
                 1,
                 output,
-                (weekday.numberDaysFromMonday() + if (modifier.oneIndexed) 1u else 0u).toUInt(),
+                (weekday.numberDaysFromMonday() + if (modifier.oneIndexed) 1 else 0).toUInt(),
                 Padding.None,
             )
     }

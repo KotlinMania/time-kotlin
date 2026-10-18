@@ -25,8 +25,9 @@ import io.github.kotlinmania.time.formatdescription.modifier.WeekdayRepr
 import io.github.kotlinmania.time.formatdescription.modifier.Year
 import io.github.kotlinmania.time.formatdescription.modifier.YearRange
 import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
-import io.github.kotlinmania.time.formatdescription.parse
-import io.github.kotlinmania.time.formatdescription.parseOwned
+import io.github.kotlinmania.time.formatdescription.parse.parse
+import io.github.kotlinmania.time.formatdescription.parse.parseOwned
+
 import io.github.kotlinmania.time.formatdescription.wellknown.Iso8601
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc2822
 import io.github.kotlinmania.time.formatdescription.wellknown.Rfc3339
@@ -35,6 +36,7 @@ import io.github.kotlinmania.time.macros.datetime
 import io.github.kotlinmania.time.macros.offset
 import io.github.kotlinmania.time.macros.time
 import io.github.kotlinmania.time.macros.utcDatetime
+import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsed
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -43,21 +45,39 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ParsingTest {
-    private fun assertInvalidLiteral(res: TimeResult<*, Parse>) {
-        assertTrue(res is TimeResult.Err && res.error is Parse.ParseFromDescriptionErr && (res.error as Parse.ParseFromDescriptionErr).error is ParseFromDescription.InvalidLiteral, "Expected InvalidLiteral, got $res")
+    private fun assertInvalidLiteral(res: Result<*>) {
+        assertTrue(
+            res.isFailure &&
+                res.error is Parse.ParseFromDescription &&
+                (res.error as Parse.ParseFromDescription).error is ParseFromDescription.InvalidLiteral,
+            "Expected InvalidLiteral, got $res",
+        )
     }
 
-    private fun assertInvalidComponent(res: TimeResult<*, Parse>, name: String) {
-        assertEquals(TimeResult.Err(Parse.ParseFromDescriptionErr(ParseFromDescription.InvalidComponent(name))), res)
+    private fun assertInvalidComponent(res: Result<*>, name: String) {
+        assertEquals(
+            TimeResult.Err(Parse.ParseFromDescription(ParseFromDescription.InvalidComponent(name))),
+            res,
+        )
     }
 
-    private fun assertUnexpectedTrailing(res: TimeResult<*, Parse>) {
-        assertTrue(res is TimeResult.Err && res.error is Parse.ParseFromDescriptionErr && (res.error as Parse.ParseFromDescriptionErr).error is ParseFromDescription.UnexpectedTrailingCharacters, "Expected UnexpectedTrailingCharacters, got $res")
+    private fun assertUnexpectedTrailing(res: Result<*>) {
+        assertTrue(
+            res.isFailure &&
+                res.error is Parse.ParseFromDescription &&
+                (res.error as Parse.ParseFromDescription).error is ParseFromDescription.UnexpectedTrailingCharacters,
+            "Expected UnexpectedTrailingCharacters, got $res",
+        )
     }
 
-    private fun assertComponentRange(res: TimeResult<*, Parse>, name: String, conditional: Boolean? = null) {
-        assertTrue(res is TimeResult.Err && res.error is Parse.TryFromParsedErr && (res.error as Parse.TryFromParsedErr).error is TryFromParsed.ComponentRangeErr, "Expected ComponentRange, got $res")
-        val comp = ((res as TimeResult.Err).error as Parse.TryFromParsedErr).error as TryFromParsed.ComponentRangeErr
+    private fun assertComponentRange(res: Result<*>, name: String, conditional: Boolean? = null) {
+        assertTrue(
+            res.isFailure &&
+                res.error is Parse.TryFromParsed &&
+                (res.error as Parse.TryFromParsed).error is TryFromParsed.ComponentRange,
+            "Expected ComponentRange, got $res",
+        )
+        val comp = ((res.error as Parse.TryFromParsed).error as TryFromParsed.ComponentRange)
         assertEquals(name, comp.error.name())
         if (conditional != null) {
             assertEquals(conditional, comp.error.isConditional())
@@ -259,7 +279,7 @@ class ParsingTest {
         assertUnexpectedTrailing(OffsetDateTime.parse("2021-01-02T03:x", Iso8601.DEFAULT))
         assertUnexpectedTrailing(OffsetDateTime.parse("2021-01-02T03:04x", Iso8601.DEFAULT))
         assertUnexpectedTrailing(OffsetDateTime.parse("2021-01-02T03:04:", Iso8601.DEFAULT))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), OffsetDateTime.parse("01:02", Iso8601.DEFAULT))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), OffsetDateTime.parse("01:02", Iso8601.DEFAULT))
 
         assertUnexpectedTrailing(UtcDateTime.parse("20210102T03:04Z", Iso8601.DEFAULT))
         assertUnexpectedTrailing(UtcDateTime.parse("20210102T03.", Iso8601.DEFAULT))
@@ -271,7 +291,7 @@ class ParsingTest {
         assertUnexpectedTrailing(UtcDateTime.parse("2021-01-02T03:x", Iso8601.DEFAULT))
         assertUnexpectedTrailing(UtcDateTime.parse("2021-01-02T03:04x", Iso8601.DEFAULT))
         assertUnexpectedTrailing(UtcDateTime.parse("2021-01-02T03:04:", Iso8601.DEFAULT))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), UtcDateTime.parse("01:02", Iso8601.DEFAULT))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), UtcDateTime.parse("01:02", Iso8601.DEFAULT))
     }
 
     @Test
@@ -290,23 +310,23 @@ class ParsingTest {
 
         for ((fd, input, output) in formatInputOutput) {
             assertEquals(output, Time.parse(input, fd).unwrap())
-            assertEquals(output, Time.parse(input, OwnedFormatItem.fromBorrowed(fd)).unwrap())
-            assertEquals(output, Time.parse(input, listOf(OwnedFormatItem.fromBorrowed(fd))).unwrap())
+            assertEquals(output, Time.parse(input, OwnedFormatItem.from(fd)).unwrap())
+            assertEquals(output, Time.parse(input, OwnedFormatItemSliceParsable(listOf(OwnedFormatItem.from(fd)))).unwrap())
         }
     }
 
     @Test
     fun parseTimeErr() {
         assertEquals(TimeResult.Err(TryFromParsed.InsufficientInformation), Time.tryFromParsed(Parsed.new()))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), Time.parse("", parse("").unwrap()))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), Time.parse("12:34", parse("[hour]:[second]").unwrap()))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), Time.parse("12:34", parse("[hour]:[subsecond]").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), Time.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), Time.parse("12:34", parse("[hour]:[second]").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), Time.parse("12:34", parse("[hour]:[subsecond]").unwrap()))
         assertInvalidComponent(Time.parse("13 PM", parse("[hour repr:12] [period]").unwrap()), "hour")
         assertUnexpectedTrailing(Time.parse(" ", parse("").unwrap()))
         assertInvalidComponent(Time.parse("a", parse("[subsecond digits:1]").unwrap()), "subsecond")
         assertInvalidComponent(Time.parse("1a", parse("[subsecond digits:2]").unwrap()), "subsecond")
-        assertInvalidComponent(Time.parse("1a", parseOwned("[subsecond digits:2]", 2).unwrap()), "subsecond")
-        assertInvalidComponent(Time.parse("1a", listOf(parseOwned("[subsecond digits:2]", 2).unwrap())), "subsecond")
+        assertInvalidComponent(Time.parse("1a", parseOwned(2, "[subsecond digits:2]").unwrap()), "subsecond")
+        assertInvalidComponent(Time.parse("1a", OwnedFormatItemSliceParsable(listOf(parseOwned(2, "[subsecond digits:2]").unwrap()))), "subsecond")
         assertInvalidComponent(Time.parse("12a", parse("[subsecond digits:3]").unwrap()), "subsecond")
         assertInvalidComponent(Time.parse("123a", parse("[subsecond digits:4]").unwrap()), "subsecond")
         assertInvalidComponent(Time.parse("1234a", parse("[subsecond digits:5]").unwrap()), "subsecond")
@@ -336,14 +356,14 @@ class ParsingTest {
 
         for ((fd, input, output) in formatInputOutput) {
             assertEquals(output, Date.parse(input, fd).unwrap())
-            assertEquals(output, Date.parse(input, OwnedFormatItem.fromBorrowed(fd)).unwrap())
+            assertEquals(output, Date.parse(input, OwnedFormatItem.from(fd)).unwrap())
         }
     }
 
     @Test
     fun parseDateErr() {
         assertEquals(TimeResult.Err(TryFromParsed.InsufficientInformation), Date.tryFromParsed(Parsed.new()))
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), Date.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), Date.parse("", parse("").unwrap()))
         assertInvalidComponent(Date.parse("a", parse("[year]").unwrap()), "year")
         assertInvalidComponent(Date.parse("0001", parse("[year sign:mandatory]").unwrap()), "year")
         assertInvalidComponent(Date.parse("0a", parse("[year repr:last_two]").unwrap()), "year")
@@ -368,7 +388,7 @@ class ParsingTest {
 
     @Test
     fun parseOffsetErr() {
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), UtcOffset.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), UtcOffset.parse("", parse("").unwrap()))
         assertInvalidComponent(UtcOffset.parse("01", parse("[offset_hour sign:mandatory]").unwrap()), "offset hour")
         assertInvalidComponent(UtcOffset.parse("24", parse("[offset_hour]").unwrap()), "offset hour")
         assertInvalidComponent(UtcOffset.parse("00:60", parse("[offset_hour]:[offset_minute]").unwrap()), "offset minute")
@@ -382,14 +402,14 @@ class ParsingTest {
 
     @Test
     fun parsePrimitiveDateTimeErr() {
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), PrimitiveDateTime.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), PrimitiveDateTime.parse("", parse("").unwrap()))
         assertInvalidComponent(PrimitiveDateTime.parse("2021-001 13 PM", parse("[year]-[ordinal] [hour repr:12] [period]").unwrap()), "hour")
         assertUnexpectedTrailing(PrimitiveDateTime.parse("2023-07-27 23:30", parse("[year]-[month]-[day] [hour]").unwrap()))
     }
 
     @Test
     fun parseOffsetDateTimeErr() {
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), OffsetDateTime.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), OffsetDateTime.parse("", parse("").unwrap()))
         assertInvalidComponent(OffsetDateTime.parse("x", parse("[year]").unwrap()), "year")
         assertInvalidComponent(OffsetDateTime.parse("2021-001 12 PM +25", parse("[year]-[ordinal] [hour repr:12] [period] [offset_hour sign:mandatory]").unwrap()), "offset hour")
     }
@@ -401,7 +421,7 @@ class ParsingTest {
 
     @Test
     fun parseUtcDateTimeErr() {
-        assertEquals(TimeResult.Err(Parse.TryFromParsedErr(TryFromParsed.InsufficientInformation)), UtcDateTime.parse("", parse("").unwrap()))
+        assertEquals(TimeResult.Err(Parse.TryFromParsed(TryFromParsed.InsufficientInformation)), UtcDateTime.parse("", parse("").unwrap()))
         assertInvalidComponent(UtcDateTime.parse("2021-001 13 PM", parse("[year]-[ordinal] [hour repr:12] [period]").unwrap()), "hour")
         assertUnexpectedTrailing(UtcDateTime.parse("2023-07-27 23:30", parse("[year]-[month]-[day] [hour]").unwrap()))
         assertInvalidComponent(UtcDateTime.parse("x", parse("[year]").unwrap()), "year")
@@ -470,11 +490,11 @@ class ParsingTest {
             val result = parsed.parseComponent("abcdef".encodeToByteArray(), Component.Ignore(Ignore.count(7u)))
             assertEquals(TimeResult.Err(ParseFromDescription.InvalidComponent("ignore")), result)
         }
-        assertEquals(I128.fromLong(1_234_567_890L) * I128.fromLong(1_000_000_000L), parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Second).withSignIsMandatory(false)), "1234567890").unixTimestampNanos())
-        assertEquals(I128.fromLong(1_234_567_890_123L) * I128.fromLong(1_000_000L), parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Millisecond).withSignIsMandatory(false)), "1234567890123").unixTimestampNanos())
-        assertEquals(I128.fromLong(1_234_567_890_123_456L) * I128.fromLong(1_000L), parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Microsecond).withSignIsMandatory(false)), "1234567890123456").unixTimestampNanos())
-        assertEquals(I128.fromLong(1_234_567_890_123_456_789L), parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Nanosecond).withSignIsMandatory(false)), "1234567890123456789").unixTimestampNanos())
-        assertEquals(I128.fromLong(-1_234_567_890_123_456_789L), parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Nanosecond).withSignIsMandatory(false)), "-1234567890123456789").unixTimestampNanos())
+        assertEquals(1_234_567_890L * 1_000_000_000L, parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Second).withSignIsMandatory(false)), "1234567890").unixTimestampNanos())
+        assertEquals(1_234_567_890_123L * 1_000_000L, parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Millisecond).withSignIsMandatory(false)), "1234567890123").unixTimestampNanos())
+        assertEquals(1_234_567_890_123_456L * 1_000L, parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Microsecond).withSignIsMandatory(false)), "1234567890123456").unixTimestampNanos())
+        assertEquals(1_234_567_890_123_456_789L, parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Nanosecond).withSignIsMandatory(false)), "1234567890123456789").unixTimestampNanos())
+        assertEquals(-1_234_567_890_123_456_789L, parseComp(Component.UnixTimestamp(UnixTimestamp.default().withPrecision(UnixTimestampPrecision.Nanosecond).withSignIsMandatory(false)), "-1234567890123456789").unixTimestampNanos())
     }
 
     @Test
@@ -494,7 +514,7 @@ class ParsingTest {
             val parsed = Parsed.new()
             val remaining = parsed.parseItem(
                 "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.fromBorrowed(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
+                OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
             ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
@@ -516,7 +536,7 @@ class ParsingTest {
             val parsed = Parsed.new()
             val remaining = parsed.parseItem(
                 "2021-01".encodeToByteArray(),
-                OwnedFormatItem.fromBorrowed(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
+                OwnedFormatItem.from(BorrowedFormatItem.Optional(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap())))
             ).unwrap()
             assertContentEquals("2021-01".encodeToByteArray(), remaining)
             assertNull(parsed.year())
@@ -542,7 +562,7 @@ class ParsingTest {
             val parsed = Parsed.new()
             val remaining = parsed.parseItem(
                 "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.fromBorrowed(BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))))
+                OwnedFormatItem.from(BorrowedFormatItem.First(listOf(BorrowedFormatItem.Compound(parse("[year]-[month]-[day]").unwrap()))))
             ).unwrap()
             assertTrue(remaining.isEmpty())
             assertEquals(2021, parsed.year())
@@ -586,7 +606,7 @@ class ParsingTest {
             val parsed = Parsed.new()
             val remaining = parsed.parseItem(
                 "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.fromBorrowed(
+                OwnedFormatItem.from(
                     BorrowedFormatItem.First(
                         listOf(
                             BorrowedFormatItem.Compound(parse("[period]").unwrap()),
@@ -618,7 +638,7 @@ class ParsingTest {
             val parsed = Parsed.new()
             val err = parsed.parseItem(
                 "2021-01-02".encodeToByteArray(),
-                OwnedFormatItem.fromBorrowed(
+                OwnedFormatItem.from(
                     BorrowedFormatItem.First(
                         listOf(
                             BorrowedFormatItem.Compound(parse("[period]").unwrap()),
@@ -662,8 +682,8 @@ class ParsingTest {
 
         assertEquals(TimeResult.Ok(time(0, 0)), Time.parse("00:00", parse("[hour]:[minute][end]").unwrap()))
         assertEquals(TimeResult.Ok(time(0, 0)), Time.parse("00:00abcdef", parse("[hour]:[minute][end trailing_input:discard]").unwrap()))
-        assertEquals(TimeResult.Ok(time(0, 0)), Time.parse("00:00:00", parseOwned("[hour]:[minute][optional [[end]]]:[second]", 2).unwrap()))
-        assertUnexpectedTrailing(Time.parse("00:00:00", parseOwned("[hour]:[minute][end]:[second]", 2).unwrap()))
-        assertInvalidLiteral(Time.parse("00:00:00", parseOwned("[hour]:[minute][end trailing_input:discard]:[second]", 2).unwrap()))
+        assertEquals(TimeResult.Ok(time(0, 0)), Time.parse("00:00:00", parseOwned(2, "[hour]:[minute][optional [[end]]]:[second]").unwrap()))
+        assertUnexpectedTrailing(Time.parse("00:00:00", parseOwned(2, "[hour]:[minute][end]:[second]").unwrap()))
+        assertInvalidLiteral(Time.parse("00:00:00", parseOwned(2, "[hour]:[minute][end trailing_input:discard]:[second]").unwrap()))
     }
 }

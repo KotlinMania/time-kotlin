@@ -75,7 +75,7 @@ fun daysInYearMonth(year: Int, month: Month): Int = daysInMonth(month, year)
  * Update time zone information from the system.
  */
 fun refreshTzUnchecked() {
-    io.github.kotlinmania.time.sys.refreshtz.refreshTzUnchecked()
+    io.github.kotlinmania.time.sys.refreshtz.unix.refreshTzUnchecked()
 }
 
 /**
@@ -83,7 +83,7 @@ fun refreshTzUnchecked() {
  *
  * Returns null if the call is not known to be sound.
  */
-fun refreshTz(): Unit? = io.github.kotlinmania.time.sys.refreshtz.refreshTz()
+fun refreshTz(): Unit? = io.github.kotlinmania.time.sys.refreshtz.unix.refreshTz()
 
 internal fun daysInMonth(month: Int, year: Int): Int {
     require(month in 1..12) { "month must be in the range 1..=12" }

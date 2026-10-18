@@ -4,7 +4,7 @@ package io.github.kotlinmania.time
 import io.github.kotlinmania.time.error.ComponentRange
 
 /**
- * Internal helper functions corresponding to upstream `internal_macros.rs`.
+ * Internal helper functions for arithmetic and range checking.
  */
 internal object InternalMacros {
     /** Division of integers, rounding the resulting value towards negative infinity. */
@@ -23,7 +23,7 @@ internal object InternalMacros {
         return if (r != 0L) d + correction else d
     }
 
-    /** Similar to `overflowing_add`, returning the number of times that it overflowed (at most once). */
+    /** Overflowing addition returning the number of times that it overflowed (at most once). */
     fun carryMostOnce(value: Int, min: Int, max: Int): Pair<Int, Int> =
         if (likely(value >= min)) {
             if (likely(value < max)) {
@@ -35,7 +35,7 @@ internal object InternalMacros {
             (value + (max - min)) to -1
         }
 
-    /** Similar to `overflowing_add`, returning the number of times that it overflowed (at most twice). */
+    /** Overflowing addition returning the number of times that it overflowed (at most twice). */
     fun carryMostTwice(value: Int, min: Int, max: Int): Pair<Int, Int> =
         if (likely(value >= min)) {
             if (likely(value < max)) {
@@ -53,7 +53,7 @@ internal object InternalMacros {
             }
         }
 
-    /** Similar to `overflowing_add`, returning the number of times that it overflowed (at most thrice). */
+    /** Overflowing addition returning the number of times that it overflowed (at most thrice). */
     fun carryMostThrice(value: Int, min: Int, max: Int): Pair<Int, Int> =
         if (likely(value >= min)) {
             if (likely(value < max)) {

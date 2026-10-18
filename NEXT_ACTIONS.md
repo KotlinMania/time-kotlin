@@ -5,15 +5,15 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 73/90 (81.1%)
-- **Function parity:** 801/1026 matched (target 1441) — 78.1%
-- **Class/type parity:** 78/155 matched (target 224) — 50.3%
-- **Combined symbol parity:** 879/1181 matched (target 1665) — 74.4%
-- **Average inline-code cosine:** 0.19 (function body across 73 matched files)
+- **Function parity:** 808/1026 matched (target 1446) — 78.8%
+- **Class/type parity:** 77/155 matched (target 220) — 49.7%
+- **Combined symbol parity:** 885/1181 matched (target 1666) — 74.9%
+- **Average inline-code cosine:** 0.18 (function body across 73 matched files)
 - **Average documentation cosine:** 0.65 (doc text across 73 matched files)
-- **Cheat-zeroed Files:** 4
-- **Critical Issues:** 70 files with <0.60 function similarity
+- **Cheat-zeroed Files:** 5
+- **Critical Issues:** 71 files with <0.60 function similarity
 - **Needs Review:** 0 files with 0.60-0.84 function similarity
-- **Excellent:** 3 files with >=0.85 function similarity
+- **Excellent:** 2 files with >=0.85 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -21,7 +21,7 @@ Based on AST analysis, here are the concrete next steps.
 - **Similarity:** 0.12 (needs 73% improvement)
 - **Dependencies:** 11
 - **Priority Score:** 11279009.0
-- **Functions:** 62/86 matched (target 94)
+- **Functions:** 62/86 matched (target 88)
 - **Missing functions:** `eq`, `partial_cmp`, `cmp`, `hash`, `raw_to_bits`, `to_utc_raw`, `to_offset_raw`, `to_hms`, `to_hms_milli`, `to_hms_micro`, `to_hms_nano`, `metadata`, `fmt_with_metadata`, `fmt`, `fmt`, `add`, `add`, `add_assign`, `add_assign`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub`
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `Timestamp`, `Metadata`, `Output`
@@ -44,30 +44,30 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.12
 - **Dependents:** 11
 - **Priority Score:** 11279009.0
-- **Functions:** 62/86 matched (target 94)
+- **Functions:** 62/86 matched (target 88)
 - **Missing functions:** `eq`, `partial_cmp`, `cmp`, `hash`, `raw_to_bits`, `to_utc_raw`, `to_offset_raw`, `to_hms`, `to_hms_milli`, `to_hms_micro`, `to_hms_nano`, `metadata`, `fmt_with_metadata`, `fmt`, `fmt`, `add`, `add`, `add_assign`, `add_assign`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub`
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `Timestamp`, `Metadata`, `Output`
 
-### 2. formatting.formattable
-
-- **Target:** `formatting.Formattable`
-- **Similarity:** 0.02
-- **Dependents:** 7
-- **Priority Score:** 7091110.0
-- **Functions:** 1/9 matched
-- **Missing functions:** `format`, `format_into`, `format_into`, `format_into`, `format_into`, `format_into`, `format_into`, `format_into`
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Sealed`
-
-### 3. parsing.parsable
+### 2. parsing.parsable
 
 - **Target:** `parsing.Parsable`
 - **Similarity:** 0.04
 - **Dependents:** 7
 - **Priority Score:** 7081909.5
-- **Functions:** 10/17 matched (target 15)
+- **Functions:** 10/17 matched
 - **Missing functions:** `parse_into`, `parse_into`, `parse_into`, `parse_offset_date_time`, `parse_into`, `parse_offset_date_time`, `parse_into`
+- **Types:** 1/2 matched (target 3)
+- **Missing types:** `Sealed`
+
+### 3. formatting.formattable
+
+- **Target:** `formatting.Formattable`
+- **Similarity:** 0.06
+- **Dependents:** 7
+- **Priority Score:** 7021109.5
+- **Functions:** 8/9 matched (target 21)
+- **Missing functions:** `format_into`
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Sealed`
 
@@ -77,7 +77,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.18
 - **Dependents:** 7
 - **Priority Score:** 7021108.0
-- **Functions:** 8/9 matched (target 13)
+- **Functions:** 8/9 matched (target 15)
 - **Missing functions:** `fmt`
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
@@ -87,9 +87,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Target:** `time.Duration`
 - **Similarity:** 0.10
 - **Dependents:** 5
-- **Priority Score:** 5389609.0
-- **Functions:** 55/90 matched (target 71)
-- **Missing functions:** `fmt`, `try_from`, `try_from`, `add`, `add`, `add`, `add_assign`, `add_assign`, `add_assign`, `neg`, `sub`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub_assign`, `mul`, `mul`, `mul`, `mul`, `mul_assign`, `mul_assign`, `div_assign`, `div_assign`, `div`, `eq`, `eq`, `partial_cmp`, `partial_cmp`, `sum`, `sum`, `add`, `add_assign`, `sub`, `sub_assign`
+- **Priority Score:** 5379609.0
+- **Functions:** 56/90 matched (target 72)
+- **Missing functions:** `fmt`, `try_from`, `add`, `add`, `add`, `add_assign`, `add_assign`, `add_assign`, `neg`, `sub`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub_assign`, `mul`, `mul`, `mul`, `mul`, `mul_assign`, `mul_assign`, `div_assign`, `div_assign`, `div`, `eq`, `eq`, `partial_cmp`, `partial_cmp`, `sum`, `sum`, `add`, `add_assign`, `sub`, `sub_assign`
 - **Types:** 3/6 matched (target 3)
 - **Missing types:** `Nanoseconds`, `Error`, `Output`
 
@@ -132,7 +132,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.22
 - **Dependents:** 3
 - **Priority Score:** 3207007.8
-- **Functions:** 49/64 matched (target 69)
+- **Functions:** 49/64 matched (target 67)
 - **Missing functions:** `checked_add_std`, `checked_sub_std`, `metadata`, `fmt_with_metadata`, `fmt`, `fmt`, `add`, `add`, `add_assign`, `add_assign`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub`
 - **Types:** 1/6 matched (target 1)
 - **Missing types:** `Year`, `JulianDay`, `DateMetadata`, `Metadata`, `Output`
@@ -143,7 +143,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.28
 - **Dependents:** 3
 - **Priority Score:** 3177807.2
-- **Functions:** 60/74 matched (target 88)
+- **Functions:** 60/74 matched (target 82)
 - **Missing functions:** `to_offset_raw`, `metadata`, `fmt_with_metadata`, `fmt`, `fmt`, `add`, `add`, `add_assign`, `add_assign`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub`
 - **Types:** 1/4 matched (target 1)
 - **Missing types:** `Timestamp`, `Metadata`, `Output`
@@ -151,11 +151,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 11. format_description.owned_format_item
 
 - **Target:** `formatdescription.OwnedFormatItem`
-- **Similarity:** 0.06
+- **Similarity:** 0.05
 - **Dependents:** 3
-- **Priority Score:** 3101509.5
-- **Functions:** 4/13 matched (target 20)
-- **Missing functions:** `fmt`, `from`, `try_from`, `from`, `try_from`, `eq`, `eq`, `eq`, `eq`
+- **Priority Score:** 3111509.5
+- **Functions:** 3/13 matched (target 19)
+- **Missing functions:** `fmt`, `from`, `from`, `try_from`, `from`, `try_from`, `eq`, `eq`, `eq`, `eq`
 - **Types:** 1/2 matched (target 6)
 - **Missing types:** `Error`
 
@@ -176,7 +176,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.06
 - **Dependents:** 2
 - **Priority Score:** 2286409.2
-- **Functions:** 35/55 matched (target 57)
+- **Functions:** 35/55 matched (target 52)
 - **Missing functions:** `hash`, `eq`, `partial_cmp`, `cmp`, `from_hms_nanos_ranged`, `as_hms_nano_ranged`, `adjusting_add_std`, `adjusting_sub_std`, `metadata`, `fmt_with_metadata`, `fmt`, `add`, `add_assign`, `add`, `add_assign`, `sub`, `sub_assign`, `sub`, `sub_assign`, `sub`
 - **Types:** 1/9 matched (target 1)
 - **Missing types:** `Padding`, `Hours`, `Minutes`, `Seconds`, `Nanoseconds`, `TimeMetadata`, `Metadata`, `Output`
@@ -231,7 +231,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.12
 - **Dependents:** 2
 - **Priority Score:** 2010808.8
-- **Functions:** 6/6 matched (target 12)
+- **Functions:** 6/6 matched (target 13)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 3)
 - **Missing types:** `Error`
@@ -242,7 +242,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.16
 - **Dependents:** 2
 - **Priority Score:** 2010508.4
-- **Functions:** 3/3 matched (target 24)
+- **Functions:** 3/3 matched (target 25)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 8)
 - **Missing types:** `Error`
@@ -264,7 +264,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.21
 - **Dependents:** 1
 - **Priority Score:** 1207407.9
-- **Functions:** 53/71 matched (target 74)
+- **Functions:** 53/71 matched (target 68)
 - **Missing functions:** `hash`, `eq`, `partial_cmp`, `cmp`, `as_i128`, `metadata`, `fmt_with_metadata`, `fmt`, `fmt`, `add`, `add`, `add_assign`, `add_assign`, `sub`, `sub`, `sub_assign`, `sub_assign`, `sub`
 - **Types:** 1/3 matched (target 1)
 - **Missing types:** `Metadata`, `Output`
@@ -286,7 +286,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.13
 - **Dependents:** 1
 - **Priority Score:** 1104008.6
-- **Functions:** 29/32 matched (target 49)
+- **Functions:** 29/32 matched (target 43)
 - **Missing functions:** `metadata`, `fmt_with_metadata`, `fmt`
 - **Types:** 1/8 matched (target 1)
 - **Missing types:** `Hours`, `Minutes`, `Seconds`, `WholeSeconds`, `UtcOffsetMetadata`, `Metadata`, `Output`
@@ -297,7 +297,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.06
 - **Dependents:** 1
 - **Priority Score:** 1081109.4
-- **Functions:** 2/9 matched (target 18)
+- **Functions:** 2/9 matched (target 17)
 - **Missing functions:** `fmt`, `try_from`, `try_from`, `eq`, `eq`, `eq`, `eq`
 - **Types:** 1/2 matched (target 6)
 - **Missing types:** `Error`
@@ -316,12 +316,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 26. error.parse
 
 - **Target:** `error.Parse`
-- **Similarity:** 0.05
+- **Similarity:** 0.06
 - **Dependents:** 1
 - **Priority Score:** 1031009.4
-- **Functions:** 6/8 matched (target 15)
+- **Functions:** 6/8 matched (target 19)
 - **Missing functions:** `try_from`, `try_from`
-- **Types:** 1/2 matched (target 3)
+- **Types:** 1/2 matched (target 4)
 - **Missing types:** `Error`
 
 ### 27. ext.numerical_std_duration
@@ -341,7 +341,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.27
 - **Dependents:** 1
 - **Priority Score:** 1021807.3
-- **Functions:** 16/16 matched (target 25)
+- **Functions:** 16/16 matched (target 33)
 - **Missing functions:** _none_
 - **Types:** 0/2 matched (target 0)
 - **Missing types:** `Sealed`, `NumericalDuration`
@@ -352,12 +352,23 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.14
 - **Dependents:** 1
 - **Priority Score:** 1010508.6
-- **Functions:** 3/3 matched (target 5)
+- **Functions:** 3/3 matched (target 6)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
 
-### 30. error.parse_from_description
+### 30. error.conversion_range
+
+- **Target:** `error.ConversionRange`
+- **Similarity:** 0.16
+- **Dependents:** 1
+- **Priority Score:** 1010508.4
+- **Functions:** 3/3 matched (target 6)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 31. error.parse_from_description
 
 - **Target:** `error.ParseFromDescription`
 - **Similarity:** 0.15
@@ -368,35 +379,24 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 4)
 - **Missing types:** `Error`
 
-### 31. error.invalid_variant
-
-- **Target:** `error.InvalidVariant`
-- **Similarity:** 0.16
-- **Dependents:** 1
-- **Priority Score:** 1010508.4
-- **Functions:** 3/3 matched (target 5)
-- **Missing functions:** _none_
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
-### 32. error.conversion_range
-
-- **Target:** `error.ConversionRange`
-- **Similarity:** 0.16
-- **Dependents:** 1
-- **Priority Score:** 1010508.4
-- **Functions:** 3/3 matched (target 5)
-- **Missing functions:** _none_
-- **Types:** 1/2 matched (target 1)
-- **Missing types:** `Error`
-
-### 33. error.indeterminate_offset
+### 32. error.indeterminate_offset
 
 - **Target:** `error.IndeterminateOffset`
 - **Similarity:** 0.16
 - **Dependents:** 1
 - **Priority Score:** 1010508.4
-- **Functions:** 3/3 matched (target 5)
+- **Functions:** 3/3 matched (target 6)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched (target 1)
+- **Missing types:** `Error`
+
+### 33. error.invalid_variant
+
+- **Target:** `error.InvalidVariant`
+- **Similarity:** 0.16
+- **Dependents:** 1
+- **Priority Score:** 1010508.4
+- **Functions:** 3/3 matched (target 6)
 - **Missing functions:** _none_
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Error`
@@ -506,7 +506,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.28
 - **Dependents:** 0
 - **Priority Score:** 10907.2
-- **Functions:** 8/8 matched (target 14)
+- **Functions:** 8/8 matched (target 13)
 - **Missing functions:** _none_
 - **Types:** 0/1 matched
 - **Missing types:** `Output`
@@ -517,7 +517,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.28
 - **Dependents:** 0
 - **Priority Score:** 10907.2
-- **Functions:** 8/8 matched (target 14)
+- **Functions:** 8/8 matched (target 13)
 - **Missing functions:** _none_
 - **Types:** 0/1 matched
 - **Missing types:** `Output`
@@ -533,7 +533,19 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/1 matched
 - **Missing types:** `Output`
 
-### 46. parsing.iso8601
+### 46. iso8601.adt_hack
+
+- **Target:** `iso8601.AdtHack`
+- **Similarity:** 0.33
+- **Dependents:** 0
+- **Priority Score:** 10606.7
+- **Functions:** 4/4 matched (target 11)
+- **Missing functions:** _none_
+- **Types:** 1/2 matched
+- **Missing types:** `DoNotRelyOnWhatThisIs`
+- **Tests:** 2/2 matched
+
+### 47. parsing.iso8601
 
 - **Target:** `parsing.Iso8601Parsing`
 - **Similarity:** 0.06
@@ -544,18 +556,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 47. local_offset_at.unix
+### 48. local_offset_at.unix
 
-- **Target:** `localoffsetat.Unix`
+- **Target:** `commonMain.kotlin.io.github.kotlinmania.time.sys.localoffsetat.unix.Unix`
 - **Similarity:** 0.27
 - **Dependents:** 0
 - **Priority Score:** 10407.3
-- **Functions:** 3/4 matched (target 5)
+- **Functions:** 3/4 matched
 - **Missing functions:** `tm_to_offset`
-- **Types:** 0/0 matched (target 1)
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 48. parsing.shim
+### 49. parsing.shim
 
 - **Target:** `parsing.Shim [ZERO]`
 - **Similarity:** 0.00
@@ -566,7 +578,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/1 matched (target 4)
 - **Missing types:** `Integer`
 
-### 49. rfc.iso8601
+### 50. rfc.iso8601
 
 - **Target:** `rfc.Iso8601Combinator`
 - **Similarity:** 0.12
@@ -577,7 +589,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 2)
 - **Missing types:** _none_
 
-### 50. rfc.rfc2822
+### 51. rfc.rfc2822
 
 - **Target:** `rfc.Rfc2822`
 - **Similarity:** 0.26
@@ -588,7 +600,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 51. rand08
+### 52. rand08
 
 - **Target:** `time.Rand08`
 - **Similarity:** 0.32
@@ -599,7 +611,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 10)
 - **Missing types:** _none_
 
-### 52. rand09
+### 53. rand09
 
 - **Target:** `time.Rand09`
 - **Similarity:** 0.33
@@ -610,38 +622,26 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 9)
 - **Missing types:** _none_
 
-### 53. util
+### 54. util
 
 - **Target:** `time.Util`
-- **Similarity:** 0.41
+- **Similarity:** 0.40
 - **Dependents:** 0
-- **Priority Score:** 805.9
+- **Priority Score:** 806.0
 - **Functions:** 6/6 matched (target 18)
 - **Missing functions:** _none_
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 54. iso8601.adt_hack
-
-- **Target:** `iso8601.AdtHack`
-- **Similarity:** 0.15
-- **Dependents:** 0
-- **Priority Score:** 608.5
-- **Functions:** 4/4 matched (target 13)
-- **Missing functions:** _none_
-- **Types:** 2/2 matched (target 3)
-- **Missing types:** _none_
-- **Tests:** 2/2 matched
-
 ### 55. local_offset_at.windows
 
-- **Target:** `localoffsetat.Windows`
+- **Target:** `windows.Windows`
 - **Similarity:** 0.18
 - **Dependents:** 0
 - **Priority Score:** 608.2
-- **Functions:** 4/4 matched (target 5)
+- **Functions:** 4/4 matched
 - **Missing functions:** _none_
-- **Types:** 2/2 matched (target 3)
+- **Types:** 2/2 matched
 - **Missing types:** _none_
 
 ### 56. timestamp.milliseconds_i64
@@ -655,18 +655,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 2)
 - **Missing types:** _none_
 
-### 57. timestamp.microseconds
-
-- **Target:** `timestamp.Microseconds`
-- **Similarity:** 0.14
-- **Dependents:** 0
-- **Priority Score:** 408.6
-- **Functions:** 4/4 matched (target 7)
-- **Missing functions:** _none_
-- **Types:** 0/0 matched (target 3)
-- **Missing types:** _none_
-
-### 58. timestamp.milliseconds
+### 57. timestamp.milliseconds
 
 - **Target:** `timestamp.Milliseconds`
 - **Similarity:** 0.14
@@ -675,6 +664,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 4/4 matched (target 6)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 2)
+- **Missing types:** _none_
+
+### 58. timestamp.microseconds
+
+- **Target:** `timestamp.Microseconds`
+- **Similarity:** 0.14
+- **Dependents:** 0
+- **Priority Score:** 408.6
+- **Functions:** 4/4 matched (target 7)
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
 
 ### 59. timestamp.nanoseconds
@@ -710,18 +710,29 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 62. refresh_tz.unix
+### 62. format_description.component
 
-- **Target:** `refreshtz.Unix`
+- **Target:** `formatdescription.Component [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 210.0
+- **Functions:** 0/0 matched (target 2)
+- **Missing functions:** _none_
+- **Types:** 2/2 matched (target 19)
+- **Missing types:** _none_
+
+### 63. refresh_tz.unix
+
+- **Target:** `unix.Unix`
 - **Similarity:** 0.04
 - **Dependents:** 0
 - **Priority Score:** 209.6
-- **Functions:** 2/2 matched (target 4)
+- **Functions:** 2/2 matched
 - **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 63. interop.js_sys_date_offsetdatetime
+### 64. interop.js_sys_date_offsetdatetime
 
 - **Target:** `interop.JsSysDateOffsetDateTime`
 - **Similarity:** 0.07
@@ -732,7 +743,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 2)
 - **Missing types:** _none_
 
-### 64. interop.js_sys_date_utcdatetime
+### 65. interop.js_sys_date_utcdatetime
 
 - **Target:** `interop.JsSysDateUtcDateTime`
 - **Similarity:** 0.08
@@ -743,26 +754,15 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 65. refresh_tz.imp
+### 66. refresh_tz.imp
 
-- **Target:** `refreshtz.Imp`
+- **Target:** `imp.Imp`
 - **Similarity:** 0.50
 - **Dependents:** 0
 - **Priority Score:** 205.0
-- **Functions:** 2/2 matched (target 4)
+- **Functions:** 2/2 matched
 - **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
-- **Missing types:** _none_
-
-### 66. format_description.component
-
-- **Target:** `formatdescription.Component`
-- **Similarity:** 1.00
-- **Dependents:** 0
-- **Priority Score:** 200.0
-- **Functions:** 0/0 matched
-- **Missing functions:** _none_
-- **Types:** 2/2 matched (target 19)
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
 ### 67. rfc.rfc2234
@@ -778,24 +778,24 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 68. local_offset_at.imp
 
-- **Target:** `localoffsetat.Imp`
+- **Target:** `commonMain.kotlin.io.github.kotlinmania.time.sys.localoffsetat.imp.Imp`
 - **Similarity:** 0.13
 - **Dependents:** 0
 - **Priority Score:** 108.7
-- **Functions:** 1/1 matched (target 2)
+- **Functions:** 1/1 matched
 - **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
 ### 69. local_offset_at.wasm_js
 
-- **Target:** `localoffsetat.WasmJs`
+- **Target:** `wasmjs.WasmJs`
 - **Similarity:** 0.55
 - **Dependents:** 0
 - **Priority Score:** 104.5
-- **Functions:** 1/1 matched (target 2)
+- **Functions:** 1/1 matched
 - **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
+- **Types:** 0/0 matched
 - **Missing types:** _none_
 
 ### 70. well_known.rfc3339
@@ -826,7 +826,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 10.0
-- **Functions:** 0/0 matched (target 8)
+- **Functions:** 0/0 matched (target 21)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched
 - **Missing types:** _none_

@@ -1,4 +1,4 @@
-package io.github.kotlinmania.time
+package io.github.kotlinmania.time.error
 
 /**
  * Various error types returned by methods in the time crate.
@@ -102,8 +102,8 @@ sealed class StdError {
 
         fun from(err: io.github.kotlinmania.time.error.Parse): StdError =
             when (err) {
-                is io.github.kotlinmania.time.error.Parse.TryFromParsed -> TryFromParsed(err.err)
-                is io.github.kotlinmania.time.error.Parse.ParseFromDescription -> ParseFromDescription(err.err)
+                is io.github.kotlinmania.time.error.Parse.TryFromParsed -> TryFromParsed(err.error)
+                is io.github.kotlinmania.time.error.Parse.ParseFromDescription -> ParseFromDescription(err.error)
                 is io.github.kotlinmania.time.error.Parse.UnexpectedTrailingCharacters -> err.never
             }
     }

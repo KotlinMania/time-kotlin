@@ -1,8 +1,6 @@
 // port-lint: source error/try_from_parsed.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.StdError
-
 /**
  * Error converting a `Parsed` struct to another type.
  */
@@ -16,13 +14,11 @@ sealed class TryFromParsed(
     open fun source(): Throwable? = null
 
     /** The `Parsed` did not include enough information to construct the type. */
-    class InsufficientInformation : TryFromParsed("the `Parsed` struct did not include enough information to construct the type") {
+    object InsufficientInformation : TryFromParsed("the `Parsed` struct did not include enough information to construct the type") {
+        operator fun invoke(): InsufficientInformation = this
+
         override fun fmt(): String =
             message ?: "the `Parsed` struct did not include enough information to construct the type"
-
-        override fun equals(other: Any?): Boolean = other is InsufficientInformation
-
-        override fun hashCode(): Int = 1
     }
 
     /** Some component contained an invalid value for the type. */
@@ -40,6 +36,9 @@ sealed class TryFromParsed(
     }
 
     companion object {
+        fun Range(error: io.github.kotlinmania.time.error.ComponentRange): ComponentRange =
+            ComponentRange(error)
+
         fun from(error: io.github.kotlinmania.time.error.ComponentRange): TryFromParsed =
             ComponentRange(error)
 
@@ -50,6 +49,9 @@ sealed class TryFromParsed(
                 is ComponentRange -> Result.success(error.error)
                 else -> Result.failure(DifferentVariant())
             }
+
+        fun tryFrom(error: Parse): Result<TryFromParsed> =
+            Parse.tryFromParsed(error)
 
         fun tryFrom(error: StdError): Result<TryFromParsed> =
             when (error) {

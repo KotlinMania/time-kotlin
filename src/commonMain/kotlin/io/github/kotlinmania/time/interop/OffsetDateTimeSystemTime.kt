@@ -20,17 +20,8 @@ fun OffsetDateTime.compareTo(other: SystemTime): Int =
 fun SystemTime.compareTo(other: OffsetDateTime): Int =
     OffsetDateTime.from(this).compareTo(other)
 
-fun OffsetDateTime.toSystemTime(): SystemTime {
-    val duration = this - OffsetDateTime.UNIX_EPOCH
-    val epoch = SystemTime.fromEpochSeconds(0)
-    return when {
-        duration.isZero() -> epoch
-        duration.isPositive() -> epoch + duration.unsignedAbs()
-        else -> epoch - duration.unsignedAbs()
-    }
-}
-
 object OffsetDateTimeSystemTimeInterop {
+
     fun sub(lhs: OffsetDateTime, rhs: SystemTime): Duration = lhs - OffsetDateTime.from(rhs)
 
     fun sub(lhs: SystemTime, rhs: OffsetDateTime): Duration = OffsetDateTime.from(lhs) - rhs

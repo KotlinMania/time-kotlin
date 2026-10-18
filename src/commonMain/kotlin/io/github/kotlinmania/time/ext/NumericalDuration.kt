@@ -39,6 +39,22 @@ fun Int.days(): Duration = toLong().days()
 
 fun Int.weeks(): Duration = toLong().weeks()
 
+fun ULong.nanoseconds(): Duration = toLong().nanoseconds()
+
+fun ULong.microseconds(): Duration = toLong().microseconds()
+
+fun ULong.milliseconds(): Duration = toLong().milliseconds()
+
+fun ULong.seconds(): Duration = toLong().seconds()
+
+fun ULong.minutes(): Duration = toLong().minutes()
+
+fun ULong.hours(): Duration = toLong().hours()
+
+fun ULong.days(): Duration = toLong().days()
+
+fun ULong.weeks(): Duration = toLong().weeks()
+
 fun Double.nanoseconds(): Duration = Duration.nanoseconds(this.toLong())
 
 fun Double.microseconds(): Duration = Duration.nanoseconds((this * 1_000.0).toLong())

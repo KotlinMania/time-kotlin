@@ -96,7 +96,7 @@ sealed class OwnedFormatItem : Formattable, Parsable {
     fun equalsComponent(rhs: io.github.kotlinmania.time.formatdescription.Component): Boolean =
         this is Component && component == rhs
 
-    fun equalsCompound(rhs: List<OwnedFormatItem>): Boolean =
+    fun equalsSlice(rhs: List<OwnedFormatItem>): Boolean =
         this is Compound && items == rhs
 
     companion object {
@@ -112,13 +112,11 @@ sealed class OwnedFormatItem : Formattable, Parsable {
         fun from(items: List<BorrowedFormatItem>): OwnedFormatItem =
             Compound(items.map { from(it) })
 
-        fun from(items: Array<BorrowedFormatItem>): OwnedFormatItem =
-            Compound(items.map { from(it) })
-
         fun from(component: io.github.kotlinmania.time.formatdescription.Component): OwnedFormatItem =
             Component(component)
 
-        fun fromOwnedList(items: List<OwnedFormatItem>): OwnedFormatItem =
+        fun fromOwnedItems(items: List<OwnedFormatItem>): OwnedFormatItem =
             Compound(items)
     }
 }
+

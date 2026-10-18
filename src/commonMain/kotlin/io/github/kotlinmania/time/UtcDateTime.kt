@@ -10,13 +10,10 @@ import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.error.ComponentRange
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
-import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
 import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
 import io.github.kotlinmania.time.formatting.Formattable
-import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.formatting.computeTimestampNanosSignAndAbs
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
-import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.parsing.parseNanosStringToSecAndNano
 import io.github.kotlinmania.time.serde.I32Serialize
@@ -25,7 +22,6 @@ import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U16Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
 import io.github.kotlinmania.time.serde.UtcDateTimeVisitor
-import kotlin.jvm.JvmName
 
 /** The Julian day of the Unix epoch. */
 private const val UNIX_EPOCH_JULIAN_DAY: Int = 2_440_588
@@ -80,7 +76,7 @@ class UtcDateTime internal constructor(
         /** Create a [UtcDateTime] from the provided Unix timestamp. */
         fun fromUnixTimestamp(timestamp: Long): Result<UtcDateTime> {
             if (timestamp < MIN.unixTimestamp() || timestamp > MAX.unixTimestamp()) {
-                return Result.failure(ComponentRange.conditional("timestamp"))
+                return Result.failure(ComponentRange.unconditional("timestamp"))
             }
             val secondsInDay = 86_400L
             val dayAdjustment = floorDiv(timestamp, secondsInDay).toInt()
@@ -124,7 +120,7 @@ class UtcDateTime internal constructor(
         fun fromUnixTimestampNanos(timestamp: String): Result<UtcDateTime> {
             val (seconds, nanos) =
                 parseNanosStringToSecAndNano(timestamp)
-                    ?: return Result.failure(ComponentRange.conditional("timestamp"))
+                    ?: return Result.failure(ComponentRange.unconditional("timestamp"))
             val datetime =
                 fromUnixTimestamp(seconds).getOrElse {
                     return Result.failure(it)
@@ -146,24 +142,8 @@ class UtcDateTime internal constructor(
         fun parse(input: String, description: Parsable): Result<UtcDateTime> =
             description.parseUtcDateTime(input.encodeToByteArray())
 
-        fun parse(input: ByteArray, description: Parsable): Result<UtcDateTime> =
-            description.parseUtcDateTime(input)
-
-        @JvmName("parseBorrowedSlice")
         fun parse(input: String, description: List<BorrowedFormatItem>): Result<UtcDateTime> =
             BorrowedFormatItemSliceParsable(description).parseUtcDateTime(input.encodeToByteArray())
-
-        @JvmName("parseBytesBorrowedSlice")
-        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<UtcDateTime> =
-            BorrowedFormatItemSliceParsable(description).parseUtcDateTime(input)
-
-        @JvmName("parseOwnedSlice")
-        fun parse(input: String, description: List<OwnedFormatItem>): Result<UtcDateTime> =
-            OwnedFormatItemSliceParsable(description).parseUtcDateTime(input.encodeToByteArray())
-
-        @JvmName("parseBytesOwnedSlice")
-        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<UtcDateTime> =
-            OwnedFormatItemSliceParsable(description).parseUtcDateTime(input)
     }
 
     /**
@@ -428,28 +408,16 @@ class UtcDateTime internal constructor(
         description: Formattable,
     ): Result<Int> = description.formatInto(output, this)
 
-    @JvmName("formatIntoBorrowedSlice")
     fun formatInto(
         output: StringBuilder,
         description: List<BorrowedFormatItem>,
     ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
 
-    @JvmName("formatIntoOwnedSlice")
-    fun formatInto(
-        output: StringBuilder,
-        description: List<OwnedFormatItem>,
-    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
-
     /** Format the [UtcDateTime] using the provided [Formattable]. */
     fun format(description: Formattable): Result<String> = description.format(this)
 
-    @JvmName("formatBorrowedSlice")
     fun format(description: List<BorrowedFormatItem>): Result<String> =
         BorrowedFormatItemSliceFormattable(description).format(this)
-
-    @JvmName("formatOwnedSlice")
-    fun format(description: List<OwnedFormatItem>): Result<String> =
-        OwnedFormatItemSliceFormattable(description).format(this)
 
     override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
         if (serializer.isHumanReadable()) {

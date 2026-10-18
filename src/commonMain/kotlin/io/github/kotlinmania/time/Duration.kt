@@ -536,6 +536,10 @@ class Duration internal constructor(
             return new(totalSec, nanos)
         }
 
+        fun tryFrom(std: kotlin.time.Duration): Result<Duration> =
+            runCatching { fromStdDuration(std) }
+
+
         private fun addWithOverflow(x: Long, y: Long): Pair<Long, Boolean> {
             val r = x + y
             val overflow = (((x xor r) and (y xor r)) < 0)

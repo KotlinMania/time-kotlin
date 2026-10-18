@@ -2,7 +2,6 @@
 package io.github.kotlinmania.time.error
 
 import io.github.kotlinmania.serde.SerdeError
-import io.github.kotlinmania.time.StdError
 
 /**
  * Error formatting a struct.
@@ -51,6 +50,9 @@ sealed class Format(
     class ComponentRange(
         val error: io.github.kotlinmania.time.error.ComponentRange,
     ) : Format(error.fmt()) {
+        val err: io.github.kotlinmania.time.error.ComponentRange
+            get() = error
+
         override fun fmt(): String = error.fmt()
 
         override fun source(): Throwable = error
@@ -65,6 +67,9 @@ sealed class Format(
     class StdIo(
         val error: Throwable,
     ) : Format(error.message ?: error.toString()) {
+        val err: Throwable
+            get() = error
+
         override fun fmt(): String = message ?: error.toString()
 
         override fun source(): Throwable = error

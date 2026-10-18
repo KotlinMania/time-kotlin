@@ -9,12 +9,9 @@ import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
 import io.github.kotlinmania.time.formatdescription.BorrowedFormatItem
-import io.github.kotlinmania.time.formatdescription.OwnedFormatItem
 import io.github.kotlinmania.time.formatting.BorrowedFormatItemSliceFormattable
 import io.github.kotlinmania.time.formatting.Formattable
-import io.github.kotlinmania.time.formatting.OwnedFormatItemSliceFormattable
 import io.github.kotlinmania.time.parsing.BorrowedFormatItemSliceParsable
-import io.github.kotlinmania.time.parsing.OwnedFormatItemSliceParsable
 import io.github.kotlinmania.time.parsing.Parsable
 import io.github.kotlinmania.time.serde.I32Serialize
 import io.github.kotlinmania.time.serde.PRIMITIVE_DATE_TIME_FORMAT
@@ -22,7 +19,6 @@ import io.github.kotlinmania.time.serde.PrimitiveDateTimeVisitor
 import io.github.kotlinmania.time.serde.U8Serialize
 import io.github.kotlinmania.time.serde.U16Serialize
 import io.github.kotlinmania.time.serde.U32Serialize
-import kotlin.jvm.JvmName
 
 /**
  * Combined date and time.
@@ -52,24 +48,8 @@ class PrimitiveDateTime internal constructor(
         fun parse(input: String, description: Parsable): Result<PrimitiveDateTime> =
             description.parseDateTime(input.encodeToByteArray())
 
-        fun parse(input: ByteArray, description: Parsable): Result<PrimitiveDateTime> =
-            description.parseDateTime(input)
-
-        @JvmName("parseBorrowedSlice")
         fun parse(input: String, description: List<BorrowedFormatItem>): Result<PrimitiveDateTime> =
             BorrowedFormatItemSliceParsable(description).parseDateTime(input.encodeToByteArray())
-
-        @JvmName("parseBytesBorrowedSlice")
-        fun parse(input: ByteArray, description: List<BorrowedFormatItem>): Result<PrimitiveDateTime> =
-            BorrowedFormatItemSliceParsable(description).parseDateTime(input)
-
-        @JvmName("parseOwnedSlice")
-        fun parse(input: String, description: List<OwnedFormatItem>): Result<PrimitiveDateTime> =
-            OwnedFormatItemSliceParsable(description).parseDateTime(input.encodeToByteArray())
-
-        @JvmName("parseBytesOwnedSlice")
-        fun parse(input: ByteArray, description: List<OwnedFormatItem>): Result<PrimitiveDateTime> =
-            OwnedFormatItemSliceParsable(description).parseDateTime(input)
     }
 
     /** Get the date component. */
@@ -275,28 +255,16 @@ class PrimitiveDateTime internal constructor(
         description: Formattable,
     ): Result<Int> = description.formatInto(output, this)
 
-    @JvmName("formatIntoBorrowedSlice")
     fun formatInto(
         output: StringBuilder,
         description: List<BorrowedFormatItem>,
     ): Result<Int> = BorrowedFormatItemSliceFormattable(description).formatInto(output, this)
 
-    @JvmName("formatIntoOwnedSlice")
-    fun formatInto(
-        output: StringBuilder,
-        description: List<OwnedFormatItem>,
-    ): Result<Int> = OwnedFormatItemSliceFormattable(description).formatInto(output, this)
-
     /** Format the [PrimitiveDateTime] using the provided [Formattable]. */
     fun format(description: Formattable): Result<String> = description.format(this)
 
-    @JvmName("formatBorrowedSlice")
     fun format(description: List<BorrowedFormatItem>): Result<String> =
         BorrowedFormatItemSliceFormattable(description).format(this)
-
-    @JvmName("formatOwnedSlice")
-    fun format(description: List<OwnedFormatItem>): Result<String> =
-        OwnedFormatItemSliceFormattable(description).format(this)
 
     override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
         if (serializer.isHumanReadable()) {

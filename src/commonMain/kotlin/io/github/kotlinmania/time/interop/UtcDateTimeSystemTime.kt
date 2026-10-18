@@ -20,17 +20,8 @@ fun UtcDateTime.compareTo(other: SystemTime): Int =
 fun SystemTime.compareTo(other: UtcDateTime): Int =
     UtcDateTime.from(this).compareTo(other)
 
-fun UtcDateTime.toSystemTime(): SystemTime {
-    val duration = this - UtcDateTime.UNIX_EPOCH
-    val epoch = SystemTime.fromEpochSeconds(0)
-    return when {
-        duration.isZero() -> epoch
-        duration.isPositive() -> epoch + duration.unsignedAbs()
-        else -> epoch - duration.unsignedAbs()
-    }
-}
-
 object UtcDateTimeSystemTimeInterop {
+
     fun sub(lhs: UtcDateTime, rhs: SystemTime): Duration = lhs - UtcDateTime.from(rhs)
 
     fun sub(lhs: SystemTime, rhs: UtcDateTime): Duration = UtcDateTime.from(lhs) - rhs

@@ -1,8 +1,6 @@
 // port-lint: source error/invalid_format_description.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.StdError
-
 /**
  * Invalid format description.
  */
@@ -12,6 +10,8 @@ sealed class InvalidFormatDescription(
     message: String,
 ) : IllegalArgumentException(message) {
     abstract fun fmt(): String
+
+    override fun toString(): String = fmt()
 
     class UnclosedOpeningBracket(
         /** The zero-based index of the opening bracket. */

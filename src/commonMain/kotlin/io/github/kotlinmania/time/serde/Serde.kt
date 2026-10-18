@@ -26,47 +26,46 @@ import io.github.kotlinmania.time.formatdescription.modifier.OffsetSecond
 import io.github.kotlinmania.time.formatdescription.modifier.Second
 import io.github.kotlinmania.time.formatdescription.modifier.Subsecond
 import io.github.kotlinmania.time.formatdescription.modifier.Year
-import io.github.kotlinmania.time.formatdescription.parseBorrowed
-import io.github.kotlinmania.time.formatdescription.parseOwned
+import io.github.kotlinmania.time.formatdescription.parse.parseOwned
 import io.github.kotlinmania.time.formatting.Formattable
 import io.github.kotlinmania.time.parsing.Parsable
 
 /** The format used when serializing and deserializing a human-readable [Date]. */
 internal val DATE_FORMAT: List<BorrowedFormatItem> =
     listOf(
-        BorrowedFormatItem.ComponentItem(Component.Year(Year())),
+        BorrowedFormatItem.Component(Component.Year(Year())),
         BorrowedFormatItem.Literal("-".encodeToByteArray()),
-        BorrowedFormatItem.ComponentItem(Component.Month(Month())),
+        BorrowedFormatItem.Component(Component.Month(Month())),
         BorrowedFormatItem.Literal("-".encodeToByteArray()),
-        BorrowedFormatItem.ComponentItem(Component.Day(Day())),
+        BorrowedFormatItem.Component(Component.Day(Day())),
     )
 
 /** The format used when serializing and deserializing a human-readable [Time]. */
 internal val TIME_FORMAT: List<BorrowedFormatItem> =
     listOf(
-        BorrowedFormatItem.ComponentItem(Component.Hour(Hour())),
+        BorrowedFormatItem.Component(Component.Hour(Hour())),
         BorrowedFormatItem.Literal(":".encodeToByteArray()),
-        BorrowedFormatItem.ComponentItem(Component.Minute(Minute())),
+        BorrowedFormatItem.Component(Component.Minute(Minute())),
         BorrowedFormatItem.Literal(":".encodeToByteArray()),
-        BorrowedFormatItem.ComponentItem(Component.Second(Second())),
+        BorrowedFormatItem.Component(Component.Second(Second())),
         BorrowedFormatItem.Literal(".".encodeToByteArray()),
-        BorrowedFormatItem.ComponentItem(Component.Subsecond(Subsecond())),
+        BorrowedFormatItem.Component(Component.Subsecond(Subsecond())),
     )
 
 /** The format used when serializing and deserializing a human-readable [UtcOffset]. */
 internal val UTC_OFFSET_FORMAT: List<BorrowedFormatItem> =
     listOf(
-        BorrowedFormatItem.ComponentItem(Component.OffsetHour(OffsetHour(signIsMandatory = true))),
+        BorrowedFormatItem.Component(Component.OffsetHour(OffsetHour(signIsMandatory = true))),
         BorrowedFormatItem.Optional(
             BorrowedFormatItem.Compound(
                 listOf(
                     BorrowedFormatItem.Literal(":".encodeToByteArray()),
-                    BorrowedFormatItem.ComponentItem(Component.OffsetMinute(OffsetMinute())),
+                    BorrowedFormatItem.Component(Component.OffsetMinute(OffsetMinute())),
                     BorrowedFormatItem.Optional(
                         BorrowedFormatItem.Compound(
                             listOf(
                                 BorrowedFormatItem.Literal(":".encodeToByteArray()),
-                                BorrowedFormatItem.ComponentItem(Component.OffsetSecond(OffsetSecond())),
+                                BorrowedFormatItem.Component(Component.OffsetSecond(OffsetSecond())),
                             ),
                         ),
                     ),
@@ -219,7 +218,7 @@ fun formatDescriptionDate(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<Date> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "Date",
         formatDescriptionString = format,
@@ -249,7 +248,7 @@ fun formatDescriptionTime(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<Time> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "Time",
         formatDescriptionString = format,
@@ -279,7 +278,7 @@ fun formatDescriptionUtcOffset(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<UtcOffset> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "UtcOffset",
         formatDescriptionString = format,
@@ -309,7 +308,7 @@ fun formatDescriptionPrimitiveDateTime(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<PrimitiveDateTime> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "PrimitiveDateTime",
         formatDescriptionString = format,
@@ -339,7 +338,7 @@ fun formatDescriptionUtcDateTime(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<UtcDateTime> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "UtcDateTime",
         formatDescriptionString = format,
@@ -369,7 +368,7 @@ fun formatDescriptionOffsetDateTime(
     format: String,
     version: Int = 2,
 ): FormatDescriptionSerde<OffsetDateTime> {
-    val items: List<OwnedFormatItem> = parseOwned(version, format).getOrThrow()
+    val items: OwnedFormatItem = parseOwned(version, format).getOrThrow()
     return FormatDescriptionSerde(
         typeName = "OffsetDateTime",
         formatDescriptionString = format,
@@ -394,3 +393,4 @@ fun <F> formatDescriptionOffsetDateTime(description: F): FormatDescriptionSerde<
         formatter = { it.format(description) },
         parser = { OffsetDateTime.parse(it, description) },
     )
+

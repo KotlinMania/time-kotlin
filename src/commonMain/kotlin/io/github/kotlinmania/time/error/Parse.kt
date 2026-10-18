@@ -1,8 +1,6 @@
 // port-lint: source error/parse.rs
 package io.github.kotlinmania.time.error
 
-import io.github.kotlinmania.time.StdError
-
 /**
  * Error that occurred at some stage of parsing.
  */
@@ -41,7 +39,23 @@ sealed class Parse(
         override fun hashCode(): Int = error.hashCode()
     }
 
+    class UnexpectedTrailingCharacters private constructor(
+        val never: Nothing,
+    ) : Parse("") {
+        override fun fmt(): String = never
+
+        override fun source(): Throwable = never
+    }
+
     companion object {
+        fun FromDescription(
+            error: io.github.kotlinmania.time.error.ParseFromDescription,
+        ): ParseFromDescription = ParseFromDescription(error)
+
+        fun FromParsed(
+            error: io.github.kotlinmania.time.error.TryFromParsed,
+        ): TryFromParsed = TryFromParsed(error)
+
         fun from(error: io.github.kotlinmania.time.error.TryFromParsed): Parse =
             TryFromParsed(error)
 
@@ -52,6 +66,7 @@ sealed class Parse(
             when (error) {
                 is TryFromParsed -> StdError.TryFromParsed(error.error)
                 is ParseFromDescription -> StdError.ParseFromDescription(error.error)
+                is UnexpectedTrailingCharacters -> error.never
             }
 
         fun tryFromParsed(error: Parse): Result<io.github.kotlinmania.time.error.TryFromParsed> =

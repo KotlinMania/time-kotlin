@@ -31,11 +31,12 @@ import io.github.kotlinmania.time.formatdescription.modifier.WeekdayRepr
 import io.github.kotlinmania.time.formatdescription.modifier.Year
 import io.github.kotlinmania.time.formatdescription.modifier.YearRange
 import io.github.kotlinmania.time.formatdescription.modifier.YearRepr
-import io.github.kotlinmania.time.formatdescription.parse
-import io.github.kotlinmania.time.formatdescription.parseBorrowed
-import io.github.kotlinmania.time.formatdescription.parseOwned
-import io.github.kotlinmania.time.formatdescription.parseStrftimeBorrowed
-import io.github.kotlinmania.time.formatdescription.parseStrftimeOwned
+import io.github.kotlinmania.time.formatdescription.parse.parse
+import io.github.kotlinmania.time.formatdescription.parse.parseBorrowed
+import io.github.kotlinmania.time.formatdescription.parse.parseOwned
+import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeBorrowed
+import io.github.kotlinmania.time.formatdescription.parse.parseStrftimeOwned
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -394,7 +395,7 @@ class ParseFormatDescriptionTest {
             val borrowed = parseStrftimeBorrowed(strftime).getOrThrow()
             val owned = parseStrftimeOwned(strftime).getOrThrow()
             assertEquals(custom, borrowed)
-            assertEquals(OwnedFormatItem.fromBorrowedSlice(custom), owned)
+            assertEquals(OwnedFormatItem.from(custom), owned)
         }
     }
 
@@ -418,7 +419,7 @@ class ParseFormatDescriptionTest {
             val customParsed = parse(customStr).getOrThrow()
             val custom = listOf(BorrowedFormatItem.Compound(customParsed))
             assertEquals(custom, borrowed)
-            assertEquals(OwnedFormatItem.fromBorrowedSlice(custom), owned)
+            assertEquals(OwnedFormatItem.from(custom), owned)
         }
     }
 }
