@@ -248,6 +248,11 @@ class SerdeMacrosTest {
     fun customSerializeBadTypeError() {
         val badFormat = formatDescriptionPrimitiveDateTime("[offset_hour]:[offset_minute]")
         val dt = datetime(2000, 1, 1, 0, 0)
+        val fieldSer =
+            object : Serialize {
+                override fun <R> serialize(serializer: Serializer<R>): SerdeResult<R> =
+                    badFormat.serialize(dt, serializer)
+            }
         val badStruct =
             object : Serialize {
                 override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
@@ -256,13 +261,8 @@ class SerdeMacrosTest {
                             .serializeStruct("TestCustomFormatPrimitiveDateTimeBad", 1)
                             .getOrElse { return SerdeResult.failure(it) }
                     state
-                        .serializeField(
-                            "dt",
-                            object : Serialize {
-                                override fun <R> serialize(serializer: Serializer<R>): SerdeResult<R> =
-                                    badFormat.serialize(dt, serializer)
-                            },
-                        ).getOrElse { return SerdeResult.failure(it) }
+                        .serializeField("dt", fieldSer)
+                        .getOrElse { return SerdeResult.failure(it) }
                     return state.end()
                 }
             }

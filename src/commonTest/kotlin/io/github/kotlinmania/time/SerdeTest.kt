@@ -507,22 +507,22 @@ class SerdeTest {
                 override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): Appendable =
                     throw IllegalStateException("failed to write whole buffer")
             }
+        val fieldSer =
+            object : Serialize {
+                override fun <R> serialize(serializer: Serializer<R>): SerdeResult<R> {
+                    val err =
+                        BorrowedFormatItemSliceFormattable(
+                            formatDescription("nonempty format description"),
+                        ).formatInto(zeroBuffer, dt).exceptionOrNull() as Format
+                    return SerdeResult.failure(err.intoInvalidSerdeValue())
+                }
+            }
         val testBadIo =
             object : Serialize {
                 override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> {
                     val state =
                         serializer.serializeStruct("TestBadIo", 1).getOrElse {
                             return SerdeResult.failure(it)
-                        }
-                    val fieldSer =
-                        object : Serialize {
-                            override fun <R> serialize(serializer: Serializer<R>): SerdeResult<R> {
-                                val err =
-                                    BorrowedFormatItemSliceFormattable(
-                                        formatDescription("nonempty format description"),
-                                    ).formatInto(zeroBuffer, dt).exceptionOrNull() as Format
-                                return SerdeResult.failure(err.intoInvalidSerdeValue())
-                            }
                         }
                     state.serializeField("dt", fieldSer).getOrElse {
                         return SerdeResult.failure(it)
