@@ -78,7 +78,7 @@ additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:time-kotlin:0.2.0")
+    implementation("io.github.kotlinmania:time-kotlin:0.2.1")
 }
 ```
 
