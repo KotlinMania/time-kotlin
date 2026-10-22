@@ -10,7 +10,7 @@ kotlinxBenchmark = "0.5.0"
 serde = "0.1.11"
 serdeTest = "0.1.1"
 serdeJson = "0.1.1"
-libc = "0.1.9"
+libc = "0.1.11"
 rand = "0.2.0"
 
 serialization = "1.11.0"

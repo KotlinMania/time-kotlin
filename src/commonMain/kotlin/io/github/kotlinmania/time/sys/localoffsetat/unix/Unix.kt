@@ -1,7 +1,7 @@
 // port-lint: source sys/local_offset_at/unix.rs
 package io.github.kotlinmania.time.sys.localoffsetat.unix
 
-import io.github.kotlinmania.libc.Tm
+import io.github.kotlinmania.libc.unix.linuxlike.Tm
 import io.github.kotlinmania.time.Date
 import io.github.kotlinmania.time.OffsetDateTime
 import io.github.kotlinmania.time.UtcOffset
