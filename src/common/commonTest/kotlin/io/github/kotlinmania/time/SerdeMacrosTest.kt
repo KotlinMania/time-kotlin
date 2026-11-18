@@ -229,7 +229,7 @@ class SerdeMacrosTest {
                 Token.Str("offset_dt"),
                 Token.Bool(false),
             ),
-            "invalid type: Bool(value=false), expected a(n) `OffsetDateTime` in the format \"custom format: [year]-[month]-[day] [hour]:[minute]:[second] [offset_hour sign:mandatory]:[offset_minute]\"",
+            "invalid type: boolean `false`, expected a(n) `OffsetDateTime` in the format \"custom format: [year]-[month]-[day] [hour]:[minute]:[second] [offset_hour sign:mandatory]:[offset_minute]\"",
         )
         assertDeTokensError(
             customFormatDeserializer,
@@ -240,7 +240,7 @@ class SerdeMacrosTest {
                 Token.Str("primitive_dt"),
                 Token.Bool(false),
             ),
-            "invalid type: Bool(value=false), expected an `Option<PrimitiveDateTime>` in the format \"custom format: [year]-[month]-[day] [hour]:[minute]:[second]\"",
+            "invalid type: boolean `false`, expected an `Option<PrimitiveDateTime>` in the format \"custom format: [year]-[month]-[day] [hour]:[minute]:[second]\"",
         )
     }
 

@@ -95,12 +95,12 @@ class SerdeTest {
         assertDeTokensError(
             Time.readable(),
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected a `Time`",
+            "invalid type: boolean `false`, expected a `Time`",
         )
         assertDeTokensError(
             Time.compact(),
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected a `Time`",
+            "invalid type: boolean `false`, expected a `Time`",
         )
     }
 
@@ -153,8 +153,8 @@ class SerdeTest {
 
     @Test
     fun dateError() {
-        assertDeTokensError(Date.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Date`")
-        assertDeTokensError(Date.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Date`")
+        assertDeTokensError(Date.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Date`")
+        assertDeTokensError(Date.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Date`")
     }
 
     @Test
@@ -210,8 +210,8 @@ class SerdeTest {
 
     @Test
     fun primitiveDateTimeError() {
-        assertDeTokensError(PrimitiveDateTime.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `PrimitiveDateTime`")
-        assertDeTokensError(PrimitiveDateTime.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `PrimitiveDateTime`")
+        assertDeTokensError(PrimitiveDateTime.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `PrimitiveDateTime`")
+        assertDeTokensError(PrimitiveDateTime.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `PrimitiveDateTime`")
         assertDeTokensError(
             PrimitiveDateTime.compact(),
             listOf(Token.Tuple(6), Token.I32(2021), Token.U16(366u), Token.U8(0u), Token.U8(0u), Token.U8(0u), Token.U32(0u), Token.TupleEnd),
@@ -291,8 +291,8 @@ class SerdeTest {
 
     @Test
     fun offsetDateTimeError() {
-        assertDeTokensError(OffsetDateTime.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected an `OffsetDateTime`")
-        assertDeTokensError(OffsetDateTime.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected an `OffsetDateTime`")
+        assertDeTokensError(OffsetDateTime.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected an `OffsetDateTime`")
+        assertDeTokensError(OffsetDateTime.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected an `OffsetDateTime`")
         assertDeTokensError(
             OffsetDateTime.compact(),
             listOf(Token.Tuple(9), Token.I32(2021), Token.U16(366u), Token.U8(0u), Token.U8(0u), Token.U8(0u), Token.U32(0u), Token.I8(0), Token.I8(0), Token.I8(0), Token.TupleEnd),
@@ -369,8 +369,8 @@ class SerdeTest {
 
     @Test
     fun utcOffsetError() {
-        assertDeTokensError(UtcOffset.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `UtcOffset`")
-        assertDeTokensError(UtcOffset.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `UtcOffset`")
+        assertDeTokensError(UtcOffset.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `UtcOffset`")
+        assertDeTokensError(UtcOffset.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `UtcOffset`")
         assertDeTokensError(
             UtcOffset.compact(),
             listOf(Token.Tuple(3), Token.I8(26), Token.I8(0), Token.I8(0), Token.TupleEnd),
@@ -413,11 +413,11 @@ class SerdeTest {
 
     @Test
     fun durationError() {
-        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("x")), "invalid value: Str(value=x), expected a decimal point")
-        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("x.0")), "invalid value: Str(value=x), expected seconds")
-        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("0.x")), "invalid value: Str(value=x), expected nanoseconds")
-        assertDeTokensError(Duration.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Duration`")
-        assertDeTokensError(Duration.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Duration`")
+        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("x")), "invalid value: string \"x\", expected a decimal point")
+        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("x.0")), "invalid value: string \"x\", expected seconds")
+        assertDeTokensError(Duration.readable(), listOf(Token.BorrowedStr("0.x")), "invalid value: string \"x\", expected nanoseconds")
+        assertDeTokensError(Duration.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Duration`")
+        assertDeTokensError(Duration.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Duration`")
     }
 
     @Test
@@ -450,10 +450,10 @@ class SerdeTest {
 
     @Test
     fun weekdayError() {
-        assertDeTokensError(Weekday.compact(), listOf(Token.U8(0u)), "invalid value: Unsigned(value=0), expected a value in the range 1..=7")
-        assertDeTokensError(Weekday.readable(), listOf(Token.BorrowedStr("NotADay")), "invalid value: Str(value=NotADay), expected a `Weekday`")
-        assertDeTokensError(Weekday.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Weekday`")
-        assertDeTokensError(Weekday.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Weekday`")
+        assertDeTokensError(Weekday.compact(), listOf(Token.U8(0u)), "invalid value: integer `0`, expected a value in the range 1..=7")
+        assertDeTokensError(Weekday.readable(), listOf(Token.BorrowedStr("NotADay")), "invalid value: string \"NotADay\", expected a `Weekday`")
+        assertDeTokensError(Weekday.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Weekday`")
+        assertDeTokensError(Weekday.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Weekday`")
     }
 
     @Test
@@ -487,10 +487,10 @@ class SerdeTest {
 
     @Test
     fun monthError() {
-        assertDeTokensError(Month.compact(), listOf(Token.U8(0u)), "invalid value: Unsigned(value=0), expected a value in the range 1..=12")
-        assertDeTokensError(Month.readable(), listOf(Token.BorrowedStr("NotAMonth")), "invalid value: Str(value=NotAMonth), expected a `Month`")
-        assertDeTokensError(Month.readable(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Month`")
-        assertDeTokensError(Month.compact(), listOf(Token.Bool(false)), "invalid type: Bool(value=false), expected a `Month`")
+        assertDeTokensError(Month.compact(), listOf(Token.U8(0u)), "invalid value: integer `0`, expected a value in the range 1..=12")
+        assertDeTokensError(Month.readable(), listOf(Token.BorrowedStr("NotAMonth")), "invalid value: string \"NotAMonth\", expected a `Month`")
+        assertDeTokensError(Month.readable(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Month`")
+        assertDeTokensError(Month.compact(), listOf(Token.Bool(false)), "invalid type: boolean `false`, expected a `Month`")
     }
 
     @Test

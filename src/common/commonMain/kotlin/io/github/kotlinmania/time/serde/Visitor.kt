@@ -10,6 +10,7 @@ import io.github.kotlinmania.serdecore.de.I32Deserialize
 import io.github.kotlinmania.serdecore.de.I64Deserialize
 import io.github.kotlinmania.serdecore.de.I8Deserialize
 import io.github.kotlinmania.serdecore.de.SeqAccess
+import io.github.kotlinmania.serdecore.de.SeqElement
 import io.github.kotlinmania.serdecore.de.U16Deserialize
 import io.github.kotlinmania.serdecore.de.U32Deserialize
 import io.github.kotlinmania.serdecore.de.U8Deserialize
@@ -36,11 +37,9 @@ private fun <T> nextItem(
 ): SerdeResult<T> =
     when (val res = seq.nextElement(deserialize)) {
         is SerdeResult.Success -> {
-            val v = res.value
-            if (v != null) {
-                SerdeResult.success(v)
-            } else {
-                SerdeResult.failure(SerdeError.custom("expected $name"))
+            when (val elem = res.value) {
+                is SeqElement.Some -> SerdeResult.success(elem.value)
+                SeqElement.None -> SerdeResult.failure(SerdeError.custom("expected $name"))
             }
         }
 
@@ -324,14 +323,14 @@ internal object UtcOffsetVisitor : Visitor<UtcOffset> {
 
         val minRes = access.nextElement(I8Deserialize)
         if (minRes is SerdeResult.Success) {
-            val minVal = minRes.value
-            if (minVal != null) {
-                minutes = minVal
+            val minElem = minRes.value
+            if (minElem is SeqElement.Some) {
+                minutes = minElem.value
                 val secRes = access.nextElement(I8Deserialize)
                 if (secRes is SerdeResult.Success) {
-                    val secVal = secRes.value
-                    if (secVal != null) {
-                        seconds = secVal
+                    val secElem = secRes.value
+                    if (secElem is SeqElement.Some) {
+                        seconds = secElem.value
                     }
                 }
             }

@@ -6,6 +6,7 @@ import io.github.kotlinmania.serde.SerdeResult
 import io.github.kotlinmania.serdecore.de.Deserialize
 import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.de.SeqAccess
+import io.github.kotlinmania.serdecore.de.SeqElement
 import io.github.kotlinmania.serdecore.de.Visitor
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
@@ -111,26 +112,50 @@ class SerdeHelpersTest {
 
                         override fun <A : SeqAccess> visitSeq(access: A): SerdeResult<Full> {
                             val f0 =
-                                access.nextElement(Rfc2822Serde).getOrElse { return SerdeResult.failure(it) }
-                                    ?: return SerdeResult.failure(SerdeError.invalidLength(0, this))
+                                when (val e = access.nextElement(Rfc2822Serde).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(0, this))
+                                }
                             val f1 =
-                                access.nextElement(Rfc2822Serde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(Rfc2822Serde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(1, this))
+                                }
                             val f2 =
-                                access.nextElement(Rfc2822Serde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(Rfc2822Serde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(2, this))
+                                }
                             val f3 =
-                                access.nextElement(Rfc3339Serde).getOrElse { return SerdeResult.failure(it) }
-                                    ?: return SerdeResult.failure(SerdeError.invalidLength(3, this))
+                                when (val e = access.nextElement(Rfc3339Serde).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(3, this))
+                                }
                             val f4 =
-                                access.nextElement(Rfc3339Serde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(Rfc3339Serde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(4, this))
+                                }
                             val f5 =
-                                access.nextElement(Rfc3339Serde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(Rfc3339Serde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(5, this))
+                                }
                             val f6 =
-                                access.nextElement(TimestampSerde).getOrElse { return SerdeResult.failure(it) }
-                                    ?: return SerdeResult.failure(SerdeError.invalidLength(6, this))
+                                when (val e = access.nextElement(TimestampSerde).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(6, this))
+                                }
                             val f7 =
-                                access.nextElement(TimestampSerde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(TimestampSerde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(7, this))
+                                }
                             val f8 =
-                                access.nextElement(TimestampSerde.Option).getOrElse { return SerdeResult.failure(it) }
+                                when (val e = access.nextElement(TimestampSerde.Option).getOrElse { return SerdeResult.failure(it) }) {
+                                    is SeqElement.Some -> e.value
+                                    SeqElement.None -> return SerdeResult.failure(SerdeError.invalidLength(8, this))
+                                }
                             return SerdeResult.success(Full(f0, f1, f2, f3, f4, f5, f6, f7, f8))
                         }
                     },
@@ -184,17 +209,17 @@ class SerdeHelpersTest {
         assertDeTokensError(
             Rfc2822Serde,
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC2822-formatted `OffsetDateTime`",
+            "invalid type: boolean `false`, expected an RFC2822-formatted `OffsetDateTime`",
         )
         assertDeTokensError(
             Rfc2822Serde.Option,
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC2822-formatted `Option<OffsetDateTime>`",
+            "invalid type: boolean `false`, expected an RFC2822-formatted `Option<OffsetDateTime>`",
         )
         assertDeTokensError(
             Rfc2822Serde.Option,
             listOf(Token.Some, Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC2822-formatted `OffsetDateTime`",
+            "invalid type: boolean `false`, expected an RFC2822-formatted `OffsetDateTime`",
         )
     }
 
@@ -220,17 +245,17 @@ class SerdeHelpersTest {
         assertDeTokensError(
             Rfc3339Serde,
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC3339-formatted `OffsetDateTime`",
+            "invalid type: boolean `false`, expected an RFC3339-formatted `OffsetDateTime`",
         )
         assertDeTokensError(
             Rfc3339Serde.Option,
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC3339-formatted `Option<OffsetDateTime>`",
+            "invalid type: boolean `false`, expected an RFC3339-formatted `Option<OffsetDateTime>`",
         )
         assertDeTokensError(
             Rfc3339Serde.Option,
             listOf(Token.Some, Token.Bool(false)),
-            "invalid type: Bool(value=false), expected an RFC3339-formatted `OffsetDateTime`",
+            "invalid type: boolean `false`, expected an RFC3339-formatted `OffsetDateTime`",
         )
     }
 
@@ -239,12 +264,12 @@ class SerdeHelpersTest {
         assertDeTokensError(
             TimestampSerde,
             listOf(Token.Bool(false)),
-            "invalid type: Bool(value=false), expected i64",
+            "invalid type: boolean `false`, expected i64",
         )
         assertDeTokensError(
             TimestampSerde.Option,
             listOf(Token.Some, Token.Bool(false)),
-            "invalid type: Bool(value=false), expected i64",
+            "invalid type: boolean `false`, expected i64",
         )
         assertDeTokensError(
             TimestampSerde,

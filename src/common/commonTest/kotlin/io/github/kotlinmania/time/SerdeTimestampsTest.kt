@@ -30,24 +30,24 @@ class SerdeTimestampsTest {
             }
         assertSerTokens(ser.compact(), listOf(Token.I64(946684800L)))
         assertDeTokens(dt, TimestampSerde.compact(), listOf(Token.I64(946684800L)))
-        assertDeTokensError(TimestampSerde, listOf(Token.Str("bad")), "invalid type: Str(value=bad), expected i64")
+        assertDeTokensError(TimestampSerde, listOf(Token.Str("bad")), "invalid type: string \"bad\", expected i64")
 
         val dtMillis = datetime(2000, 1, 1, 0, 0, 0, 999_000_000, 0)
-        assertDeTokensError(MillisecondsSerde, listOf(Token.Str("bad")), "invalid type: Str(value=bad), expected i128")
+        assertDeTokensError(MillisecondsSerde, listOf(Token.Str("bad")), "invalid type: string \"bad\", expected i128")
         val sbMillis = StringBuilder()
         MillisecondsSerde.serialize(dtMillis, FormatterSerializer(sbMillis)).getOrThrow()
         assertEquals("946684800999", sbMillis.toString())
         assertEquals(dtMillis, MillisecondsSerde.deserialize(I128Deserializer.new("946684800999")).getOrThrow())
 
         val dtMicros = datetime(2000, 1, 1, 0, 0, 0, 999_999_000, 0)
-        assertDeTokensError(MicrosecondsSerde, listOf(Token.Str("bad")), "invalid type: Str(value=bad), expected i128")
+        assertDeTokensError(MicrosecondsSerde, listOf(Token.Str("bad")), "invalid type: string \"bad\", expected i128")
         val sbMicros = StringBuilder()
         MicrosecondsSerde.serialize(dtMicros, FormatterSerializer(sbMicros)).getOrThrow()
         assertEquals("946684800999999", sbMicros.toString())
         assertEquals(dtMicros, MicrosecondsSerde.deserialize(I128Deserializer.new("946684800999999")).getOrThrow())
 
         val dtNanos = datetime(2000, 1, 1, 0, 0, 0, 999_999_999, 0)
-        assertDeTokensError(NanosecondsSerde, listOf(Token.Str("bad")), "invalid type: Str(value=bad), expected i128")
+        assertDeTokensError(NanosecondsSerde, listOf(Token.Str("bad")), "invalid type: string \"bad\", expected i128")
         val sbNanos = StringBuilder()
         NanosecondsSerde.serialize(dtNanos, FormatterSerializer(sbNanos)).getOrThrow()
         assertEquals("946684800999999999", sbNanos.toString())
