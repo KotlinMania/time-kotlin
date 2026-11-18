@@ -16,15 +16,15 @@ For every Rust crate this repo owns (under `tmp/`), this file lists every **cros
 
 | package | module | inbound use sites | distinct caller crates | distinct caller repos | codex sites |
 |---|---|---:|---:|---:|---:|
-| `time` | `time` | 99 | 17 | 11 | 19 |
+| `time` | `time` | 110 | 19 | 13 | 19 |
 
 ## `time`
 
-### Inbound symbols (27 distinct, 99 total `use` sites)
+### Inbound symbols (29 distinct, 110 total `use` sites)
 
 Sorted by codex demand, then total demand. The first symbols are the priority queue for porting `time`.
 
-#### `time::OffsetDateTime` — 26 site(s) (7 codex, 19 other, 14 caller crates)
+#### `time::OffsetDateTime` — 28 site(s) (7 codex, 21 other, 16 caller crates)
 
 - ✅ `codex-kotlin/codex-app-server` `tests/suite/v2/connection_handling_websocket.rs:32` — `use time::OffsetDateTime`
 - ✅ `codex-kotlin/codex-app-server-transport` `src/transport/auth.rs:21` — `use time::OffsetDateTime`
@@ -38,7 +38,7 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:7` — `use time::OffsetDateTime`
 - `aws-sigv4-kotlin/aws-sigv4` `src/http_request/test.rs:17` — `use time::OffsetDateTime`
 - `aws-sigv4-kotlin/aws-sigv4` `src/http_request/test.rs:314` — `use time::OffsetDateTime`
-- _… and 14 more site(s)._
+- _… and 16 more site(s)._
 
 #### `time::format_description::well_known::Rfc3339` — 9 site(s) (3 codex, 6 other, 4 caller crates)
 
@@ -64,28 +64,31 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - ✅ `codex-kotlin/codex-rollout` `src/recorder.rs:22` — `use time::macros::format_description`
 - ✅ `codex-kotlin/codex-rollout` `src/tests.rs:18` — `use time::macros::format_description`
 
-#### `time::PrimitiveDateTime` — 7 site(s) (2 codex, 5 other, 5 caller crates)
+#### `time::PrimitiveDateTime` — 8 site(s) (2 codex, 6 other, 6 caller crates)
 
 - ✅ `codex-kotlin/codex-rollout` `src/list.rs:13` — `use time::PrimitiveDateTime`
 - ✅ `codex-kotlin/codex-rollout` `src/tests.rs:16` — `use time::PrimitiveDateTime`
 - `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:50` — `use time::PrimitiveDateTime`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::PrimitiveDateTime`
 - `rcgen-kotlin/rcgen` `src/certificate.rs:7` — `use time::PrimitiveDateTime`
 - `rcgen-kotlin/rcgen` `src/lib.rs:896` — `use time::PrimitiveDateTime`
 - `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::PrimitiveDateTime`
 - `zip-kotlin/zip` `src/types.rs:31` — `use time::PrimitiveDateTime`
 
-#### `time::Duration` — 5 site(s) (1 codex, 4 other, 4 caller crates)
+#### `time::Duration` — 6 site(s) (1 codex, 5 other, 5 caller crates)
 
 - ✅ `codex-kotlin/codex-rollout` `src/tests.rs:14` — `use time::Duration`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::Duration`
 - `ratatui-kotlin/ratatui-widgets` `src/calendar.rs:20` — `use time::Duration`
 - `rcgen-kotlin/rcgen` `examples/sign-leaf-with-ca.rs:6` — `use time::Duration`
 - `rcgen-kotlin/rcgen` `examples/sign-leaf-with-pem-files.rs:15` — `use time::Duration`
 - `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::Duration`
 
-#### `time::Date` — 11 site(s) (0 codex, 11 other, 8 caller crates)
+#### `time::Date` — 12 site(s) (0 codex, 12 other, 9 caller crates)
 
 - `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:50` — `use time::Date`
 - `axum-kotlin/axum` `src/extract/path/mod.rs:862` — `use time::Date`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::Date`
 - `ratatui-kotlin/calendar-explorer` `src/main.rs:21` — `use time::Date`
 - `ratatui-kotlin/ratatui` `tests/widgets_calendar.rs:8` — `use time::Date`
 - `ratatui-kotlin/ratatui-widgets` `examples/calendar.rs:25` — `use time::Date`
@@ -96,8 +99,9 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::Date`
 - `zip-kotlin/zip` `src/types.rs:31` — `use time::Date`
 
-#### `time::Month` — 8 site(s) (0 codex, 8 other, 5 caller crates)
+#### `time::Month` — 9 site(s) (0 codex, 9 other, 6 caller crates)
 
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::Month`
 - `ratatui-kotlin/calendar-explorer` `src/main.rs:21` — `use time::Month`
 - `ratatui-kotlin/ratatui` `tests/widgets_calendar.rs:8` — `use time::Month`
 - `ratatui-kotlin/ratatui-widgets` `examples/calendar.rs:25` — `use time::Month`
@@ -107,14 +111,21 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `rcgen-kotlin/rcgen` `src/lib.rs:896` — `use time::Month`
 - `zip-kotlin/zip` `src/types.rs:31` — `use time::Month`
 
-#### `time::Time` — 6 site(s) (0 codex, 6 other, 4 caller crates)
+#### `time::Time` — 7 site(s) (0 codex, 7 other, 5 caller crates)
 
 - `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:7` — `use time::Time`
 - `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:50` — `use time::Time`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::Time`
 - `rcgen-kotlin/rcgen` `src/certificate.rs:7` — `use time::Time`
 - `rcgen-kotlin/rcgen` `src/lib.rs:57` — `use time::Time`
 - `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::Time`
 - `zip-kotlin/zip` `src/types.rs:31` — `use time::Time`
+
+#### `time::format_description` — 3 site(s) (0 codex, 3 other, 3 caller crates)
+
+- `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:49` — `use time::format_description`
+- `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::format_description`
+- `vergen-kotlin/vergen` `src/feature/build.rs:16` — `use time::format_description`
 
 #### `time::macros::datetime` — 3 site(s) (0 codex, 3 other, 1 caller crates)
 
@@ -122,10 +133,10 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `zip-kotlin/zip` `src/types.rs:1306` — `use time::macros::datetime`
 - `zip-kotlin/zip` `src/types.rs:1324` — `use time::macros::datetime`
 
-#### `time::format_description` — 2 site(s) (0 codex, 2 other, 2 caller crates)
+#### `time::UtcOffset` — 2 site(s) (0 codex, 2 other, 2 caller crates)
 
-- `aws-sigv4-kotlin/aws-sigv4` `src/date_time.rs:49` — `use time::format_description`
-- `tracing-appender-kotlin/tracing-appender` `src/rolling.rs:37` — `use time::format_description`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::UtcOffset`
+- `tracing-subscriber-kotlin/tracing-subscriber` `src/fmt/time/time_crate.rs:3` — `use time::UtcOffset`
 
 #### `::time_0_3::Duration` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
@@ -155,9 +166,9 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 
 - `serde-with-kotlin/serde_with` `src/time_0_3.rs:20` — `use ::time_0_3::format_description::well_known::iso8601::EncodedConfig`
 
-#### `time::UtcOffset` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+#### `time::UtcDateTime` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
-- `tracing-subscriber-kotlin/tracing-subscriber` `src/fmt/time/time_crate.rs:3` — `use time::UtcOffset`
+- `pyo3-kotlin/pyo3` `src/conversions/time.rs:64` — `use time::UtcDateTime`
 
 #### `time::error::ComponentRange` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
@@ -170,6 +181,10 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 #### `time::format_description::well_known` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
 - `tracing-subscriber-kotlin/tracing-subscriber` `src/fmt/time/time_crate.rs:3` — `use time::format_description::well_known`
+
+#### `time::format_description::well_known::Iso8601` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+
+- `vergen-kotlin/vergen` `src/feature/build.rs:16` — `use time::format_description::well_known::Iso8601`
 
 #### `time::formatting::Formattable` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
